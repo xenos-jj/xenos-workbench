@@ -5214,7 +5214,7 @@ select.pf-input {
 /* ---- 本月重点卡片 ---- */
 .br-focus-row {
   display: flex; align-items: flex-end; gap: 10px;
-  margin-top: -30px; margin-bottom: 12px;
+  margin-top: -45px; margin-bottom: 12px;
 }
 .br-focus-card-clean {
   display: flex; flex-direction: column; align-items: flex-start;
