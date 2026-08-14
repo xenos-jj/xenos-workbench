@@ -10,7 +10,7 @@
     // 内联版本探针：独立于 app.js，确保即使脚本被缓存也能发现新版本
     (function () {
       try {
-        var BUILT = 9119;
+        var BUILT = 9120;
         fetch('./version.json?v=' + Date.now(), { cache: 'no-store' })
           .then(function (r) { return r.ok ? r.json() : null; })
           .then(function (d) {
@@ -27,14 +27,12 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <link rel="manifest" href="manifest.webmanifest?v=119">
-  <link rel="apple-touch-icon" href="icon-192.png?v=119">
-  <link rel="stylesheet" href="styles.css?v=119">
+  <link rel="manifest" href="manifest.webmanifest?v=120">
+  <link rel="apple-touch-icon" href="icon-192.png?v=120">
+  <link rel="stylesheet" href="styles.css?v=120">
   <title>xenos - 人生系统工作台</title>
 <meta name="theme-color" content="#F4B678">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+  <!-- 字体已改为本地自托管 ZCOOL KuaiLe，见 styles.css 顶部 @font-face -->
 </head>
 <body>
   <!-- 共享进度环渐变（金色，用于所有进度圆圈精致化） -->
@@ -250,6 +248,6 @@
     </div>
   </div>
 
-  <script src="app.js?v=119"></script>
+  <script src="app.js?v=120"></script>
 </body>
 </html>
