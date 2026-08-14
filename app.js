@@ -8490,6 +8490,16 @@ function branchIconMoney(color = '#f7ba61') {
   </svg>`;
 }
 
+function branchIconTarget(color = '#E8B4A8') {
+  return `<svg class="br-icon-svg br-icon-target" viewBox="0 0 32 32" width="26" height="26" aria-hidden="true">
+    <g stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="16" cy="16" r="11" fill="none" stroke="${color}" stroke-width="1.6"/>
+      <circle cx="16" cy="16" r="6.5" fill="none" stroke="${color}" stroke-width="1.4"/>
+      <circle cx="16" cy="16" r="2.2" fill="${color}"/>
+    </g>
+  </svg>`;
+}
+
 // 首页顶部：抱咖啡杯的兔子（右侧装饰）
 function homeBunnyCoffeeSVG() {
   return `<svg class="hp-bunny-coffee" viewBox="0 0 110 110" aria-hidden="true">
@@ -8672,7 +8682,7 @@ function renderBranchesPage() {
         <div class="br-focus-card-clean" id="br-focus-picker">
           <div class="br-focus-main">
             <div class="br-focus-icon-ring">
-              ${branchIconLeaf('#bccc8d')}
+              ${branchIconTarget('#E8B4A8')}
             </div>
             <div class="br-focus-body">
               <div class="br-focus-label">本月主线</div>
