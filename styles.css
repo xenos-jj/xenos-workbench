@@ -5207,6 +5207,7 @@ select.pf-input {
 .br-streak-clean {
   display: flex; align-items: flex-end; gap: 5px;
   font-size: 10px; font-weight: 450; color: var(--text-muted);
+  transform: translateY(-7px);
 }
 .br-streak-clean b { color: var(--primary-dark); font-size: 12px; font-weight: 600; }
 .br-fire { font-size: 12px; }
