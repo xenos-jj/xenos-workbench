@@ -7,6 +7,15 @@
   font-display: swap;
 }
 
+/* 本地自托管字体：草莓字体（用户本地卡通字体，用于顶部大标题） */
+@font-face {
+  font-family: 'Strawberry';
+  src: url('fonts/strawberry.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* CSS Variables —— 奶油/小兔「人生系统」设计语言（仅浅色主题） */
 :root {
   --bg: #fcfbf6;                 /* 更通透的奶油白，接近白 */
@@ -50,6 +59,7 @@
   --cream-purple: #F7F4FC;       /* 本周推进卡片底色 */
   --cream-yellow: #FFFCF3;       /* 可延后卡片底色 */
   --font: 'ZCOOL KuaiLe', -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  --font-title: 'Strawberry', var(--font);   /* 顶部大标题专用：草莓字体，回退到站酷快乐体 */
 }
 
 /* 列表项删除按钮：默认隐藏，长按后显示 */
@@ -4873,7 +4883,7 @@ select.pf-input {
   justify-content: space-between;
 }
 .hp-greet-wrap { flex: 1; min-width: 0; }
-.hp-greet { font-size: 18px; font-weight: 800; color: var(--text); margin: 0; letter-spacing: .3px; }
+.hp-greet { font-size: 18px; font-weight: 400; color: var(--text); margin: 0; letter-spacing: .3px; font-family: var(--font-title); }
 .hp-sub { font-size: 11px; color: var(--text-muted); margin: 6px 0 0; }
 .hp-weather {
   display: inline-flex; align-items: center; gap: 6px;
@@ -5276,8 +5286,9 @@ select.pf-input {
   margin-bottom: 3px;
 }
 .br-page-title {
-  font-size: 24px; font-weight: 700; color: var(--text);
+  font-size: 24px; font-weight: 400; color: var(--text);
   display: inline-flex; align-items: center; gap: 5px;
+  font-family: var(--font-title);
 }
 .br-title-spark { font-size: 18px; filter: saturate(0.8); line-height: 1; }
 
