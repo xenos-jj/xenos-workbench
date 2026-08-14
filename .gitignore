@@ -7,3 +7,6 @@ test-smoke-9013.js
 out.txt
 err.txt
 package-lock.json
+images/mascot.png.bak
+images/empty.png
+images/*Q_*.png
