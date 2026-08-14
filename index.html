@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <script>
+    // 内联版本探针：独立于 app.js，确保即使脚本被缓存也能发现新版本
+    (function () {
+      try {
+        var BUILT = 9113;
+        fetch('./version.json?v=' + Date.now(), { cache: 'no-store' })
+          .then(function (r) { return r.ok ? r.json() : null; })
+          .then(function (d) {
+            if (d && d.version && d.version !== BUILT) {
+              // 版本不匹配：已部署新版但当前加载的是旧缓存，强制刷新（no-store）
+              var sep = location.search.indexOf('?') >= 0 ? '&' : '?';
+              location.replace(location.pathname + sep + 'nocache=' + Date.now());
+            }
+          })
+          .catch(function () {});
+      } catch (e) {}
+    })();
+  </script>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <link rel="manifest" href="manifest.webmanifest?v=113">
+  <link rel="apple-touch-icon" href="icon-192.png?v=113">
+  <link rel="stylesheet" href="styles.css?v=113">
+  <title>xenos - 人生系统工作台</title>
+<meta name="theme-color" content="#F4B678">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- 共享进度环渐变（金色，用于所有进度圆圈精致化） -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+    <defs>
+      <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#F9B67A"/>
+        <stop offset="55%" stop-color="#F5A062"/>
+        <stop offset="100%" stop-color="#E8944F"/>
+      </linearGradient>
+    </defs>
+  </svg>
+
+  <div class="app" id="app">
+    <!-- 遮罩：移动端点击空白关闭侧边栏 -->
+    <div class="overlay" id="overlay"></div>
+
+    <!-- 侧边栏 -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-inner">
+        <!-- 用户资料卡 -->
+        <div class="profile-card" id="profile-card">
+          <div class="profile-avatar" id="profile-avatar"><span>🐰</span></div>
+          <div class="profile-info">
+            <div class="profile-top">
+              <span class="profile-name" id="profile-name">Xenos</span>
+              <span class="profile-level" id="profile-level">Lv.1</span>
+            </div>
+            <div class="exp-bar"><div class="exp-fill" id="exp-fill"></div></div>
+            <div class="exp-text" id="exp-text">0/100</div>
+          </div>
+        </div>
+
+        <nav class="menu-scroll" id="menu">
+          <!-- 菜单组由 JS 生成 -->
+        </nav>
+
+        <div class="sidebar-footer">
+          <div class="footer-actions">
+            <button class="footer-btn" id="btn-add-group">
+              <svg viewBox="0 0 24 24" width="12" height="12"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+              添加分组
+            </button>
+            <button class="footer-btn" id="btn-export">
+              <svg viewBox="0 0 24 24" width="12" height="12"><path d="M12 15V3m0 0L7 8m5-5 5 5M3 15v4a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-4" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              导出
+            </button>
+            <button class="footer-btn" id="btn-import">
+              <svg viewBox="0 0 24 24" width="12" height="12"><path d="M12 9V21m0 0-5-5m5 5 5-5M3 15V9a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              导入
+            </button>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- 主内容区 -->
+    <main class="main" id="main">
+      <header class="topbar">
+        <button class="menu-toggle" id="menu-toggle" aria-label="打开菜单">
+          <svg viewBox="0 0 24 24" width="20" height="20"><path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+        <button class="back-btn" id="back-btn" aria-label="返回上一页" style="display:none;">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+        </button>
+        <div class="topbar-greeting">
+          <div class="greet-line" id="greet-line">你好</div>
+          <div class="greet-date" id="greet-date"></div>
+        </div>
+        <div class="topbar-chips" id="topbar-chips"></div>
+      </header>
+
+      <div class="content" id="content">
+        <!-- 动态内容 -->
+      </div>
+    </main>
+
+    <!-- 悬浮专注挂件 -->
+    <div class="fab-wrap" id="fab-wrap">
+      <button class="fab" id="fab" aria-label="专注时钟">
+        <span class="fab-face">🍅</span>
+        <span class="fab-time" id="fab-time">25:00</span>
+      </button>
+    </div>
+
+    <!-- 移动端底部导航 -->
+    <nav class="bottom-nav" id="bottom-nav">
+      <button class="bn-item active" data-bn="home">
+        <span class="bn-icon">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="0.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M3 11l9-7 9 7"/>
+            <path d="M5 9.5V20h14V9.5"/>
+            <path d="M10 20v-5h4v5"/>
+          </svg>
+        </span>
+        <span>首页</span>
+      </button>
+      <button class="bn-item" data-bn="branches">
+        <span class="bn-icon">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="0.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="4" y="4" width="16" height="16" rx="3"/>
+            <path d="M8 9l1.5 1.5L12 8"/>
+            <path d="M8 15l1.5 1.5L12 14"/>
+            <path d="M15 9h2.5"/>
+            <path d="M15 15h2.5"/>
+          </svg>
+        </span>
+        <span>支线</span>
+      </button>
+      <button class="bn-item bn-plus" id="bn-plus" data-bn="plus" aria-label="专注时钟">
+        <span class="bn-plus-inner">
+          <svg viewBox="0 0 24 24" width="30" height="30" aria-hidden="true">
+            <circle cx="12" cy="13" r="8" fill="#F4B678"/>
+            <path d="M12 5 Q13.4 3 15 4.2 Q14 6 12 6 Q10 6 9 4.2 Q10.6 3 12 5 Z" fill="#8BC34A"/>
+            <circle cx="10" cy="11.5" r="1.1" fill="#fff" opacity="0.55"/>
+            <circle cx="14" cy="14" r="1.1" fill="#fff" opacity="0.55"/>
+          </svg>
+        </span>
+      </button>
+      <button class="bn-item" data-bn="insight">
+        <span class="bn-icon">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="0.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M5 19V11.5"/>
+            <path d="M10 19V5.5"/>
+            <path d="M15 19V13.5"/>
+            <path d="M20 19V8.5"/>
+            <path d="M3.5 19h17"/>
+          </svg>
+        </span>
+        <span>洞察</span>
+      </button>
+      <button class="bn-item" data-bn="mine">
+        <span class="bn-icon">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="0.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="8" r="3.4"/>
+            <path d="M5.5 20c0-3.6 2.9-6.5 6.5-6.5s6.5 2.9 6.5 6.5"/>
+          </svg>
+        </span>
+        <span>我的</span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- 隐藏的文件输入 -->
+  <input type="file" id="import-file" accept=".json" hidden>
+  <input type="file" id="avatar-input" accept="image/*" hidden>
+
+  <!-- 通用模态框 -->
+  <div class="modal" id="modal">
+    <div class="modal-card">
+      <h3 class="modal-title" id="modal-title">提示</h3>
+      <input type="text" class="modal-input" id="modal-input" placeholder="请输入名称">
+      <div class="modal-actions">
+        <button class="btn btn-secondary" id="modal-cancel">取消</button>
+        <button class="btn btn-primary" id="modal-confirm">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 番茄专注模态框 -->
+  <div class="modal" id="focus-modal">
+    <div class="modal-card focus-card">
+      <h3 class="modal-title">专注时钟</h3>
+      <div class="focus-ring" id="focus-ring">
+        <svg viewBox="0 0 120 120" id="focus-ring-svg">
+          <circle class="fr-bg" cx="60" cy="60" r="52"></circle>
+          <circle class="fr-fg" id="focus-ring-fg" cx="60" cy="60" r="52" transform="rotate(-90 60 60)"></circle>
+          <!-- tick marks -->
+          <g id="focus-ticks"></g>
+          <!-- draggable knob -->
+          <circle class="fr-knob" id="focus-knob" cx="60" cy="8" r="5"></circle>
+        </svg>
+        <div class="focus-time" id="focus-time">25:00</div>
+        <div class="focus-min-label" id="focus-min-label">25 分钟</div>
+      </div>
+      <div class="focus-actions">
+        <button class="btn btn-primary" id="focus-toggle">开始</button>
+        <button class="btn btn-secondary" id="focus-reset">重置</button>
+        <button class="btn btn-secondary" id="focus-close">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 奖励详情与兑奖模态框 -->
+  <div class="modal" id="reward-detail-modal">
+    <div class="modal-card reward-detail-card">
+      <h3 class="modal-title">奖励详情</h3>
+      <div class="reward-detail-body"></div>
+    </div>
+  </div>
+
+  <!-- 快速记录底部滑出 sheet -->
+  <div class="modal bottom-sheet" id="quick-record-modal">
+    <div class="bottom-sheet-card qr-card">
+      <div class="qr-header">
+        <div class="qr-head-left">
+          <span class="qr-bunny">🐰</span>
+          <div>
+            <h3>快速记录 ✨</h3>
+            <p class="qr-subtitle">随手记下当下，为更好的自己打卡✨</p>
+          </div>
+        </div>
+        <button class="qr-close" id="qr-close" aria-label="关闭">✕</button>
+      </div>
+      <div class="qr-tabs">
+        <button class="qr-tab active" data-qr="sport">运动</button>
+        <button class="qr-tab" data-qr="sleep">睡眠</button>
+        <button class="qr-tab" data-qr="money">收支</button>
+        <button class="qr-tab" data-qr="idea">想法</button>
+      </div>
+      <div class="qr-body" id="qr-body"><!-- JS fills --></div>
+      <button class="btn btn-primary qr-save" id="qr-save">✨ 保存记录</button>
+    </div>
+  </div>
+
+  <script src="app.js?v=113"></script>
+</body>
+</html>
