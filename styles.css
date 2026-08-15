@@ -2895,7 +2895,7 @@ button, input {
 .topbar-greeting { flex: 1; min-width: 0; }
 .greet-line {
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 650;
   color: var(--text);
   line-height: 1.3;
   white-space: nowrap;
@@ -5273,8 +5273,8 @@ select.pf-input {
 }
 .br-focus-icon-ring svg { display: block; width: 25px; height: 25px; }
 .br-focus-body { display: flex; flex-direction: column; gap: 5px; }
-.br-focus-label { font-size: 10px; font-family: var(--font-small); font-weight: 500; color: var(--text-muted); }
-.br-focus-tags { display: flex; flex-wrap: nowrap; justify-content: space-between; gap: 6px; width: 100%; margin-top: 8px; }
+.br-focus-label { font-size: 10px; font-family: var(--font-small); font-weight: 500; color: var(--text-muted); transform: translateX(-2px); }
+.br-focus-tags { display: flex; flex-wrap: nowrap; justify-content: flex-start; gap: 6px; width: 100%; margin-top: 8px; }
 .br-focus-tag {
   display: inline-flex; align-items: center;
   padding: 2px 14px; border-radius: 800px;
@@ -5370,7 +5370,7 @@ select.pf-input {
   flex: 0 0 auto; min-height: 0; padding: 6px 0;
 }
 .br-trend { flex: 1; min-width: 0; padding-right: 6px; display: flex; flex-direction: column; justify-content: flex-start; }
-.br-trend-label { font-size: 6px; font-family: var(--font-small); color: var(--text-muted); margin-bottom: 2px; }
+.br-trend-label { font-size: 8px; font-family: var(--font-small); color: var(--text-muted); margin-bottom: 2px; }
 .br-trend .spark-chart { width: 100%; height: auto; aspect-ratio: 260 / 40; display: block; }
 .br-trend .chart-empty { padding: 4px 0; font-size: 10px; }
 .br-branch-vline { width: 1px; flex-shrink: 0; opacity: 0.35; align-self: stretch; }
@@ -5378,7 +5378,7 @@ select.pf-input {
   display: flex; flex-direction: column; justify-content: flex-start;
   padding-left: 6px; flex-shrink: 0; min-width: 118px;
 }
-.br-next-wrap .br-next-label { font-size: 6px; font-family: var(--font-small); color: var(--text-muted); margin-bottom: 2px; }
+.br-next-wrap .br-next-label { font-size: 8px; font-family: var(--font-small); color: var(--text-muted); margin-bottom: 2px; }
 .br-next-btn {
   display: inline-flex; align-items: center; justify-content: space-between; gap: 5px;
   border: none; border-radius: 999px; padding: 5px 10px;
@@ -6062,7 +6062,7 @@ select.pf-input {
   backdrop-filter: blur(8px);
   border-bottom: 1px solid var(--border);
 }
-.greet-line { font-size: 13px; font-weight: 700; color: var(--text); }
+.greet-line { font-size: 13px; font-weight: 650; color: var(--text); }
 .greet-date { font-size: 11px; color: var(--text-muted); }
 .topbar-chips .chip, .topbar-chips .pill-tag { border-radius: 999px; }
 
@@ -6492,7 +6492,7 @@ select.pf-input {
   backdrop-filter: blur(8px);
   border-bottom: 1px solid var(--border);
 }
-.greet-line { font-size: 13px; font-weight: 700; color: var(--text); }
+.greet-line { font-size: 13px; font-weight: 650; color: var(--text); }
 .greet-date { font-size: 11px; color: var(--text-muted); }
 .topbar-chips .chip, .topbar-chips .pill-tag { border-radius: 999px; }
 
