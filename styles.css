@@ -4874,6 +4874,8 @@ select.pf-input {
   flex-direction: column;
   font-size: 12px; font-weight: 700; color: var(--text);
 }
+/* 进度环数字与 % 作为一整排显示，防止 boldZeroPct 包成的多个 zpct span 被 flex 子项拆行 */
+.mini-ring .mr-num-main { display: inline-flex; align-items: center; justify-content: center; white-space: nowrap; }
 .mini-ring .mr-num small { font-size: 9px; font-family: var(--font-small); font-weight: 400; color: var(--text-muted); }
 
 /* 通用简单折线图 */
@@ -5336,7 +5338,7 @@ select.pf-input {
   flex-shrink: 0;
 }
 /* 树叶图标视觉重心偏下，圆底保持不动，仅将树叶上移以在视觉上居中 */
-.br-branch-icon .br-icon-leaf { transform: translateY(-6px); }
+.br-branch-icon .br-icon-leaf { transform: translateY(-5px); }
 /* 支线卡片图标统一用 currentColor，所有图标与文字中心对齐 */
 .br-branch-info { flex: 1; min-width: 0; }
 .br-branch-title { font-size: 15px; font-weight: 600; color: var(--text); margin: 0; font-family: var(--font-title); }
@@ -5358,9 +5360,9 @@ select.pf-input {
 .br-branch-ring .mini-ring.ring-purple .mr-num { color: #8978c3; }
 .br-branch-ring .mini-ring.ring-green .mr-num { color: #a0bb7a; }
 .br-branch-ring .mini-ring.ring-peach .mr-num { color: #f4b75b; }
-.br-branch-ring .mini-ring .mr-num { font-size: 13px; font-weight: 575; color: var(--text); white-space: nowrap; }
+.br-branch-ring .mini-ring .mr-num { font-size: 13px; font-weight: 585; color: var(--text); white-space: nowrap; }
 .br-branch-ring .mini-ring .mr-num small { font-size: 8px; font-family: var(--font-small); color: var(--text-muted); }
-.br-branch-ring .mini-ring .mr-num .zpct { font-weight: 575; }
+.br-branch-ring .mini-ring .mr-num .zpct { font-weight: 585; }
 /* 全局：所有阿拉伯数字 0 与百分号 % 的字重与进度环数字（.mr-num）保持一致（600），不改变其颜色 */
 .zpct { font-weight: 600; }
 

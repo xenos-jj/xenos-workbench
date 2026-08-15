@@ -8100,7 +8100,7 @@ function miniRingHTML(percent, colorClass, num, label) {
       <circle class="mr-bg" cx="32" cy="32" r="${r}"></circle>
       <circle class="mr-fg" cx="32" cy="32" r="${r}" style="stroke-dasharray:${c.toFixed(1)};stroke-dashoffset:${(c * (1 - percent / 100)).toFixed(1)}"></circle>
     </svg>
-    <div class="mr-num">${num}<small>${label}</small></div>
+    <div class="mr-num"><span class="mr-num-main">${num}</span><small>${label}</small></div>
   </div>`;
 }
 
@@ -8489,15 +8489,15 @@ function openSlowBranchPicker() {
 // ============ 我的支线（Screenshot 2） ============
 // 支线卡片图标：彩色填充风格，与圆框背景搭配
 function branchIconBook(stroke = '#9C8AC9', fill = '#a99add', line = '#ffffff') {
-  // 柔和同色系描边 + 清晰书形 + 小笑脸（描边减半，更精致）
+  // 柔和同色系描边 + 清晰书形 + 小笑脸（描边比原减半后再略粗一点点）
   return `<svg class="br-icon-svg" viewBox="0 0 32 32" width="26" height="26" aria-hidden="true">
     <g stroke-linecap="round" stroke-linejoin="round">
-      <path d="M7 10c0-1.7 1.4-3 3.1-3h5.9v17H10.1C8.4 24 7 22.8 7 21.1V10z" fill="#F6EFE0" stroke="${stroke}" stroke-width="0.9"/>
-      <path d="M25 10c0-1.7-1.4-3-3.1-3H16v17h5.9c1.7 0 3.1-1.2 3.1-2.9V10z" fill="#F1E9FA" stroke="${stroke}" stroke-width="0.9"/>
-      <path d="M16 7V24" stroke="${stroke}" stroke-width="1.1"/>
+      <path d="M7 10c0-1.7 1.4-3 3.1-3h5.9v17H10.1C8.4 24 7 22.8 7 21.1V10z" fill="#F6EFE0" stroke="${stroke}" stroke-width="1.1"/>
+      <path d="M25 10c0-1.7-1.4-3-3.1-3H16v17h5.9c1.7 0 3.1-1.2 3.1-2.9V10z" fill="#F1E9FA" stroke="${stroke}" stroke-width="1.1"/>
+      <path d="M16 7V24" stroke="${stroke}" stroke-width="1.3"/>
       <circle cx="11.5" cy="14" r="0.8" fill="${stroke}"/>
       <circle cx="20.5" cy="14" r="0.8" fill="${stroke}"/>
-      <path d="M11 16.6q1.3 1.3 2.8 0" stroke="${stroke}" stroke-width="0.6" fill="none"/>
+      <path d="M11 16.6q1.3 1.3 2.8 0" stroke="${stroke}" stroke-width="0.8" fill="none"/>
     </g>
   </svg>`;
 }
