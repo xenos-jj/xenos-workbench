@@ -2650,6 +2650,41 @@ function prependBackBar(target) {
   content.insertBefore(bar, content.firstChild);
 }
 
+// 全局：把所有可见文本中的阿拉伯数字 0 与百分号 % 包裹为 <span class="zpct">，
+// 使其字重（600）与进度环数字 .mr-num 一致；仅设置字重，颜色沿用父级，不改变既有颜色。
+function boldZeroPct(root) {
+  if (!root) return;
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+    acceptNode(node) {
+      const p = node.parentNode;
+      if (!p) return NodeFilter.FILTER_REJECT;
+      const tag = p.tagName;
+      if (tag === 'SCRIPT' || tag === 'STYLE' || tag === 'TEXTAREA' || tag === 'INPUT') return NodeFilter.FILTER_REJECT;
+      if (p.namespaceURI && String(p.namespaceURI).indexOf('svg') >= 0) return NodeFilter.FILTER_REJECT;
+      if (p.classList && p.classList.contains('zpct')) return NodeFilter.FILTER_REJECT;
+      return /[0%]/.test(node.nodeValue) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+    }
+  });
+  const targets = [];
+  let n;
+  while ((n = walker.nextNode())) targets.push(n);
+  for (const t of targets) {
+    const frag = document.createDocumentFragment();
+    const parts = t.nodeValue.split(/([0%])/);
+    for (const part of parts) {
+      if (part === '0' || part === '%') {
+        const span = document.createElement('span');
+        span.className = 'zpct';
+        span.textContent = part;
+        frag.appendChild(span);
+      } else if (part !== '') {
+        frag.appendChild(document.createTextNode(part));
+      }
+    }
+    if (frag.childNodes.length) t.parentNode.replaceChild(frag, t);
+  }
+}
+
 function renderContent() {
   content.innerHTML = '';
 
@@ -2658,11 +2693,13 @@ function renderContent() {
     route();
     const parent = SUB_PAGE_PARENT[state.activeItem];
     if (parent) prependBackBar(parent);
+    boldZeroPct(document.body);
     return;
   }
 
   if (DOMAIN_CONFIG[state.activeItem]) {
     renderDomainPage(state.activeItem);
+    boldZeroPct(document.body);
     return;
   }
 
@@ -2676,6 +2713,7 @@ function renderContent() {
     </div>
   `;
   content.appendChild(card);
+  boldZeroPct(document.body);
 }
 
 // Daily plan

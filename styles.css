@@ -5342,6 +5342,8 @@ select.pf-input {
 .br-branch-ring .mini-ring.ring-peach .mr-num { color: #f4b75b; }
 .br-branch-ring .mini-ring .mr-num { font-size: 13px; font-weight: 600; color: var(--text); }
 .br-branch-ring .mini-ring .mr-num small { font-size: 8px; font-family: var(--font-small); color: var(--text-muted); }
+/* 全局：所有阿拉伯数字 0 与百分号 % 的字重与进度环数字（.mr-num）保持一致（600），不改变其颜色 */
+.zpct { font-weight: 600; }
 
 .br-branch-divider { height: 1px; margin: 0; opacity: 0.35; }
 .br-branch-bottom {
