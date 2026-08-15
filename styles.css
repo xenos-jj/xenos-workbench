@@ -5253,7 +5253,7 @@ select.pf-input {
 .br-focus-main { display: flex; align-items: center; gap: 8px; width: 100%; }
 .br-focus-icon-ring {
   display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0; align-self: flex-start; margin-top: -4px;
+  flex-shrink: 0;
 }
 .br-focus-icon-ring svg { display: block; width: 18px; height: 18px; }
 .br-focus-body { display: flex; flex-direction: column; gap: 5px; }
@@ -5319,8 +5319,7 @@ select.pf-input {
   height: 35px;
   flex-shrink: 0;
 }
-.br-branch-icon .br-icon-leaf { transform: translateY(-5px); }
-/* 支线卡片图标统一用 currentColor，不再单独偏移 */
+/* 支线卡片图标统一用 currentColor，所有图标与文字中心对齐，不再单独偏移 */
 .br-branch-info { flex: 1; min-width: 0; }
 .br-branch-title { font-size: 15px; font-weight: 700; color: var(--text); margin: 0; }
 .br-branch-sub { font-size: 8px; font-family: var(--font-small); color: var(--text-muted); margin: 1px 0 4px; }
