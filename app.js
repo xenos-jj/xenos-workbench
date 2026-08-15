@@ -8664,11 +8664,6 @@ function renderBranchesPage() {
   const branchIconBg = (cls) => cls === 'c-purple' ? '#f5f2f9' : cls === 'c-green' ? '#f5f6e8' : '#fdf1e1';
   const branchBorder = (cls) => cls === 'c-purple' ? '#a99adc' : cls === 'c-green' ? '#a0bb7a' : '#f7ba61';
   const branchLvBg = (cls) => cls === 'c-purple' ? '#f5f2f9' : cls === 'c-green' ? '#f5f6e8' : '#fdf1e1';
-  const PHASE_COLOR = {
-    '成长': '#E8B4A8', '生活': '#f4b75b', '自律': '#a0bb7a',
-    '学习': '#8978c3', '英语': '#C9B6EC', '剪辑': '#f7ba61', 'AI': '#9C8AC9'
-  };
-  const phaseColor = (p) => PHASE_COLOR[p] || '#E8B4A8';
 
   page.innerHTML = `
     <div class="br-page">
@@ -8679,7 +8674,7 @@ function renderBranchesPage() {
 
       <div class="br-header-clean">
         <div class="br-stage" id="br-stage-picker">
-          当前阶段：<span class="br-current-phase" style="color:${phaseColor(currentPhase)}">${escapeHTML(currentPhase)}</span><span class="br-stage-caret">▾</span>
+          当前阶段：<span class="br-current-phase">${escapeHTML(currentPhase)}</span><span class="br-stage-caret">▾</span>
         </div>
       </div>
 
@@ -8690,7 +8685,7 @@ function renderBranchesPage() {
               ${branchIconTarget('#E8B4A8')}
             </div>
             <div class="br-focus-body">
-              <div class="br-focus-label" style="color:${phaseColor(currentPhase)}">本月主线</div>
+              <div class="br-focus-label">本月主线</div>
             </div>
           </div>
           <div class="br-focus-tags">
