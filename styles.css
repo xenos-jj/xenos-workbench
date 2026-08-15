@@ -5319,7 +5319,9 @@ select.pf-input {
   height: 35px;
   flex-shrink: 0;
 }
-/* 支线卡片图标统一用 currentColor，所有图标与文字中心对齐，不再单独偏移 */
+/* 树叶图标视觉重心偏下，圆底保持不动，仅将树叶上移以在视觉上居中 */
+.br-branch-icon .br-icon-leaf { transform: translateY(-3px); }
+/* 支线卡片图标统一用 currentColor，所有图标与文字中心对齐 */
 .br-branch-info { flex: 1; min-width: 0; }
 .br-branch-title { font-size: 15px; font-weight: 600; color: var(--text); margin: 0; font-family: var(--font-title); }
 .br-branch-sub { font-size: 8px; font-family: var(--font-small); color: var(--text-muted); margin: 1px 0 4px; }
