@@ -8690,7 +8690,7 @@ function renderBranchesPage() {
               ${branchIconTarget('#E8B4A8')}
             </div>
             <div class="br-focus-body">
-              <div class="br-focus-label">本月主线</div>
+              <div class="br-focus-label" style="color:${phaseColor(currentPhase)}">本月主线</div>
             </div>
           </div>
           <div class="br-focus-tags">

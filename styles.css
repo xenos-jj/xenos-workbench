@@ -5229,7 +5229,7 @@ select.pf-input {
   font-size: 10px; font-weight: 450; color: var(--text-muted);
   transform: translateY(-12px);
 }
-.br-streak-clean b { color: var(--primary-dark); font-size: 12px; font-weight: 450; }
+.br-streak-clean b { color: var(--primary-dark); font-size: 12px; font-weight: 550; }
 .br-fire { font-size: 12px; }
 
 /* ---- 本月重点卡片 ---- */
@@ -5255,7 +5255,7 @@ select.pf-input {
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
 }
-.br-focus-icon-ring svg { display: block; width: 20px; height: 20px; }
+.br-focus-icon-ring svg { display: block; width: 25px; height: 25px; }
 .br-focus-body { display: flex; flex-direction: column; gap: 5px; }
 .br-focus-label { font-size: 10px; font-family: var(--font-small); font-weight: 500; color: var(--text); }
 .br-focus-tags { display: flex; flex-wrap: nowrap; justify-content: space-between; gap: 6px; width: 100%; margin-top: 8px; }
@@ -5287,7 +5287,7 @@ select.pf-input {
   margin-bottom: 3px;
 }
 .br-page-title {
-  font-size: 24px; font-weight: 600; color: var(--text);
+  font-size: 24px; font-weight: 500; color: var(--text);
   display: inline-flex; align-items: center; gap: 5px;
   font-family: var(--font-title);
 }
@@ -5337,6 +5337,9 @@ select.pf-input {
 .br-branch-ring .mini-ring.ring-purple .mr-fg { stroke: #8978c3; }
 .br-branch-ring .mini-ring.ring-green .mr-fg { stroke: #a0bb7a; }
 .br-branch-ring .mini-ring.ring-peach .mr-fg { stroke: #f4b75b; }
+.br-branch-ring .mini-ring.ring-purple .mr-num { color: #8978c3; }
+.br-branch-ring .mini-ring.ring-green .mr-num { color: #a0bb7a; }
+.br-branch-ring .mini-ring.ring-peach .mr-num { color: #f4b75b; }
 .br-branch-ring .mini-ring .mr-num { font-size: 13px; font-weight: 600; color: var(--text); }
 .br-branch-ring .mini-ring .mr-num small { font-size: 8px; font-family: var(--font-small); color: var(--text-muted); }
 
