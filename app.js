@@ -8703,6 +8703,14 @@ function renderBranchesPage() {
   const branchBorder = (cls) => cls === 'c-purple' ? '#a99adc' : cls === 'c-green' ? '#a0bb7a' : '#f7ba61';
   const branchLvBg = (cls) => cls === 'c-purple' ? '#f5f2f9' : cls === 'c-green' ? '#f5f6e8' : '#fdf1e1';
 
+  // 本月主线标签按对应支线主题染色
+  const focusItems = monthlyFocus.map(name => {
+    const type = branchTypeOf(name);
+    const cls = BRANCH_TEMPLATE[type].cls;
+    return { name, cls, color: branchColor(cls), border: branchBorder(cls), bg: branchIconBg(cls) };
+  });
+  const titleColor = focusItems[0] ? focusItems[0].color : '#E8B4A8';
+
   page.innerHTML = `
     <div class="br-page">
       <div class="br-page-head">
@@ -8723,11 +8731,11 @@ function renderBranchesPage() {
               ${branchIconTarget('#E8B4A8')}
             </div>
             <div class="br-focus-body">
-              <div class="br-focus-label">本月主线</div>
+              <div class="br-focus-label" style="color:${titleColor}">本月主线</div>
             </div>
           </div>
           <div class="br-focus-tags">
-            ${monthlyFocus.map(f => `<span class="br-focus-tag">${escapeHTML(f)}</span>`).join('')}
+            ${focusItems.map(f => `<span class="br-focus-tag" style="background:${f.bg};color:${f.color};border-color:${f.border}">${escapeHTML(f.name)}</span>`).join('')}
           </div>
         </div>
         <div class="br-focus-illust"><img src="images/mascot.png" class="br-mascot-img" alt="mascot"></div>
