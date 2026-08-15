@@ -5225,11 +5225,11 @@ select.pf-input {
 .br-current-phase { color: var(--text); font-size: 10px; font-weight: 450; }
 .br-stage-caret { font-size: 12px; color: var(--text-muted); }
 .br-streak-clean {
-  display: flex; align-items: flex-end; gap: 5px;
+  display: flex; align-items: center; gap: 5px;
   font-size: 10px; font-weight: 450; color: var(--text-muted);
   transform: translateY(-12px);
 }
-.br-streak-clean b { color: var(--primary-dark); font-size: 12px; font-weight: 600; }
+.br-streak-clean b { color: var(--primary-dark); font-size: 12px; font-weight: 450; }
 .br-fire { font-size: 12px; }
 
 /* ---- 本月重点卡片 ---- */
@@ -5255,9 +5255,9 @@ select.pf-input {
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
 }
-.br-focus-icon-ring svg { display: block; width: 18px; height: 18px; }
+.br-focus-icon-ring svg { display: block; width: 20px; height: 20px; }
 .br-focus-body { display: flex; flex-direction: column; gap: 5px; }
-.br-focus-label { font-size: 8px; font-family: var(--font-small); font-weight: 500; color: var(--text); }
+.br-focus-label { font-size: 10px; font-family: var(--font-small); font-weight: 500; color: var(--text); }
 .br-focus-tags { display: flex; flex-wrap: nowrap; justify-content: space-between; gap: 6px; width: 100%; margin-top: 8px; }
 .br-focus-tag {
   display: inline-flex; align-items: center;
@@ -5287,7 +5287,7 @@ select.pf-input {
   margin-bottom: 3px;
 }
 .br-page-title {
-  font-size: 24px; font-weight: 400; color: var(--text);
+  font-size: 24px; font-weight: 600; color: var(--text);
   display: inline-flex; align-items: center; gap: 5px;
   font-family: var(--font-title);
 }
@@ -5321,7 +5321,7 @@ select.pf-input {
 }
 /* 支线卡片图标统一用 currentColor，所有图标与文字中心对齐，不再单独偏移 */
 .br-branch-info { flex: 1; min-width: 0; }
-.br-branch-title { font-size: 15px; font-weight: 700; color: var(--text); margin: 0; }
+.br-branch-title { font-size: 15px; font-weight: 600; color: var(--text); margin: 0; font-family: var(--font-title); }
 .br-branch-sub { font-size: 8px; font-family: var(--font-small); color: var(--text-muted); margin: 1px 0 4px; }
 .br-branch-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .br-lv-tag { border-radius: 999px; padding: 1px 7px; font-size: 9px; font-family: var(--font-small); font-weight: 500; }
@@ -5337,21 +5337,21 @@ select.pf-input {
 .br-branch-ring .mini-ring.ring-purple .mr-fg { stroke: #8978c3; }
 .br-branch-ring .mini-ring.ring-green .mr-fg { stroke: #a0bb7a; }
 .br-branch-ring .mini-ring.ring-peach .mr-fg { stroke: #f4b75b; }
-.br-branch-ring .mini-ring .mr-num { font-size: 13px; font-weight: 700; color: var(--text); }
+.br-branch-ring .mini-ring .mr-num { font-size: 13px; font-weight: 600; color: var(--text); }
 .br-branch-ring .mini-ring .mr-num small { font-size: 8px; font-family: var(--font-small); color: var(--text-muted); }
 
 .br-branch-divider { height: 1px; margin: 0; opacity: 0.35; }
 .br-branch-bottom {
-  display: flex; align-items: center; gap: 0;
+  display: flex; align-items: flex-start; gap: 0;
   flex: 0 0 auto; min-height: 0; padding: 6px 0;
 }
-.br-trend { flex: 1; min-width: 0; padding-right: 6px; display: flex; flex-direction: column; justify-content: center; }
+.br-trend { flex: 1; min-width: 0; padding-right: 6px; display: flex; flex-direction: column; justify-content: flex-start; }
 .br-trend-label { font-size: 6px; font-family: var(--font-small); color: var(--text-muted); margin-bottom: 2px; }
 .br-trend .spark-chart { width: 100%; height: auto; aspect-ratio: 260 / 40; display: block; }
 .br-trend .chart-empty { padding: 4px 0; font-size: 10px; }
 .br-branch-vline { width: 1px; flex-shrink: 0; opacity: 0.35; align-self: stretch; }
 .br-next-wrap {
-  display: flex; flex-direction: column; justify-content: center;
+  display: flex; flex-direction: column; justify-content: flex-start;
   padding-left: 6px; flex-shrink: 0; min-width: 118px;
 }
 .br-next-wrap .br-next-label { font-size: 6px; font-family: var(--font-small); color: var(--text-muted); margin-bottom: 2px; }
