@@ -5277,6 +5277,12 @@ select.pf-input {
 .br-focus-body { display: flex; flex-direction: column; gap: 5px; }
 .br-focus-label { font-size: 10px; font-family: var(--font-small); font-weight: 500; color: var(--text-muted); transform: translateX(-2px); }
 .br-focus-tags { display: flex; flex-wrap: nowrap; justify-content: flex-start; gap: 6px; width: 100%; margin-top: 8px; }
+/* 2 个标签：左右与边框间距一致，中间间距比常规多 10px（6+10=16） */
+.br-focus-tags.count-2 { justify-content: center; gap: 16px; }
+.br-focus-tags.count-2 .br-focus-tag:first-child { margin-left: auto; }
+.br-focus-tags.count-2 .br-focus-tag:last-child { margin-right: auto; }
+/* 3 个标签：所有间隙（含两端）均匀一致 */
+.br-focus-tags.count-3 { justify-content: space-evenly; }
 .br-focus-tag {
   display: inline-flex; align-items: center;
   padding: 2px 14px; border-radius: 800px;

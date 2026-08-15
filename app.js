@@ -8669,6 +8669,33 @@ function renderBranchesPage() {
     return days;
   }
 
+  // 进度环：100% 按一周 7 天均分，每天基础份额 100/7；当天进度再按当天任务完成比例细化
+  const DAY_BASE = 100 / 7;
+  function calcBranchWeeklyProgress(type) {
+    const todayKey = getTodayKey();
+    let sum = 0;
+    for (let i = 0; i < 7; i++) {
+      const k = shiftDate(todayKey, -i);
+      let ratio = 0;
+      let tasks;
+      if (k === todayKey) tasks = (state.domains[type] || { tasks: [] }).tasks || [];
+      else { const h = (state.domainHistory[k] || {})[type]; tasks = (h && h.tasks) || []; }
+      if (tasks && tasks.length) {
+        // 有每日任务的支线（健康/记账/外貌等）：按当天完成比例计算当天份额
+        ratio = tasks.filter(t => t.done).length / tasks.length;
+      } else if (type === 'learning') {
+        // 学习支线无 domain 任务时，以当天是否有专注时长作为完成日
+        ratio = getFocusMinutesByDomain(k, 'learning') > 0 ? 1 : 0;
+      } else {
+        // 兜底：以当天积分日志是否大于 0 作为完成日
+        const log = (state.domains[type] || {}).log || {};
+        ratio = Number(log[k]) > 0 ? 1 : 0;
+      }
+      sum += ratio * DAY_BASE;
+    }
+    return Math.round(sum);
+  }
+
   const branches = monthlyFocus.slice(0, 3).map(name => {
     const type = branchTypeOf(name);
     const t = BRANCH_TEMPLATE[type];
@@ -8691,7 +8718,7 @@ function renderBranchesPage() {
     return {
       name, type, icon: t.icon(), cls: t.cls, sub: t.sub, btn: t.btn, action: t.action, route: t.route,
       week, level, levelText, activeDays, focusMin, hasData,
-      progress: Math.round((activeDays / 7) * 100)
+      progress: calcBranchWeeklyProgress(type)
     };
   });
   const keepList = state.settings.keepBranches || DEFAULT_SETTINGS.keepBranches;
@@ -8732,7 +8759,7 @@ function renderBranchesPage() {
               <div class="br-focus-label">本月主线</div>
             </div>
           </div>
-          <div class="br-focus-tags">
+          <div class="br-focus-tags count-${focusItems.length}">
             ${focusItems.map(f => `<span class="br-focus-tag" style="background:${f.bg};color:${f.color};border-color:${f.border}">${escapeHTML(f.name)}</span>`).join('')}
           </div>
         </div>
