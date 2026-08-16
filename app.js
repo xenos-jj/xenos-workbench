@@ -2654,6 +2654,9 @@ function prependBackBar(target) {
 // 使其字重（600）与进度环数字 .mr-num 一致；仅设置字重，颜色沿用父级，不改变既有颜色。
 function boldZeroPct(root) {
   if (!root) return;
+  const sep = '[\\s\\(\\[\\{（【「『\\-]'; // 0 或 0% 前面的分隔符
+  const sepAfter = '[\\s\\)\\]\\}）】」』.,!?;：，。！？、；\\/]|$'; // 后面的分隔符
+  const re = new RegExp('(^|' + sep + ')(0%|0)(?=' + sepAfter + ')', 'g');
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
     acceptNode(node) {
       const p = node.parentNode;
@@ -2662,25 +2665,30 @@ function boldZeroPct(root) {
       if (tag === 'SCRIPT' || tag === 'STYLE' || tag === 'TEXTAREA' || tag === 'INPUT') return NodeFilter.FILTER_REJECT;
       if (p.namespaceURI && String(p.namespaceURI).indexOf('svg') >= 0) return NodeFilter.FILTER_REJECT;
       if (p.classList && p.classList.contains('zpct')) return NodeFilter.FILTER_REJECT;
-      return /[0%]/.test(node.nodeValue) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+      return re.test(node.nodeValue) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
     }
   });
   const targets = [];
   let n;
   while ((n = walker.nextNode())) targets.push(n);
   for (const t of targets) {
+    const text = t.nodeValue;
+    re.lastIndex = 0;
+    if (!re.test(text)) continue;
+    re.lastIndex = 0;
     const frag = document.createDocumentFragment();
-    const parts = t.nodeValue.split(/([0%])/);
-    for (const part of parts) {
-      if (part === '0' || part === '%') {
-        const span = document.createElement('span');
-        span.className = 'zpct';
-        span.textContent = part;
-        frag.appendChild(span);
-      } else if (part !== '') {
-        frag.appendChild(document.createTextNode(part));
-      }
+    let lastIndex = 0, m;
+    while ((m = re.exec(text))) {
+      const before = text.slice(lastIndex, m.index + m[1].length);
+      if (before) frag.appendChild(document.createTextNode(before));
+      const span = document.createElement('span');
+      span.className = 'zpct';
+      span.textContent = m[2];
+      frag.appendChild(span);
+      lastIndex = m.index + m[0].length;
     }
+    const tail = text.slice(lastIndex);
+    if (tail) frag.appendChild(document.createTextNode(tail));
     if (frag.childNodes.length) t.parentNode.replaceChild(frag, t);
   }
 }
@@ -5151,7 +5159,7 @@ function finishFocus() {
   updateFocusUI();
   renderProfileCard();
   renderTopbar();
-  if (state.activeItem === '工作台首页') renderContent();
+  renderContent();
   setTimeout(() => alert(`专注完成，本次 ${minutes} 分钟，已记入今日专注时长`), 60);
 }
 
@@ -5629,12 +5637,9 @@ function renderOverview() {
   const greeting = getGreeting();
   const weather = '26° 上海 · 雷雨';
 
-  // 主任务列表（合并 plans + mainTasks）
+  // 主任务列表：只显示用户自己添加的 mainTasks，选多少显示多少，新增追加到底部
   if (!state.mainTasks) state.mainTasks = loadMainTasks();
-  const mainTaskList = [
-    ...(state.mainTasks || []).filter(t => !t.done),
-    ...state.plans.filter(p => !p.done).sort((a, b) => (b.points || 0) - (a.points || 0))
-  ].slice(0, 3);
+  const mainTaskList = (state.mainTasks || []).filter(t => !t.done);
 
   if (!state.supportBranches) state.supportBranches = loadSupportBranches();
   const supportCards = state.supportBranches;
