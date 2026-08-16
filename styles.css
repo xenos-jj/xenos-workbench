@@ -4978,14 +4978,19 @@ select.pf-input {
 .ov-ring { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 4px; box-shadow: var(--shadow); cursor: pointer; transition: transform .12s ease, box-shadow .12s ease; }
 .ov-ring:hover { transform: translateY(-1px); box-shadow: var(--shadow-sm); }
 .ov-ring:active { transform: scale(0.97); }
-.ov-ring-circle { position: relative; width: 58px; height: 58px; }
-.ov-ring-circle svg { width: 58px; height: 58px; transform: rotate(-90deg); }
-.ov-ring-circle .mr-bg { fill: none; stroke: var(--border-soft); stroke-width: 5.5; }
-.ov-ring-circle .mr-fg { fill: none; stroke-width: 5.5; stroke-linecap: round; }
-.ov-ring.ring-green .ov-ring-circle .mr-fg { stroke: var(--green); }
-.ov-ring.ring-purple .ov-ring-circle .mr-fg { stroke: var(--purple); }
-.ov-ring.ring-yellow .ov-ring-circle .mr-fg { stroke: var(--yellow); }
-.ov-ring.ring-peach .ov-ring-circle .mr-fg { stroke: var(--primary); }
+.ov-ring-circle { position: relative; width: 56px; height: 56px; }
+.ov-ring-circle svg { width: 56px; height: 56px; transform: rotate(-90deg); }
+.ov-ring-circle .mr-bg { fill: none; stroke: var(--border-soft); stroke-width: 4; }
+.ov-ring-circle .mr-fg { fill: none; stroke-width: 4; stroke-linecap: round; }
+/* 首页概览圆环颜色/粗细参考我的支线页进度环 */
+.ov-ring.ring-purple .ov-ring-circle .mr-bg { stroke: #F3F1F4; }
+.ov-ring.ring-green .ov-ring-circle .mr-bg { stroke: #F4F5E5; }
+.ov-ring.ring-yellow .ov-ring-circle .mr-bg { stroke: #FDF6E3; }
+.ov-ring.ring-peach .ov-ring-circle .mr-bg { stroke: #FDF1E6; }
+.ov-ring.ring-purple .ov-ring-circle .mr-fg { stroke: #8978c3; }
+.ov-ring.ring-green .ov-ring-circle .mr-fg { stroke: #a0bb7a; }
+.ov-ring.ring-yellow .ov-ring-circle .mr-fg { stroke: #f4b75b; }
+.ov-ring.ring-peach .ov-ring-circle .mr-fg { stroke: #f4b75b; }
 .ov-ring-icon { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
 .ov-ring-icon svg { transform: none !important; width: 20px; height: 20px; }
 .ov-ring-name { font-size: 10.5px; font-weight: 600; color: var(--text); }
@@ -5294,7 +5299,7 @@ select.pf-input {
   flex-shrink: 0;
 }
 .br-focus-text { margin: 0; font-size: 13px; color: var(--text-muted); font-weight: 500; }
-.br-mascot-img { width: 143px; height: auto; object-fit: contain; flex-shrink: 0; display: block; }
+.br-mascot-img { width: 143px; height: auto; object-fit: contain; flex-shrink: 0; display: block; transform: translateX(-15px); }
 
 /* ---- 板块标题 ---- */
 .br-section-header {

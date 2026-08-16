@@ -218,9 +218,9 @@ const DOMAIN_CONFIG = {
       { name: '健身训练', sub: '运动 / 跟练', icon: 'dumbbell', target: '健身' }
     ],
     tasks: [
-      { text: '喝水 1500ml', points: 5 },
-      { text: '12点前睡觉', points: 10 },
-      { text: '饮食记录', points: 5 }
+      { text: '喝水 1500ml', points: 2 },
+      { text: '12点前睡觉', points: 5 },
+      { text: '饮食记录', points: 2 }
     ]
   },
   '外貌': {
@@ -232,10 +232,10 @@ const DOMAIN_CONFIG = {
       { name: '灵感素材', sub: '穿搭参考', icon: 'content', target: '内容素材库' }
     ],
     tasks: [
-      { text: '早晚护肤', points: 5 },
-      { text: '挺胸收腹 10 分钟', points: 5 },
-      { text: '搭配今日穿搭', points: 5 },
-      { text: '拉伸 / 体态训练', points: 10 }
+      { text: '早晚护肤', points: 2 },
+      { text: '挺胸收腹 10 分钟', points: 2 },
+      { text: '搭配今日穿搭', points: 2 },
+      { text: '拉伸 / 体态训练', points: 5 }
     ]
   },
   '记账': {
@@ -247,8 +247,8 @@ const DOMAIN_CONFIG = {
       { key: 'invest', name: '理财' }
     ],
     tasks: [
-      { text: '不超日预算', points: 2 },
-      { text: '记录今日所有支出', points: 2 }
+      { text: '不超日预算', points: 1 },
+      { text: '记录今日所有支出', points: 1 }
     ]
   }
 };
@@ -386,19 +386,19 @@ const DEFAULT_DAILY_REVIEW = {
 };
 
 const DEFAULT_PLANS = [
-  { text: '12点前睡觉', group: '生活计划', points: 5 },
-  { text: '每日做饭', group: '生活计划', points: 5 },
-  { text: '喝水 1500ml', group: '健康计划', points: 5 },
-  { text: '锻炼足弓10分钟', group: '运动计划', points: 5 },
-  { text: '站轴10分钟', group: '运动计划', points: 5 },
-  { text: '练习前驱5分钟', group: '运动计划', points: 5 },
-  { text: '滚泡沫轴', group: '运动计划', points: 5 },
-  { text: '每日30个单词', group: '学习计划', points: 10 },
-  { text: '音标学习', group: '学习计划', points: 10 },
-  { text: '早晚护肤', group: '生活计划', points: 5 },
-  { text: '挺胸收腹 10 分钟', group: '运动计划', points: 5 },
-  { text: '搭配今日穿搭', group: '生活计划', points: 5 },
-  { text: '拉伸 / 体态训练', group: '运动计划', points: 10 }
+  { text: '12点前睡觉', group: '生活计划', points: 2 },
+  { text: '每日做饭', group: '生活计划', points: 2 },
+  { text: '喝水 1500ml', group: '健康计划', points: 2 },
+  { text: '锻炼足弓10分钟', group: '运动计划', points: 2 },
+  { text: '站轴10分钟', group: '运动计划', points: 2 },
+  { text: '练习前驱5分钟', group: '运动计划', points: 2 },
+  { text: '滚泡沫轴', group: '运动计划', points: 2 },
+  { text: '每日30个单词', group: '学习计划', points: 5 },
+  { text: '音标学习', group: '学习计划', points: 5 },
+  { text: '早晚护肤', group: '生活计划', points: 2 },
+  { text: '挺胸收腹 10 分钟', group: '运动计划', points: 2 },
+  { text: '搭配今日穿搭', group: '生活计划', points: 2 },
+  { text: '拉伸 / 体态训练', group: '运动计划', points: 5 }
 ];
 
 const DEFAULT_PLAN_GROUPS = ['工作计划', '生活计划', '健康计划', '运动计划', '学习计划', '日常'];
@@ -1224,9 +1224,9 @@ function migrateData() {
     snap.forEach(s => {
       let cur = state.plans.find(p => p.text === s.text && (p.group || '日常') === (s.group || '日常'));
       if (!cur) {
-        cur = { id: uid('p'), text: s.text, group: s.group || '日常', points: typeof s.points === 'number' ? s.points : 5, done: false };
+        cur = { id: uid('p'), text: s.text, group: s.group || '日常', points: typeof s.points === 'number' ? s.points : 2, done: false };
       } else {
-        cur.points = typeof s.points === 'number' ? s.points : (cur.points || 5);
+        cur.points = typeof s.points === 'number' ? s.points : (cur.points || 2);
       }
       kept.push(cur);
     });
@@ -2654,9 +2654,10 @@ function prependBackBar(target) {
 // 使其字重（600）与进度环数字 .mr-num 一致；仅设置字重，颜色沿用父级，不改变既有颜色。
 function boldZeroPct(root) {
   if (!root) return;
-  const sep = '[\\s\\(\\[\\{（【「『\\-]'; // 0 或 0% 前面的分隔符
+  const sep = '[\\s\\(\\[\\{（【「『\\-]'; // 0 前面的分隔符
   const sepAfter = '[\\s\\)\\]\\}）】」』.,!?;：，。！？、；\\/]|$'; // 后面的分隔符
-  const re = new RegExp('(^|' + sep + ')(0%|0)(?=' + sepAfter + ')', 'g');
+  // 匹配独立的 0 / 0% / 0.0 / 0.00；10.0 / 10.00 等数字内部的 0 不处理
+  const re = new RegExp('(^|' + sep + ')((?:0(?:\\.0{1,2})?%|0(?:\\.0{1,2})?))(?=' + sepAfter + ')', 'g');
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
     acceptNode(node) {
       const p = node.parentNode;
@@ -2950,7 +2951,7 @@ function renderDailyPlan(host, embedded = false) {
   function addPlan() {
     const text = input.value.trim();
     if (!text) return;
-    const plan = { id: uid('p'), text, done: false, group: '日常', points: 5 };
+    const plan = { id: uid('p'), text, done: false, group: '日常', points: 2 };
     state.plans.push(plan);
     savePlans();
     snapshotTodayPlans();
@@ -3366,7 +3367,7 @@ function renderMoney(opts) {
         <div class="budget-bar-fill ${todayOver ? 'over' : ''}" style="width:${budgetPct}%"></div>
       </div>
       <div class="budget-hint ${todayOver ? 'over' : ''}">
-        ${todayOver ? '今日已超预算，积分 -2' : (state.budget > 0 ? '今日未超预算，可获得 +2 积分' : '未设置预算，仅记录支出')}
+        ${todayOver ? '今日已超预算，积分 -1' : (state.budget > 0 ? '今日未超预算，可获得 +1 积分' : '未设置预算，仅记录支出')}
       </div>
     </div>
 
@@ -5459,12 +5460,12 @@ function openMainTaskPicker() {
       const inp = card.querySelector('#mtk-input');
       const v = inp.value.trim();
       if (!v) return;
-      state.mainTasks.push({ id: uid('mt'), text: v, points: 10, done: false, targetMinutes: 30 });
+      state.mainTasks.push({ id: uid('mt'), text: v, points: 5, done: false, targetMinutes: 30 });
       saveMainTasks();
       rerender();
     });
     card.querySelectorAll('[data-add]').forEach(s => s.addEventListener('click', () => {
-      state.mainTasks.push({ id: uid('mt'), text: s.dataset.add, points: 10, done: false, targetMinutes: 30 });
+      state.mainTasks.push({ id: uid('mt'), text: s.dataset.add, points: 5, done: false, targetMinutes: 30 });
       saveMainTasks();
       rerender();
     }));
@@ -5716,7 +5717,7 @@ function renderOverview() {
           <div class="hmt-item">
             <div class="hmt-item-body">
               <h4 class="hmt-title">每日 30 个单词</h4>
-              <p class="hmt-sub">第 1 优先级 · +10 积分</p>
+              <p class="hmt-sub">第 1 优先级 · +5 积分</p>
             </div>
           </div>`}
       </div>
@@ -7261,9 +7262,9 @@ function checkLanguageGoal() {
   const today = getTodayKey();
   if (state.language.todayCount >= state.language.dailyGoal && !state.language.awarded[today]) {
     state.language.awarded[today] = true;
-    state.language.points = (state.language.points || 0) + 10;
+    state.language.points = (state.language.points || 0) + 5;
     saveLanguage();
-    toast('今日外语目标达成 +10 积分');
+    toast('今日外语目标达成 +5 积分');
     return true;
   }
   return false;
