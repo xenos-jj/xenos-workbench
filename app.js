@@ -138,9 +138,7 @@ const DEFAULT_GROUPS = [
       { id: 'i-review', name: '每日复盘', icon: 'review', todo: true },
       { id: 'i-money', name: '记账', icon: 'coins' },
       { id: 'i-insight', name: '数据洞察', icon: 'insight' },
-      { id: 'i-voice', name: '语音复盘', icon: 'mic' },
-      { id: 'i-branches', name: '我的支线', icon: 'layers' },
-      { id: 'i-project', name: '项目计划', icon: 'target' }
+      { id: 'i-branches', name: '我的支线', icon: 'layers' }
     ]
   },
   {

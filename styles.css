@@ -5299,7 +5299,7 @@ select.pf-input {
   flex-shrink: 0;
 }
 .br-focus-text { margin: 0; font-size: 13px; color: var(--text-muted); font-weight: 500; }
-.br-mascot-img { width: 143px; height: auto; object-fit: contain; flex-shrink: 0; display: block; transform: translateX(-15px); }
+.br-mascot-img { width: 143px; height: auto; object-fit: contain; flex-shrink: 0; display: block; transform: translateX(-25px); }
 
 /* ---- 板块标题 ---- */
 .br-section-header {
