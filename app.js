@@ -3,15 +3,15 @@
 // ---------- 成长提升：外语模块默认数据（提前定义，避免初始化 TDZ） ----------
 const DEFAULT_LANGUAGE = {
   lang: 'en',
-  level: 'primary',
+  level: 'middle',
   dailyGoal: 20,
   learned: {},
   today: '',
   todayCount: 0,
-  phoneticsDone: [],
   listenTotal: 0,
   points: 0,
-  awarded: {}
+  awarded: {},
+  stats: { totalLearned: 0, studyMinutes: 0, gameScore: 0, listenCount: 0, speakCount: 0 }
 };
 
 const DEFAULT_ASSET_ACCOUNTS = [
@@ -1048,12 +1048,7 @@ function resetProgressData() {
   state.focusSessions = [];
   saveFocusSessions();
   // 清空语言学习进度
-  state.language.points = 0;
-  state.language.todayCount = 0;
-  state.language.listenTotal = 0;
-  state.language.learned = {};
-  state.language.phoneticsDone = [];
-  state.language.awarded = {};
+  state.language = JSON.parse(JSON.stringify(DEFAULT_LANGUAGE));
   saveLanguage();
   // 清空计划完成状态
   state.plans.forEach(p => { p.done = false; p.doneDate = ''; });
@@ -1305,7 +1300,8 @@ function loadLanguage() {
     learned: l.learned && typeof l.learned === 'object' ? l.learned : {},
     phoneticsDone: Array.isArray(l.phoneticsDone) ? l.phoneticsDone : [],
     awarded: l.awarded && typeof l.awarded === 'object' ? l.awarded : {},
-    points: typeof l.points === 'number' ? l.points : 0
+    points: typeof l.points === 'number' ? l.points : 0,
+    stats: l.stats && typeof l.stats === 'object' ? { ...DEFAULT_LANGUAGE.stats, ...l.stats } : JSON.parse(JSON.stringify(DEFAULT_LANGUAGE.stats))
   };
 }
 function saveLanguage() { saveJSON('xenos-language', state.language); }
@@ -7234,19 +7230,6 @@ function renderHistoryLearning() {
 }
 
 // ============ 成长提升：外语（核心模块） ============
-let langCardIndex = 0;
-
-function getLangWordList() {
-  const lang = state.language.lang;
-  if (lang === 'en') return ENGLISH_WORDS[state.language.level] || ENGLISH_WORDS.cet4;
-  return LANG_WORDS[lang] || [];
-}
-
-function getLangCode() {
-  const f = LANGS.find(l => l.key === state.language.lang);
-  return f ? f.code : 'en-US';
-}
-
 function ensureLangToday() {
   const today = getTodayKey();
   if (state.language.today !== today) {
@@ -7260,9 +7243,9 @@ function checkLanguageGoal() {
   const today = getTodayKey();
   if (state.language.todayCount >= state.language.dailyGoal && !state.language.awarded[today]) {
     state.language.awarded[today] = true;
-    state.language.points = (state.language.points || 0) + 5;
+    state.language.points = (state.language.points || 0) + 1;
     saveLanguage();
-    toast('今日外语目标达成 +5 积分');
+    toast('今日外语目标达成 +1 积分');
     return true;
   }
   return false;
@@ -7271,155 +7254,14 @@ function checkLanguageGoal() {
 function renderLanguageLearning() {
   ensureLangToday();
   const page = document.createElement('div');
-  page.className = 'page';
-
-  const lang = state.language.lang;
-  const isEn = lang === 'en';
-  const words = getLangWordList();
-  const learnedCount = Object.keys(state.language.learned || {}).length;
-  const goal = state.language.dailyGoal;
-  const todayCount = state.language.todayCount;
-  const goalPct = goal > 0 ? Math.min(100, Math.round((todayCount / goal) * 100)) : 0;
-  if (langCardIndex >= words.length) langCardIndex = 0;
-  const card = words[langCardIndex] || { word: '-', phonetic: '', meaning: '' };
-  const langCode = getLangCode();
-  const phDone = state.language.phoneticsDone || [];
-
-  page.innerHTML = `
-    <div class="growth-hero">
-      <div class="growth-hero-icon">${icon('language', 26)}</div>
-      <div>
-        <h3 class="page-title-main">外语学习</h3>
-        <p class="page-subtitle">累计掌握 ${learnedCount} 词 · 今日 ${todayCount}/${goal}</p>
-      </div>
-    </div>
-
-    <div class="soft-card">
-      <div class="lang-picker" id="lang-picker">
-        ${LANGS.map(l => `<button class="lang-chip${l.key === lang ? ' active' : ''}" data-lang="${l.key}">${l.name}</button>`).join('')}
-      </div>
-      ${isEn ? `
-      <div class="lang-level" id="lang-level">
-        ${ENGLISH_LEVELS.map(lv => `<button class="filter-chip${lv.key === state.language.level ? ' active' : ''}" data-level="${lv.key}">${lv.name}</button>`).join('')}
-      </div>` : ''}
-      <div class="lang-goal">
-        <span>每日目标</span>
-        <div class="budget-bar" style="flex:1"><div class="budget-bar-fill" style="width:${goalPct}%"></div></div>
-        <button class="mini-btn" id="lang-goal-edit">${goal} 词</button>
-      </div>
-    </div>
-
-    <div class="soft-card">
-      <div class="soft-card-title">${icon('bookOpen', 16)} 单词卡片</div>
-      <div class="flashcard" id="flashcard">
-        <button class="fc-speak" id="fc-speak" aria-label="朗读">${icon('voice', 20)}</button>
-        <div class="fc-word">${escapeHTML(card.word)}</div>
-        <div class="fc-phonetic">${escapeHTML(card.phonetic || '')}</div>
-        <div class="fc-meaning" id="fc-meaning">${escapeHTML(card.meaning)}</div>
-      </div>
-      <div class="fc-actions">
-        <button class="btn btn-secondary" id="fc-skip">跳过</button>
-        <button class="gold-btn" id="fc-known">认识 +1</button>
-      </div>
-      <p class="section-note" style="text-align:center">第 ${Math.min(langCardIndex + 1, words.length)} / ${words.length} 张</p>
-    </div>
-
-    ${isEn ? `
-    <div class="soft-card">
-      <div class="soft-card-title">${icon('ear', 16)} 国际音标（点击发音）<span class="stitle-meta">${phDone.length}/${PHONETICS.length}</span></div>
-      <div class="phonetics-grid" id="ph-grid">
-        ${PHONETICS.map(p => `<button class="ph-cell${phDone.includes(p.symbol) ? ' done' : ''}" data-sym="${escapeHTML(p.symbol)}" data-word="${escapeHTML(p.word)}"><span class="ph-sym">${escapeHTML(p.symbol)}</span><span class="ph-word">${escapeHTML(p.word)}</span></button>`).join('')}
-      </div>
-    </div>` : ''}
-
-    <div class="soft-card">
-      <div class="soft-card-title">${icon('voice', 16)} 听力练习<span class="stitle-meta">累计 ${state.language.listenTotal || 0} 次</span></div>
-      <p class="section-note">点击播放，听音辨词，再显示答案检查</p>
-      <div class="listen-box">
-        <button class="gold-btn" id="ls-play">${icon('voice', 16)} 播放单词</button>
-        <button class="btn btn-secondary" id="ls-reveal">显示答案</button>
-      </div>
-      <div class="listen-answer" id="ls-answer" style="display:none;"></div>
-    </div>
-  `;
+  page.className = 'page lang-page';
+  const sub = state.language.sub || 'home';
+  if (sub === 'recite') renderLangRecite(page);
+  else if (sub === 'game') renderLangGame(page);
+  else if (sub === 'speak') renderLangSpeak(page);
+  else if (sub === 'listen') renderLangListen(page);
+  else renderLangHome(page);
   content.appendChild(page);
-
-  // 语言切换
-  page.querySelectorAll('[data-lang]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      state.language.lang = btn.dataset.lang;
-      langCardIndex = 0;
-      saveLanguage();
-      renderContent();
-    });
-  });
-  // 级别切换
-  page.querySelectorAll('[data-level]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      state.language.level = btn.dataset.level;
-      langCardIndex = 0;
-      saveLanguage();
-      renderContent();
-    });
-  });
-  // 每日目标
-  page.querySelector('#lang-goal-edit').addEventListener('click', async () => {
-    const v = await openModal('设置每日背词目标（个）：', goal, '请输入每日目标');
-    if (v !== null && !isNaN(parseInt(v)) && parseInt(v) > 0) {
-      state.language.dailyGoal = parseInt(v);
-      saveLanguage();
-      renderContent();
-    }
-  });
-
-  // 单词卡片
-  page.querySelector('#fc-speak').addEventListener('click', () => speak(card.word, langCode));
-  page.querySelector('#flashcard').addEventListener('click', (e) => {
-    if (e.target.closest('#fc-speak')) return;
-    speak(card.word, langCode);
-  });
-  page.querySelector('#fc-skip').addEventListener('click', () => {
-    langCardIndex = (langCardIndex + 1) % words.length;
-    renderContent();
-  });
-  page.querySelector('#fc-known').addEventListener('click', () => {
-    state.language.learned[card.word] = getTodayKey();
-    state.language.todayCount += 1;
-    saveLanguage();
-    checkLanguageGoal();
-    langCardIndex = (langCardIndex + 1) % words.length;
-    renderContent();
-  });
-
-  // 音标发音
-  const phGrid = page.querySelector('#ph-grid');
-  if (phGrid) {
-    phGrid.querySelectorAll('.ph-cell').forEach(cell => {
-      cell.addEventListener('click', () => {
-        const sym = cell.dataset.sym;
-        speak(cell.dataset.word, 'en-US');
-        if (!state.language.phoneticsDone.includes(sym)) {
-          state.language.phoneticsDone.push(sym);
-          saveLanguage();
-        }
-        cell.classList.add('done');
-      });
-    });
-  }
-
-  // 听力练习
-  let listenWord = words[Math.floor(Math.random() * words.length)] || card;
-  const ansEl = page.querySelector('#ls-answer');
-  page.querySelector('#ls-play').addEventListener('click', () => {
-    speak(listenWord.word, langCode);
-    state.language.listenTotal = (state.language.listenTotal || 0) + 1;
-    saveLanguage();
-    ansEl.style.display = 'none';
-  });
-  page.querySelector('#ls-reveal').addEventListener('click', () => {
-    ansEl.innerHTML = `<strong>${escapeHTML(listenWord.word)}</strong> ${escapeHTML(listenWord.phonetic || '')} — ${escapeHTML(listenWord.meaning)}`;
-    ansEl.style.display = 'block';
-  });
 }
 
 // ============ 成长提升：视频剪辑 ============
