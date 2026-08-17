@@ -159,7 +159,6 @@ const DEFAULT_GROUPS = [
     items: [
       { id: 'i-book', name: '书籍阅读', icon: 'book' },
       { id: 'i-history', name: '历史', icon: 'history' },
-      { id: 'i-language', name: '外语', icon: 'language' },
       { id: 'i-study', name: '学习成长', icon: 'bookOpen' },
       { id: 'i-video-edit', name: '视频剪辑', icon: 'video' },
       { id: 'i-3d', name: '3D建模', icon: 'model3d' }
@@ -464,334 +463,6 @@ const DEFAULT_SETTINGS = {
 };
 
 const APP_VERSION = '2.0.0';
-
-// ---------- 外语学习数据 ----------
-const LANGS = [
-  { key: 'en', name: '英语', code: 'en-US' },
-  { key: 'ja', name: '日语', code: 'ja-JP' },
-  { key: 'ko', name: '韩语', code: 'ko-KR' },
-  { key: 'fr', name: '法语', code: 'fr-FR' },
-  { key: 'de', name: '德语', code: 'de-DE' },
-  { key: 'es', name: '西班牙语', code: 'es-ES' }
-];
-
-const ENGLISH_LEVELS = [
-  { key: 'primary', name: '小学' },
-  { key: 'middle', name: '初中' },
-  { key: 'high', name: '高中' },
-  { key: 'cet4', name: '四级' },
-  { key: 'cet6', name: '六级' }
-];
-
-const ENGLISH_WORDS = {
-  primary: [
-    { word: 'apple', phonetic: '/ˈæpl/', meaning: 'n. 苹果' },
-    { word: 'book', phonetic: '/bʊk/', meaning: 'n. 书' },
-    { word: 'cat', phonetic: '/kæt/', meaning: 'n. 猫' },
-    { word: 'dog', phonetic: '/dɒɡ/', meaning: 'n. 狗' },
-    { word: 'egg', phonetic: '/eɡ/', meaning: 'n. 蛋' },
-    { word: 'fish', phonetic: '/fɪʃ/', meaning: 'n. 鱼' },
-    { word: 'good', phonetic: '/ɡʊd/', meaning: 'adj. 好的' },
-    { word: 'hand', phonetic: '/hænd/', meaning: 'n. 手' },
-    { word: 'red', phonetic: '/red/', meaning: 'adj. 红色的' },
-    { word: 'sun', phonetic: '/sʌn/', meaning: 'n. 太阳' },
-    { word: 'tree', phonetic: '/triː/', meaning: 'n. 树' },
-    { word: 'water', phonetic: '/ˈwɔːtə/', meaning: 'n. 水' },
-    { word: 'boy', phonetic: '/bɔɪ/', meaning: 'n. 男孩' },
-    { word: 'girl', phonetic: '/ɡɜːl/', meaning: 'n. 女孩' },
-    { word: 'happy', phonetic: '/ˈhæpi/', meaning: 'adj. 开心的' },
-    { word: 'school', phonetic: '/skuːl/', meaning: 'n. 学校' },
-    { word: 'mother', phonetic: '/ˈmʌðə/', meaning: 'n. 妈妈' },
-    { word: 'father', phonetic: '/ˈfɑːðə/', meaning: 'n. 爸爸' },
-    { word: 'friend', phonetic: '/frend/', meaning: 'n. 朋友' },
-    { word: 'teacher', phonetic: '/ˈtiːtʃə/', meaning: 'n. 老师' }
-  ],
-  middle: [
-    { word: 'because', phonetic: '/bɪˈkɒz/', meaning: 'conj. 因为' },
-    { word: 'before', phonetic: '/bɪˈfɔː/', meaning: 'prep. 在…之前' },
-    { word: 'believe', phonetic: '/bɪˈliːv/', meaning: 'v. 相信' },
-    { word: 'build', phonetic: '/bɪld/', meaning: 'v. 建造' },
-    { word: 'careful', phonetic: '/ˈkeəfl/', meaning: 'adj. 小心的' },
-    { word: 'decide', phonetic: '/dɪˈsaɪd/', meaning: 'v. 决定' },
-    { word: 'describe', phonetic: '/dɪˈskraɪb/', meaning: 'v. 描述' },
-    { word: 'enough', phonetic: '/ɪˈnʌf/', meaning: 'adj./adv. 足够的' },
-    { word: 'example', phonetic: '/ɪɡˈzɑːmpl/', meaning: 'n. 例子' },
-    { word: 'favorite', phonetic: '/ˈfeɪvərɪt/', meaning: 'adj. 最喜欢的' },
-    { word: 'healthy', phonetic: '/ˈhelθi/', meaning: 'adj. 健康的' },
-    { word: 'improve', phonetic: '/ɪmˈpruːv/', meaning: 'v. 改善' },
-    { word: 'journey', phonetic: '/ˈdʒɜːni/', meaning: 'n. 旅行' },
-    { word: 'knowledge', phonetic: '/ˈnɒlɪdʒ/', meaning: 'n. 知识' },
-    { word: 'language', phonetic: '/ˈlæŋɡwɪdʒ/', meaning: 'n. 语言' },
-    { word: 'mountain', phonetic: '/ˈmaʊntən/', meaning: 'n. 山' },
-    { word: 'necessary', phonetic: '/ˈnesəsəri/', meaning: 'adj. 必要的' },
-    { word: 'opinion', phonetic: '/əˈpɪnjən/', meaning: 'n. 意见' },
-    { word: 'popular', phonetic: '/ˈpɒpjələ/', meaning: 'adj. 受欢迎的' },
-    { word: 'temperature', phonetic: '/ˈtemprətʃə/', meaning: 'n. 温度' }
-  ],
-  high: [
-    { word: 'absent', phonetic: '/ˈæbsənt/', meaning: 'adj. 缺席的' },
-    { word: 'ancient', phonetic: '/ˈeɪnʃənt/', meaning: 'adj. 古代的' },
-    { word: 'beneath', phonetic: '/bɪˈniːθ/', meaning: 'prep. 在…之下' },
-    { word: 'comprehend', phonetic: '/ˌkɒmprɪˈhend/', meaning: 'v. 理解' },
-    { word: 'consequence', phonetic: '/ˈkɒnsɪkwəns/', meaning: 'n. 后果' },
-    { word: 'deliberate', phonetic: '/dɪˈlɪbərət/', meaning: 'adj. 故意的' },
-    { word: 'distinguish', phonetic: '/dɪˈstɪŋɡwɪʃ/', meaning: 'v. 区分' },
-    { word: 'emphasize', phonetic: '/ˈemfəsaɪz/', meaning: 'v. 强调' },
-    { word: 'fundamental', phonetic: '/ˌfʌndəˈmentl/', meaning: 'adj. 基本的' },
-    { word: 'guarantee', phonetic: '/ˌɡærənˈtiː/', meaning: 'n./v. 保证' },
-    { word: 'hesitate', phonetic: '/ˈhezɪteɪt/', meaning: 'v. 犹豫' },
-    { word: 'inevitable', phonetic: '/ɪnˈevɪtəbl/', meaning: 'adj. 不可避免的' },
-    { word: 'jealous', phonetic: '/ˈdʒeləs/', meaning: 'adj. 嫉妒的' },
-    { word: 'legislation', phonetic: '/ˌledʒɪsˈleɪʃn/', meaning: 'n. 立法' },
-    { word: 'magnificent', phonetic: '/mæɡˈnɪfɪsnt/', meaning: 'adj. 壮丽的' },
-    { word: 'negotiate', phonetic: '/nɪˈɡəʊʃieɪt/', meaning: 'v. 谈判' },
-    { word: 'phenomenon', phonetic: '/fəˈnɒmɪnən/', meaning: 'n. 现象' },
-    { word: 'quartet', phonetic: '/kwɔːˈtet/', meaning: 'n. 四重奏' },
-    { word: 'reluctant', phonetic: '/rɪˈlʌktənt/', meaning: 'adj. 不情愿的' },
-    { word: 'sufficient', phonetic: '/səˈfɪʃnt/', meaning: 'adj. 足够的' }
-  ],
-  cet4: [
-    { word: 'abandon', phonetic: '/əˈbændən/', meaning: 'v. 抛弃，放弃' },
-    { word: 'ability', phonetic: '/əˈbɪləti/', meaning: 'n. 能力，才能' },
-    { word: 'absorb', phonetic: '/əbˈzɔːb/', meaning: 'v. 吸收，吸引' },
-    { word: 'academic', phonetic: '/ˌækəˈdemɪk/', meaning: 'adj. 学术的' },
-    { word: 'accept', phonetic: '/əkˈsept/', meaning: 'v. 接受，认可' },
-    { word: 'account', phonetic: '/əˈkaʊnt/', meaning: 'n. 账户；解释' },
-    { word: 'achieve', phonetic: '/əˈtʃiːv/', meaning: 'v. 实现，达到' },
-    { word: 'acquire', phonetic: '/əˈkwaɪə/', meaning: 'v. 获得，习得' },
-    { word: 'address', phonetic: '/əˈdres/', meaning: 'n. 地址 v. 处理' },
-    { word: 'advantage', phonetic: '/ədˈvɑːntɪdʒ/', meaning: 'n. 优势，有利条件' },
-    { word: 'affect', phonetic: '/əˈfekt/', meaning: 'v. 影响，感动' },
-    { word: 'appreciate', phonetic: '/əˈpriːʃieɪt/', meaning: 'v. 欣赏，感激' },
-    { word: 'approach', phonetic: '/əˈprəʊtʃ/', meaning: 'n./v. 方法；接近' },
-    { word: 'argue', phonetic: '/ˈɑːɡjuː/', meaning: 'v. 争论，主张' },
-    { word: 'attitude', phonetic: '/ˈætɪtjuːd/', meaning: 'n. 态度，看法' },
-    { word: 'available', phonetic: '/əˈveɪləbl/', meaning: 'adj. 可获得的' },
-    { word: 'benefit', phonetic: '/ˈbenɪfɪt/', meaning: 'n./v. 益处；受益' },
-    { word: 'challenge', phonetic: '/ˈtʃælɪndʒ/', meaning: 'n./v. 挑战' },
-    { word: 'confident', phonetic: '/ˈkɒnfɪdənt/', meaning: 'adj. 自信的' },
-    { word: 'consider', phonetic: '/kənˈsɪdə/', meaning: 'v. 考虑，认为' },
-    { word: 'develop', phonetic: '/dɪˈveləp/', meaning: 'v. 发展，开发' },
-    { word: 'effort', phonetic: '/ˈefət/', meaning: 'n. 努力，尝试' },
-    { word: 'improve', phonetic: '/ɪmˈpruːv/', meaning: 'v. 改善，提高' },
-    { word: 'opportunity', phonetic: '/ˌɒpəˈtjuːnəti/', meaning: 'n. 机会' },
-    { word: 'succeed', phonetic: '/səkˈsiːd/', meaning: 'v. 成功，接替' }
-  ],
-  cet6: [
-    { word: 'abolish', phonetic: '/əˈbɒlɪʃ/', meaning: 'v. 废除，取消' },
-    { word: 'accelerate', phonetic: '/əkˈseləreɪt/', meaning: 'v. 加速，促进' },
-    { word: 'accommodate', phonetic: '/əˈkɒmədeɪt/', meaning: 'v. 容纳，适应' },
-    { word: 'accumulate', phonetic: '/əˈkjuːmjəleɪt/', meaning: 'v. 积累，积攒' },
-    { word: 'acknowledge', phonetic: '/əkˈnɒlɪdʒ/', meaning: 'v. 承认，致谢' },
-    { word: 'aesthetic', phonetic: '/iːsˈθetɪk/', meaning: 'adj. 审美的' },
-    { word: 'ambiguous', phonetic: '/æmˈbɪɡjuəs/', meaning: 'adj. 模糊的' },
-    { word: 'anticipate', phonetic: '/ænˈtɪsɪpeɪt/', meaning: 'v. 预期，期望' },
-    { word: 'apparent', phonetic: '/əˈpærənt/', meaning: 'adj. 明显的' },
-    { word: 'arbitrary', phonetic: '/ˈɑːbɪtrəri/', meaning: 'adj. 任意的' },
-    { word: 'compensate', phonetic: '/ˈkɒmpenseɪt/', meaning: 'v. 补偿，弥补' },
-    { word: 'comprehensive', phonetic: '/ˌkɒmprɪˈhensɪv/', meaning: 'adj. 全面的' },
-    { word: 'conscience', phonetic: '/ˈkɒnʃəns/', meaning: 'n. 良心，良知' },
-    { word: 'controversial', phonetic: '/ˌkɒntrəˈvɜːʃl/', meaning: 'adj. 有争议的' },
-    { word: 'diminish', phonetic: '/dɪˈmɪnɪʃ/', meaning: 'v. 减少，削弱' },
-    { word: 'elaborate', phonetic: '/ɪˈlæbərət/', meaning: 'adj. 精心的 v. 详述' },
-    { word: 'endeavor', phonetic: '/ɪnˈdevə/', meaning: 'n./v. 努力，尽力' },
-    { word: 'enhance', phonetic: '/ɪnˈhɑːns/', meaning: 'v. 提高，增强' },
-    { word: 'inevitable', phonetic: '/ɪnˈevɪtəbl/', meaning: 'adj. 不可避免的' },
-    { word: 'integrity', phonetic: '/ɪnˈteɡrəti/', meaning: 'n. 正直，完整' },
-    { word: 'perceive', phonetic: '/pəˈsiːv/', meaning: 'v. 察觉，认为' },
-    { word: 'reluctant', phonetic: '/rɪˈlʌktənt/', meaning: 'adj. 不情愿的' },
-    { word: 'sophisticated', phonetic: '/səˈfɪstɪkeɪtɪd/', meaning: 'adj. 复杂精密的' },
-    { word: 'sufficient', phonetic: '/səˈfɪʃnt/', meaning: 'adj. 足够的' },
-    { word: 'versatile', phonetic: '/ˈvɜːsətaɪl/', meaning: 'adj. 多才多艺的' }
-  ],
-  ielts: [
-    { word: 'adequate', phonetic: '/ˈædɪkwət/', meaning: 'adj. 足够的，适当的' },
-    { word: 'allocate', phonetic: '/ˈæləkeɪt/', meaning: 'v. 分配，分派' },
-    { word: 'analyze', phonetic: '/ˈænəlaɪz/', meaning: 'v. 分析' },
-    { word: 'aspect', phonetic: '/ˈæspekt/', meaning: 'n. 方面，外观' },
-    { word: 'assess', phonetic: '/əˈses/', meaning: 'v. 评估，评定' },
-    { word: 'assume', phonetic: '/əˈsjuːm/', meaning: 'v. 假定，承担' },
-    { word: 'coherent', phonetic: '/kəʊˈhɪərənt/', meaning: 'adj. 连贯的' },
-    { word: 'consequence', phonetic: '/ˈkɒnsɪkwəns/', meaning: 'n. 结果，后果' },
-    { word: 'constitute', phonetic: '/ˈkɒnstɪtjuːt/', meaning: 'v. 构成，组成' },
-    { word: 'contemporary', phonetic: '/kənˈtemprəri/', meaning: 'adj. 当代的' },
-    { word: 'contribute', phonetic: '/kənˈtrɪbjuːt/', meaning: 'v. 贡献，促成' },
-    { word: 'demonstrate', phonetic: '/ˈdemənstreɪt/', meaning: 'v. 证明，演示' },
-    { word: 'derive', phonetic: '/dɪˈraɪv/', meaning: 'v. 得到，起源于' },
-    { word: 'distinct', phonetic: '/dɪˈstɪŋkt/', meaning: 'adj. 明显的，独特的' },
-    { word: 'emphasis', phonetic: '/ˈemfəsɪs/', meaning: 'n. 强调，重点' },
-    { word: 'evident', phonetic: '/ˈevɪdənt/', meaning: 'adj. 明显的' },
-    { word: 'facilitate', phonetic: '/fəˈsɪlɪteɪt/', meaning: 'v. 促进，使便利' },
-    { word: 'fundamental', phonetic: '/ˌfʌndəˈmentl/', meaning: 'adj. 基本的' },
-    { word: 'hypothesis', phonetic: '/haɪˈpɒθəsɪs/', meaning: 'n. 假设，猜想' },
-    { word: 'implication', phonetic: '/ˌɪmplɪˈkeɪʃn/', meaning: 'n. 含义，影响' },
-    { word: 'phenomenon', phonetic: '/fəˈnɒmɪnən/', meaning: 'n. 现象' },
-    { word: 'preliminary', phonetic: '/prɪˈlɪmɪnəri/', meaning: 'adj. 初步的' },
-    { word: 'significant', phonetic: '/sɪɡˈnɪfɪkənt/', meaning: 'adj. 重要的，显著的' },
-    { word: 'substitute', phonetic: '/ˈsʌbstɪtjuːt/', meaning: 'n./v. 替代（品）' },
-    { word: 'ultimate', phonetic: '/ˈʌltɪmət/', meaning: 'adj. 最终的' }
-  ]
-};
-
-const LANG_WORDS = {
-  ja: [
-    { word: 'こんにちは', phonetic: 'konnichiwa', meaning: '你好' },
-    { word: 'ありがとう', phonetic: 'arigatou', meaning: '谢谢' },
-    { word: 'おはよう', phonetic: 'ohayou', meaning: '早上好' },
-    { word: 'さようなら', phonetic: 'sayounara', meaning: '再见' },
-    { word: 'すみません', phonetic: 'sumimasen', meaning: '对不起 / 打扰了' },
-    { word: 'はい', phonetic: 'hai', meaning: '是 / 好的' },
-    { word: 'いいえ', phonetic: 'iie', meaning: '不 / 不是' },
-    { word: '水', phonetic: 'mizu', meaning: '水' },
-    { word: '食べる', phonetic: 'taberu', meaning: '吃' },
-    { word: '飲む', phonetic: 'nomu', meaning: '喝' },
-    { word: '学校', phonetic: 'gakkou', meaning: '学校' },
-    { word: '先生', phonetic: 'sensei', meaning: '老师' },
-    { word: '友達', phonetic: 'tomodachi', meaning: '朋友' },
-    { word: '好き', phonetic: 'suki', meaning: '喜欢' },
-    { word: '大きい', phonetic: 'ookii', meaning: '大的' },
-    { word: '小さい', phonetic: 'chiisai', meaning: '小的' },
-    { word: '今日', phonetic: 'kyou', meaning: '今天' },
-    { word: '明日', phonetic: 'ashita', meaning: '明天' },
-    { word: '時間', phonetic: 'jikan', meaning: '时间' },
-    { word: '元気', phonetic: 'genki', meaning: '精神好 / 健康' }
-  ],
-  ko: [
-    { word: '안녕하세요', phonetic: 'annyeonghaseyo', meaning: '你好' },
-    { word: '감사합니다', phonetic: 'gamsahamnida', meaning: '谢谢' },
-    { word: '죄송합니다', phonetic: 'joesonghamnida', meaning: '对不起' },
-    { word: '네', phonetic: 'ne', meaning: '是 / 好的' },
-    { word: '아니요', phonetic: 'aniyo', meaning: '不是' },
-    { word: '안녕히 가세요', phonetic: 'annyeonghi gaseyo', meaning: '再见（对离开者）' },
-    { word: '물', phonetic: 'mul', meaning: '水' },
-    { word: '먹다', phonetic: 'meokda', meaning: '吃' },
-    { word: '마시다', phonetic: 'masida', meaning: '喝' },
-    { word: '학교', phonetic: 'hakgyo', meaning: '学校' },
-    { word: '선생님', phonetic: 'seonsaengnim', meaning: '老师' },
-    { word: '친구', phonetic: 'chingu', meaning: '朋友' },
-    { word: '좋아하다', phonetic: 'joahada', meaning: '喜欢' },
-    { word: '크다', phonetic: 'keuda', meaning: '大的' },
-    { word: '작다', phonetic: 'jakda', meaning: '小的' },
-    { word: '오늘', phonetic: 'oneul', meaning: '今天' },
-    { word: '내일', phonetic: 'naeil', meaning: '明天' },
-    { word: '시간', phonetic: 'sigan', meaning: '时间' },
-    { word: '사랑', phonetic: 'sarang', meaning: '爱' },
-    { word: '행복', phonetic: 'haengbok', meaning: '幸福' }
-  ],
-  fr: [
-    { word: 'bonjour', phonetic: '/bɔ̃ʒuʁ/', meaning: '你好 / 早上好' },
-    { word: 'merci', phonetic: '/mɛʁsi/', meaning: '谢谢' },
-    { word: 'au revoir', phonetic: '/o ʁəvwaʁ/', meaning: '再见' },
-    { word: 'oui', phonetic: '/wi/', meaning: '是' },
-    { word: 'non', phonetic: '/nɔ̃/', meaning: '不' },
-    { word: "s'il vous plaît", phonetic: '/sil vu plɛ/', meaning: '请' },
-    { word: 'eau', phonetic: '/o/', meaning: '水' },
-    { word: 'manger', phonetic: '/mɑ̃ʒe/', meaning: '吃' },
-    { word: 'boire', phonetic: '/bwaʁ/', meaning: '喝' },
-    { word: 'école', phonetic: '/ekɔl/', meaning: '学校' },
-    { word: 'professeur', phonetic: '/pʁɔfesœʁ/', meaning: '老师' },
-    { word: 'ami', phonetic: '/ami/', meaning: '朋友' },
-    { word: 'aimer', phonetic: '/eme/', meaning: '喜欢 / 爱' },
-    { word: 'grand', phonetic: '/ɡʁɑ̃/', meaning: '大的' },
-    { word: 'petit', phonetic: '/pəti/', meaning: '小的' },
-    { word: "aujourd'hui", phonetic: '/oʒuʁdɥi/', meaning: '今天' },
-    { word: 'demain', phonetic: '/dəmɛ̃/', meaning: '明天' },
-    { word: 'temps', phonetic: '/tɑ̃/', meaning: '时间 / 天气' },
-    { word: 'maison', phonetic: '/mɛzɔ̃/', meaning: '家 / 房子' },
-    { word: 'bonheur', phonetic: '/bɔnœʁ/', meaning: '幸福' }
-  ],
-  de: [
-    { word: 'hallo', phonetic: '/haˈloː/', meaning: '你好' },
-    { word: 'danke', phonetic: '/ˈdaŋkə/', meaning: '谢谢' },
-    { word: 'auf Wiedersehen', phonetic: '/aʊf ˈviːdɐzeːən/', meaning: '再见' },
-    { word: 'ja', phonetic: '/jaː/', meaning: '是' },
-    { word: 'nein', phonetic: '/naɪn/', meaning: '不' },
-    { word: 'bitte', phonetic: '/ˈbɪtə/', meaning: '请 / 不客气' },
-    { word: 'Wasser', phonetic: '/ˈvasɐ/', meaning: '水' },
-    { word: 'essen', phonetic: '/ˈɛsn̩/', meaning: '吃' },
-    { word: 'trinken', phonetic: '/ˈtʁɪŋkn̩/', meaning: '喝' },
-    { word: 'Schule', phonetic: '/ˈʃuːlə/', meaning: '学校' },
-    { word: 'Lehrer', phonetic: '/ˈleːʁɐ/', meaning: '老师' },
-    { word: 'Freund', phonetic: '/fʁɔɪnt/', meaning: '朋友' },
-    { word: 'mögen', phonetic: '/ˈmøːɡn̩/', meaning: '喜欢' },
-    { word: 'groß', phonetic: '/ɡʁoːs/', meaning: '大的' },
-    { word: 'klein', phonetic: '/klaɪn/', meaning: '小的' },
-    { word: 'heute', phonetic: '/ˈhɔɪtə/', meaning: '今天' },
-    { word: 'morgen', phonetic: '/ˈmɔʁɡn̩/', meaning: '明天' },
-    { word: 'Zeit', phonetic: '/tsaɪt/', meaning: '时间' },
-    { word: 'Haus', phonetic: '/haʊs/', meaning: '房子' },
-    { word: 'Glück', phonetic: '/ɡlʏk/', meaning: '幸福 / 运气' }
-  ],
-  es: [
-    { word: 'hola', phonetic: '/ˈola/', meaning: '你好' },
-    { word: 'gracias', phonetic: '/ˈɡɾasjas/', meaning: '谢谢' },
-    { word: 'adiós', phonetic: '/aˈðjos/', meaning: '再见' },
-    { word: 'sí', phonetic: '/si/', meaning: '是' },
-    { word: 'no', phonetic: '/no/', meaning: '不' },
-    { word: 'por favor', phonetic: '/poɾ faˈβoɾ/', meaning: '请' },
-    { word: 'agua', phonetic: '/ˈaɣwa/', meaning: '水' },
-    { word: 'comer', phonetic: '/koˈmeɾ/', meaning: '吃' },
-    { word: 'beber', phonetic: '/beˈβeɾ/', meaning: '喝' },
-    { word: 'escuela', phonetic: '/esˈkwela/', meaning: '学校' },
-    { word: 'profesor', phonetic: '/pɾofeˈsoɾ/', meaning: '老师' },
-    { word: 'amigo', phonetic: '/aˈmiɣo/', meaning: '朋友' },
-    { word: 'gustar', phonetic: '/ɡusˈtaɾ/', meaning: '喜欢' },
-    { word: 'grande', phonetic: '/ˈɡɾande/', meaning: '大的' },
-    { word: 'pequeño', phonetic: '/peˈkeɲo/', meaning: '小的' },
-    { word: 'hoy', phonetic: '/oi/', meaning: '今天' },
-    { word: 'mañana', phonetic: '/maˈɲana/', meaning: '明天' },
-    { word: 'tiempo', phonetic: '/ˈtjempo/', meaning: '时间 / 天气' },
-    { word: 'casa', phonetic: '/ˈkasa/', meaning: '家 / 房子' },
-    { word: 'felicidad', phonetic: '/feliθiˈðað/', meaning: '幸福' }
-  ]
-};
-
-// 英语国际音标（IPA）：symbol 音标，type 元/辅音，word 示例词，example 示例音
-const PHONETICS = [
-  { symbol: '/iː/', type: '元音', word: 'see', example: '/siː/' },
-  { symbol: '/ɪ/', type: '元音', word: 'sit', example: '/sɪt/' },
-  { symbol: '/e/', type: '元音', word: 'bed', example: '/bed/' },
-  { symbol: '/æ/', type: '元音', word: 'cat', example: '/kæt/' },
-  { symbol: '/ɑː/', type: '元音', word: 'car', example: '/kɑː/' },
-  { symbol: '/ɒ/', type: '元音', word: 'hot', example: '/hɒt/' },
-  { symbol: '/ɔː/', type: '元音', word: 'door', example: '/dɔː/' },
-  { symbol: '/ʊ/', type: '元音', word: 'book', example: '/bʊk/' },
-  { symbol: '/uː/', type: '元音', word: 'food', example: '/fuːd/' },
-  { symbol: '/ʌ/', type: '元音', word: 'cup', example: '/kʌp/' },
-  { symbol: '/ɜː/', type: '元音', word: 'bird', example: '/bɜːd/' },
-  { symbol: '/ə/', type: '元音', word: 'about', example: '/əˈbaʊt/' },
-  { symbol: '/eɪ/', type: '双元音', word: 'day', example: '/deɪ/' },
-  { symbol: '/aɪ/', type: '双元音', word: 'my', example: '/maɪ/' },
-  { symbol: '/ɔɪ/', type: '双元音', word: 'boy', example: '/bɔɪ/' },
-  { symbol: '/aʊ/', type: '双元音', word: 'now', example: '/naʊ/' },
-  { symbol: '/əʊ/', type: '双元音', word: 'go', example: '/ɡəʊ/' },
-  { symbol: '/ɪə/', type: '双元音', word: 'here', example: '/hɪə/' },
-  { symbol: '/eə/', type: '双元音', word: 'hair', example: '/heə/' },
-  { symbol: '/p/', type: '辅音', word: 'pen', example: '/pen/' },
-  { symbol: '/b/', type: '辅音', word: 'bad', example: '/bæd/' },
-  { symbol: '/t/', type: '辅音', word: 'tea', example: '/tiː/' },
-  { symbol: '/d/', type: '辅音', word: 'dog', example: '/dɒɡ/' },
-  { symbol: '/k/', type: '辅音', word: 'key', example: '/kiː/' },
-  { symbol: '/g/', type: '辅音', word: 'go', example: '/ɡəʊ/' },
-  { symbol: '/f/', type: '辅音', word: 'fish', example: '/fɪʃ/' },
-  { symbol: '/v/', type: '辅音', word: 'van', example: '/væn/' },
-  { symbol: '/θ/', type: '辅音', word: 'think', example: '/θɪŋk/' },
-  { symbol: '/ð/', type: '辅音', word: 'this', example: '/ðɪs/' },
-  { symbol: '/s/', type: '辅音', word: 'sun', example: '/sʌn/' },
-  { symbol: '/z/', type: '辅音', word: 'zoo', example: '/zuː/' },
-  { symbol: '/ʃ/', type: '辅音', word: 'she', example: '/ʃiː/' },
-  { symbol: '/ʒ/', type: '辅音', word: 'vision', example: '/ˈvɪʒn/' },
-  { symbol: '/h/', type: '辅音', word: 'hat', example: '/hæt/' },
-  { symbol: '/tʃ/', type: '辅音', word: 'chair', example: '/tʃeə/' },
-  { symbol: '/dʒ/', type: '辅音', word: 'joy', example: '/dʒɔɪ/' },
-  { symbol: '/m/', type: '辅音', word: 'man', example: '/mæn/' },
-  { symbol: '/n/', type: '辅音', word: 'no', example: '/nəʊ/' },
-  { symbol: '/ŋ/', type: '辅音', word: 'sing', example: '/sɪŋ/' },
-  { symbol: '/l/', type: '辅音', word: 'leg', example: '/leɡ/' },
-  { symbol: '/r/', type: '辅音', word: 'red', example: '/red/' },
-  { symbol: '/j/', type: '辅音', word: 'yes', example: '/jes/' },
-  { symbol: '/w/', type: '辅音', word: 'we', example: '/wiː/' }
-];
 
 const DEFAULT_BODY = {
   weight: 53.95,
@@ -1797,21 +1468,6 @@ function toast(msg) {
   toastTimer = setTimeout(() => el.classList.remove('show'), 1600);
 }
 
-// 语音合成：朗读文本（外语学习用）
-function speak(text, lang = 'en-US') {
-  if (!('speechSynthesis' in window)) {
-    toast('当前环境不支持朗读');
-    return;
-  }
-  try {
-    window.speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(text);
-    u.lang = lang;
-    u.rate = 0.9;
-    window.speechSynthesis.speak(u);
-  } catch (e) {}
-}
-
 function findItemByName(name) {
   for (const g of state.groups) {
     for (const i of g.items) {
@@ -2618,7 +2274,6 @@ const PAGE_ROUTES = {
   // 成长提升
   '书籍阅读': renderBookReading,
   '历史': renderHistoryLearning,
-  '外语': renderLanguageLearning,
   '视频剪辑': renderVideoEditing,
   '3D建模': render3DModeling,
   // 保留的功能页（由领域页的工具入口跳转）
@@ -5673,7 +5328,7 @@ function renderOverview() {
       ${overviewRingHTML(habitPct, 'ring-peach', habitIcon, '习惯完成', habitPct + '%', habitVal, '#E8B4A8', '每日计划')}
       ${overviewRingHTML(sleepPct, 'ring-purple', sleepIcon, '睡眠', sleepPct + '%', sleepVal, '#B8AAD8', '健康')}
       ${overviewRingHTML(sportPct, 'ring-green', sportIcon, '运动', sportPct + '%', sportVal, '#9ACB86', '健康')}
-      ${overviewRingHTML(langPct, 'ring-yellow', langIcon, '学英语', langPct + '%', langVal, '#F4B678', '外语')}
+      ${overviewRingHTML(langPct, 'ring-yellow', langIcon, '学英语', langPct + '%', langVal, '#F4B678', '学习成长')}
     </div>
 
     <div class="hp-section-title">今日主任务 <button class="hmt-add" id="hmt-add" title="添加主任务">+</button></div>
@@ -7227,41 +6882,6 @@ function renderHistoryLearning() {
     saveHistoryNotes();
     renderContent();
   });
-}
-
-// ============ 成长提升：外语（核心模块） ============
-function ensureLangToday() {
-  const today = getTodayKey();
-  if (state.language.today !== today) {
-    state.language.today = today;
-    state.language.todayCount = 0;
-    saveLanguage();
-  }
-}
-
-function checkLanguageGoal() {
-  const today = getTodayKey();
-  if (state.language.todayCount >= state.language.dailyGoal && !state.language.awarded[today]) {
-    state.language.awarded[today] = true;
-    state.language.points = (state.language.points || 0) + 1;
-    saveLanguage();
-    toast('今日外语目标达成 +1 积分');
-    return true;
-  }
-  return false;
-}
-
-function renderLanguageLearning() {
-  ensureLangToday();
-  const page = document.createElement('div');
-  page.className = 'page lang-page';
-  const sub = state.language.sub || 'home';
-  if (sub === 'recite') renderLangRecite(page);
-  else if (sub === 'game') renderLangGame(page);
-  else if (sub === 'speak') renderLangSpeak(page);
-  else if (sub === 'listen') renderLangListen(page);
-  else renderLangHome(page);
-  content.appendChild(page);
 }
 
 // ============ 成长提升：视频剪辑 ============
@@ -8844,7 +8464,6 @@ function renderStudyPage() {
         <h4>四级核心词汇</h4>
         <p class="sg-sub">目标：掌握 ${TARGET} 个高频词汇</p>
         <span class="sg-streak">🔥 连续学习 ${streak} 天</span>
-        <button class="btn btn-primary pill-btn" id="sg-continue">继续学习</button>
       </div>
     </div>
     <div class="study-stats">
@@ -8872,9 +8491,9 @@ function renderStudyPage() {
     </div>
 
     <div class="section-card">
-      <div class="soft-card-title">📝 最近笔记 <span class="hp-more hp-link" data-go="外语">全部 ›</span></div>
-      ${notes.length ? notes.map(n => `<div class="study-note-item"><span class="sn-word">${(n.text || n.content || n.note || '').toString().split(/[，,。.\n]/)[0]}</span><span class="sn-rest">${(n.text || n.content || n.note || '').toString().slice(0, 40)}</span></div>`).join('') : '<p style="font-size:12px;color:var(--text-muted);margin:0;">还没有笔记，去「外语」记一笔吧～</p>'}
-      <div class="study-note-foot">共 ${Math.max(notes.length, 28)} 个词组 <button class="btn btn-secondary pill-btn sm" data-go="外语">去复习</button></div>
+      <div class="soft-card-title">📝 最近笔记 <span class="hp-more hp-link" data-go="学习成长">全部 ›</span></div>
+      ${notes.length ? notes.map(n => `<div class="study-note-item"><span class="sn-word">${(n.text || n.content || n.note || '').toString().split(/[，,。.\n]/)[0]}</span><span class="sn-rest">${(n.text || n.content || n.note || '').toString().slice(0, 40)}</span></div>`).join('') : '<p style="font-size:12px;color:var(--text-muted);margin:0;">还没有笔记，去「学习成长」记一笔吧～</p>'}
+      <div class="study-note-foot">共 ${Math.max(notes.length, 28)} 个词组 <button class="btn btn-secondary pill-btn sm" data-go="学习成长">去复习</button></div>
     </div>
 
     <div class="study-ai">
@@ -8892,8 +8511,6 @@ function renderStudyPage() {
   content.appendChild(page);
 
   page.querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', () => selectItem(b.dataset.go)));
-  const cont = page.querySelector('#sg-continue');
-  if (cont) cont.addEventListener('click', () => selectItem('外语'));
   const studyBody = page.querySelector('#study-tab-body');
   if (studyBody) renderStudyTabBody(studyBody);
   page.querySelectorAll('.study-tab').forEach(t => {
