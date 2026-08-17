@@ -964,9 +964,19 @@ function saveHistoryNotes() { saveJSON('xenos-history', state.historyNotes); }
 
 function loadLanguage() {
   const l = loadJSON('xenos-language', null);
-  if (!l || typeof l !== 'object') return JSON.parse(JSON.stringify(DEFAULT_LANGUAGE));
+  const base = JSON.parse(JSON.stringify(DEFAULT_LANGUAGE));
+  if (!l || typeof l !== 'object') return base;
+  // v9143：外语学习页已移除，学习进度统一归零（一次性迁移）
+  if (!l.reset9143) {
+    l.learned = {};
+    l.todayCount = 0;
+    l.listenTotal = 0;
+    l.awarded = {};
+    l.stats = JSON.parse(JSON.stringify(DEFAULT_LANGUAGE.stats));
+    l.reset9143 = true;
+  }
   return {
-    ...DEFAULT_LANGUAGE,
+    ...base,
     ...l,
     learned: l.learned && typeof l.learned === 'object' ? l.learned : {},
     phoneticsDone: Array.isArray(l.phoneticsDone) ? l.phoneticsDone : [],
@@ -7370,7 +7380,7 @@ content.addEventListener('touchend', (e) => {
 (function initLongPressDelete() {
   let timer = null;
   let activeRow = null;
-  const SELECTOR = '.task-row, .plan-item, .exercise-row, .proj-task, .voice-item, .reward-row, .br-branch-card';
+  const SELECTOR = '.task-row, .plan-item, .exercise-row, .proj-task, .voice-item, .reward-row, .br-branch-card, .study-plan-item';
   const LONG_PRESS_MS = 600;
 
   function clearActive() {
@@ -8343,15 +8353,11 @@ function renderStudyPage() {
 
   const learned = Object.keys(state.language.learned || {}).length;
   const TARGET = 2000;
-  const goalPct = Math.min(100, Math.round(learned / TARGET * 100)) || 72;
+  const goalPct = Math.min(100, Math.round(learned / TARGET * 100)) || 0;
 
   const todayCount = state.language.todayCount || 0;
   const dailyGoal = state.language.dailyGoal || 20;
   const wordPct = Math.min(100, Math.round(todayCount / dailyGoal * 100));
-  const listenDaily = Math.round((state.language.listenTotal || 0) / 7);
-  const listenPct = Math.min(100, Math.round(listenDaily / 20 * 100));
-  const readPlan = state.plans.find(p => p.text.includes('阅读'));
-  const readPct = readPlan && readPlan.done ? 100 : 0;
 
   const planItems = [
     { name: '背单词 30 个', pct: wordPct, done: todayCount >= dailyGoal, val: todayCount + '/' + dailyGoal, bar: 'bar-orange' }
@@ -8360,11 +8366,7 @@ function renderStudyPage() {
   const studyTrend = [];
   for (let i = 6; i >= 0; i--) studyTrend.push(getFocusMinutes(shiftDate(getTodayKey(), -i)));
 
-  const notes = Array.isArray(state.historyNotes) ? state.historyNotes.slice(-3).reverse() : [];
   const streak = calcStreak();
-
-  let planEditMode = false;
-  let planEditingId = null;
 
   function isEnglishPlan(text) {
     const t = (text || '').toLowerCase();
@@ -8374,7 +8376,7 @@ function renderStudyPage() {
 
   function studyProgressHTML() {
     return planItems.map(it => `
-      <div class="study-plan-item ${it.done ? 'done' : ''}">
+      <div class="study-progress-item ${it.done ? 'done' : ''}">
         <div class="spi-check">${it.done ? '✓' : ''}</div>
         <div class="spi-body">
           <div class="spi-row"><span class="spi-name">${it.name}</span><span class="spi-val">${it.val}</span></div>
@@ -8386,67 +8388,40 @@ function renderStudyPage() {
   function studyPlanListHTML() {
     const englishPlans = state.plans.filter(p => isEnglishPlan(p.text));
     if (!englishPlans.length) return '<p style="font-size:12px;color:var(--text-muted);margin:0;">还没有英语学习计划，去「当日计划」添加吧～</p>';
-    return englishPlans.map(p => {
-      if (planEditingId === p.id) {
-        return `<div class="study-plan-item editing" data-pid="${p.id}">
-          <div class="spi-check ${p.done ? 'on' : ''}" data-act="toggle" data-pid="${p.id}">${p.done ? '✓' : ''}</div>
-          <div class="spi-body spi-edit-body">
-            <input class="spi-input" data-pid="${p.id}" value="${escapeHTML(p.text)}">
-            <input class="spi-points-input" type="number" min="0" value="${p.points}" title="积分">
-          </div>
-          <span class="spi-actions">
-            <button class="icon-action" data-act="save-plan" data-pid="${p.id}" title="保存">✓</button>
-            <button class="icon-action delete" data-act="del-plan" data-pid="${p.id}" title="删除">🗑</button>
-          </span>
-        </div>`;
-      }
-      return `<div class="study-plan-item ${p.done ? 'done' : ''}" data-pid="${p.id}">
-        <div class="spi-check ${p.done ? 'on' : ''}" data-act="toggle" data-pid="${p.id}">${p.done ? '✓' : ''}</div>
-        <div class="spi-body"><div class="spi-row"><span class="spi-name">${escapeHTML(p.text)}</span><span class="spi-val">+${p.points}</span></div></div>
-        <span class="spi-actions">
-          <button class="icon-action" data-act="edit-plan" data-pid="${p.id}" title="编辑">✎</button>
-          <button class="icon-action delete" data-act="del-plan" data-pid="${p.id}" title="删除">🗑</button>
-        </span>
-      </div>`;
-    }).join('');
+    return englishPlans.map(p => `
+      <div class="study-plan-item ${p.done ? 'done' : ''}" data-pid="${p.id}">
+        <div class="spi-check ${p.done ? 'on' : ''}">${p.done ? '✓' : ''}</div>
+        <span class="spi-name">${escapeHTML(p.text)}</span>
+        <span class="task-points">+${p.points}</span>
+        <button class="item-delete" data-id="${p.id}" data-del-type="plan" aria-label="删除">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+        </button>
+      </div>
+    `).join('');
   }
 
   function bindStudyPlanList(wrap) {
     if (!wrap) return;
-    wrap.querySelectorAll('[data-act]').forEach(el => {
-      el.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const pid = el.dataset.pid;
-        const act = el.dataset.act;
-        const plan = state.plans.find(p => p.id === pid);
-        if (!plan) return;
-        if (act === 'toggle') { togglePlanDone(pid); planEditingId = null; renderStudyPlanList(); }
-        else if (act === 'edit-plan') { planEditingId = pid; renderStudyPlanList(); const inp = wrap.querySelector('.spi-input'); if (inp) inp.focus(); }
-        else if (act === 'del-plan') { deletePlanById(pid); planEditingId = null; renderStudyPlanList(); }
-        else if (act === 'save-plan') {
-          const inp = wrap.querySelector(`.spi-input[data-pid="${pid}"]`);
-          const pts = wrap.querySelector(`.spi-points-input[data-pid="${pid}"]`);
-          const txt = inp ? inp.value.trim() : '';
-          if (txt) { plan.text = txt; const np = parseInt(pts ? pts.value : '0'); plan.points = isNaN(np) ? 0 : np; savePlans(); snapshotTodayPlans(); }
-          planEditingId = null; renderStudyPlanList();
-        }
+    wrap.querySelectorAll('.study-plan-item').forEach(row => {
+      row.addEventListener('click', (e) => {
+        if (e.target.closest('.item-delete')) return;
+        const pid = row.dataset.pid;
+        togglePlanDone(pid);
       });
     });
   }
 
   function renderStudyPlanList() {
     const wrap = page.querySelector('#study-plan-list');
-    if (wrap) { wrap.className = planEditMode ? 'editing' : ''; wrap.innerHTML = studyPlanListHTML(); bindStudyPlanList(wrap); }
+    if (wrap) { wrap.innerHTML = studyPlanListHTML(); bindStudyPlanList(wrap); }
   }
 
   function renderStudyTabBody(body) {
     body.innerHTML = `
       <div class="soft-card-title"><span class="sct-check">☑</span> 英语学习进度</div>
       ${studyProgressHTML()}
-      <div class="soft-card-title" style="margin-top:10px;"><span class="sct-check">☑</span> 今日学习计划 <span class="hp-more hp-link" id="study-edit-plan">${planEditMode ? '完成 ✓' : '编辑计划 ›'}</span></div>
-      <div id="study-plan-list" class="${planEditMode ? 'editing' : ''}">${studyPlanListHTML()}</div>`;
-    const editBtn = body.querySelector('#study-edit-plan');
-    if (editBtn) editBtn.addEventListener('click', () => { planEditMode = !planEditMode; planEditingId = null; renderStudyTabBody(body); });
+      <div class="soft-card-title" style="margin-top:10px;"><span class="sct-check">☑</span> 今日学习计划</div>
+      <div id="study-plan-list">${studyPlanListHTML()}</div>`;
     bindStudyPlanList(body.querySelector('#study-plan-list'));
   }
 
@@ -8469,31 +8444,18 @@ function renderStudyPage() {
     <div class="study-stats">
       <div class="study-stat"><b>${learned.toLocaleString()}</b><span>已学单词（词）</span></div>
       <div class="study-stat"><b>${goalPct}%</b><span>掌握率</span></div>
-      <div class="study-stat"><b>45</b><span>距离考试（天）</span></div>
-    </div>
-
-    <div class="study-tabs">
-      <button class="study-tab active" data-stab="英语">英语</button>
-      <button class="study-tab" data-stab="阅读">阅读</button>
-      <button class="study-tab" data-stab="专业">专业</button>
     </div>
 
     <div class="section-card" id="study-tab-body">
       <div class="soft-card-title"><span class="sct-check">☑</span> 英语学习进度</div>
       ${studyProgressHTML()}
-      <div class="soft-card-title" style="margin-top:10px;"><span class="sct-check">☑</span> 今日学习计划 <span class="hp-more hp-link" id="study-edit-plan">${planEditMode ? '完成 ✓' : '编辑计划 ›'}</span></div>
-      <div id="study-plan-list" class="${planEditMode ? 'editing' : ''}">${studyPlanListHTML()}</div>
+      <div class="soft-card-title" style="margin-top:10px;"><span class="sct-check">☑</span> 今日学习计划</div>
+      <div id="study-plan-list">${studyPlanListHTML()}</div>
     </div>
 
     <div class="section-card">
       <div class="soft-card-title">📈 本周学习时长 <span class="soft-card-note">平均 6.2 小时</span></div>
       ${inlineLineChart(studyTrend, '#A99BD6', 150)}
-    </div>
-
-    <div class="section-card">
-      <div class="soft-card-title">📝 最近笔记 <span class="hp-more hp-link" data-go="学习成长">全部 ›</span></div>
-      ${notes.length ? notes.map(n => `<div class="study-note-item"><span class="sn-word">${(n.text || n.content || n.note || '').toString().split(/[，,。.\n]/)[0]}</span><span class="sn-rest">${(n.text || n.content || n.note || '').toString().slice(0, 40)}</span></div>`).join('') : '<p style="font-size:12px;color:var(--text-muted);margin:0;">还没有笔记，去「学习成长」记一笔吧～</p>'}
-      <div class="study-note-foot">共 ${Math.max(notes.length, 28)} 个词组 <button class="btn btn-secondary pill-btn sm" data-go="学习成长">去复习</button></div>
     </div>
 
     <div class="study-ai">
@@ -8513,18 +8475,6 @@ function renderStudyPage() {
   page.querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', () => selectItem(b.dataset.go)));
   const studyBody = page.querySelector('#study-tab-body');
   if (studyBody) renderStudyTabBody(studyBody);
-  page.querySelectorAll('.study-tab').forEach(t => {
-    t.addEventListener('click', () => {
-      page.querySelectorAll('.study-tab').forEach(x => x.classList.remove('active'));
-      t.classList.add('active');
-      const body = page.querySelector('#study-tab-body');
-      if (t.dataset.stab === '英语') {
-        renderStudyTabBody(body);
-      } else {
-        body.innerHTML = `<p style="font-size:12px;color:var(--text-muted);margin:0;">「${t.dataset.stab}」模块整理中，敬请期待 🐰</p>`;
-      }
-    });
-  });
 }
 
 // ============ 生活秩序 ============

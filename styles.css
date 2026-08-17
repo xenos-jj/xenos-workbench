@@ -5533,7 +5533,8 @@ select.pf-input {
    ========================================================= */
 .study-goal {
   position: relative; overflow: hidden;
-  background: linear-gradient(135deg, #EDEAF9 0%, #FFF5E9 100%);
+  background: var(--card);
+  border: 1px solid var(--border);
   border-radius: var(--radius); padding: 16px; margin-bottom: 12px;
   box-shadow: var(--shadow); display: flex; align-items: center; gap: 14px;
 }
@@ -5555,30 +5556,43 @@ select.pf-input {
 .sub-title { margin: 0; font-size: 17px; font-weight: 700; flex: 1; }
 .sub-spark { font-size: 13px; }
 .study-goal .sg-no-progress { width: 64px; height: 64px; border-radius: 50%; border: 1px dashed #cdb8e8; display: flex; align-items: center; justify-content: center; font-size: 9px; font-family: var(--font-small); color: var(--text-muted); text-align: center; padding: 4px; }
-#sg-continue { margin-top: 14px; padding: 5px 16px; font-size: 11px; border-radius: 999px; }
-#study-plan-list .spi-actions { display: none; gap: 6px; }
-#study-plan-list.editing .spi-actions, .study-plan-item.editing .spi-actions { display: inline-flex; }
-.study-plan-item .spi-actions .icon-action { width: 22px; height: 22px; border-radius: 50%; border: 1px solid var(--border); background: var(--card); display: flex; align-items: center; justify-content: center; font-size: 11px; cursor: pointer; color: var(--text-muted); }
-.study-plan-item .spi-actions .icon-action.delete { color: #d9534f; border-color: #f0c8c5; }
-.study-plan-item .spi-edit-body { display: flex; gap: 6px; align-items: center; }
-.study-plan-item .spi-input { flex: 1; border: 1px solid var(--border); border-radius: 8px; padding: 4px 8px; font-size: 11px; }
-.study-plan-item .spi-points-input { width: 52px; border: 1px solid var(--border); border-radius: 8px; padding: 4px 6px; font-size: 11px; }
-.study-plan-item .spi-check.on { background: var(--purple); color: #fff; }
-.study-tabs { display: flex; gap: 8px; margin: 0 0 14px; }
-.study-tab {
-  flex: 1; border: 1px solid var(--border); background: var(--card);
-  border-radius: 999px; height: 32px; font-size: 11px; color: var(--text-muted); cursor: pointer;
+.study-stats { display: flex; gap: 10px; margin-bottom: 14px; }
+.study-stat { flex: 1; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 8px; text-align: center; box-shadow: var(--shadow-sm); }
+.study-stat b { display: block; font-size: 16px; color: var(--text); margin-bottom: 2px; }
+.study-stat span { font-size: 9px; color: var(--text-muted); font-family: var(--font-small); }
+.study-plan-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px; border-radius: var(--radius-sm);
+  border: 1px solid var(--border); background: #fff;
+  transition: all 0.15s ease;
+  margin-bottom: 8px;
+  cursor: pointer;
 }
-.study-tab.active { background: var(--purple-light); border-color: var(--purple); color: #6B5FA8; font-weight: 600; }
-.study-plan-item { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border-soft); }
-.study-plan-item:last-child { border-bottom: none; }
-.study-plan-item .spi-check { width: 18px; height: 18px; border-radius: 50%; border: 1.2px solid var(--purple); display: flex; align-items: center; justify-content: center; color: var(--purple); font-size: 9px; font-family: var(--font-small); flex-shrink: 0; }
+.study-plan-item:last-child { margin-bottom: 0; }
+.study-plan-item:hover { border-color: var(--primary-hover); }
+.study-plan-item .spi-check {
+  width: 18px; height: 18px; border-radius: 50%;
+  border: 1.2px solid var(--purple);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--purple); font-size: 9px; font-family: var(--font-small);
+  flex-shrink: 0; background: #fff;
+}
 .study-plan-item.done .spi-check { background: var(--purple); color: #fff; }
-.study-plan-item .spi-body { flex: 1; }
-.study-plan-item .spi-name { font-size: 11px; }
+.study-plan-item .spi-name { flex: 1; font-size: 11px; color: var(--text); }
 .study-plan-item.done .spi-name { color: var(--text-muted); text-decoration: line-through; }
-.study-plan-item .spi-bar { height: 6px; background: var(--border-soft); border-radius: 999px; margin-top: 5px; overflow: hidden; }
-.study-plan-item .spi-bar i { display: block; height: 100%; background: var(--purple); border-radius: 999px; }
+.study-plan-item .task-points { margin-right: 0; }
+.study-plan-item.show-delete .item-delete { opacity: 1; pointer-events: auto; }
+/* 英语学习进度条（与计划列表共用外层卡片，但内部保留进度条） */
+.study-progress-item { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border-soft); }
+.study-progress-item:last-child { border-bottom: none; }
+.study-progress-item .spi-check { width: 18px; height: 18px; border-radius: 50%; border: 1.2px solid var(--purple); display: flex; align-items: center; justify-content: center; color: var(--purple); font-size: 9px; font-family: var(--font-small); flex-shrink: 0; background: #fff; }
+.study-progress-item.done .spi-check { background: var(--purple); color: #fff; }
+.study-progress-item .spi-body { flex: 1; }
+.study-progress-item .spi-row { display: flex; align-items: center; justify-content: space-between; }
+.study-progress-item .spi-name { font-size: 11px; color: var(--text); }
+.study-progress-item .spi-val { font-size: 10px; color: var(--text-muted); }
+.study-progress-item .spi-bar { height: 6px; background: var(--border-soft); border-radius: 999px; margin-top: 5px; overflow: hidden; }
+.study-progress-item .spi-bar i { display: block; height: 100%; background: var(--purple); border-radius: 999px; }
 .study-ai {
   position: relative; overflow: hidden;
   background: var(--purple-light); border: 1px solid var(--border);
