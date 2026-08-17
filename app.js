@@ -14,6 +14,34 @@ const DEFAULT_LANGUAGE = {
   stats: { totalLearned: 0, studyMinutes: 0, gameScore: 0, listenCount: 0, speakCount: 0 }
 };
 
+// ---------- 学习成长：英语打卡（v9144） ----------
+const ENGLISH_DAILY_TASKS = [
+  { key: 'words', name: '背单词', sub: '完成新词 + 复习旧词', points: 3, color: '#A99BD6', bg: '#F3F0FA' },
+  { key: 'listening', name: '听力练习', sub: '完成精听 + 泛听', points: 3, color: '#6FBFB0', bg: '#EAF6F4' },
+  { key: 'speaking', name: '口语练习', sub: '跟读 + 口头输出练习', points: 5, color: '#F4B678', bg: '#FFF5E9' },
+  { key: 'review', name: '当日复盘', sub: '标记难词、难点', points: 2, color: '#8FA3C7', bg: '#EEF2F9' }
+];
+
+const ENGLISH_WEEKLY_TASKS = [
+  { key: 'wordReview', name: '本周单词复盘整理', points: 5, color: '#A99BD6', bg: '#F3F0FA' },
+  { key: 'listeningPassage', name: '完整听力短篇练习', points: 5, color: '#6FBFB0', bg: '#EAF6F4' },
+  { key: 'speakingTopic', name: '口语话题口述练习', points: 5, color: '#F4B678', bg: '#FFF5E9' },
+  { key: 'vocabTest', name: '词汇简单自测', points: 3, color: '#8FA3C7', bg: '#EEF2F9' }
+];
+
+const ENGLISH_STAGES = [
+  { key: 'stage1', name: '基础夯实', months: '1‑2月', startMonth: 1, endMonth: 2, color: '#A99BD6' },
+  { key: 'stage2', name: '能力进阶', months: '3‑4月', startMonth: 3, endMonth: 4, color: '#6FBFB0' },
+  { key: 'stage3', name: '熟练运用', months: '5‑6月', startMonth: 5, endMonth: 6, color: '#F4B678' }
+];
+
+const DEFAULT_ENGLISH_CHECKIN = {
+  version: 1,
+  dailyMode: 'standard', // 'standard' | 'simplified'
+  totalPoints: 0,
+  history: {} // { '2026-08-17': { mode, restDay, tasks:{words:{done,note},...}, weekly:{wordReview:{done,note},...}, note } }
+};
+
 const DEFAULT_ASSET_ACCOUNTS = [
   { id: 'balance', name: '余额', amount: 0 },
   { id: 'secret', name: '悄悄攒', amount: 0 },
@@ -671,6 +699,7 @@ const state = {
   books: loadBooks(),
   historyNotes: loadHistoryNotes(),
   language: loadLanguage(),
+  englishCheckin: loadEnglishCheckin(),
   videoEdit: loadVideoEdit(),
   modeling: loadModeling(),
   reviewDate: null,
@@ -721,6 +750,9 @@ function resetProgressData() {
   // 清空语言学习进度
   state.language = JSON.parse(JSON.stringify(DEFAULT_LANGUAGE));
   saveLanguage();
+  // 清空英语打卡记录
+  state.englishCheckin = JSON.parse(JSON.stringify(DEFAULT_ENGLISH_CHECKIN));
+  saveEnglishCheckin();
   // 清空计划完成状态
   state.plans.forEach(p => { p.done = false; p.doneDate = ''; });
   savePlans();
@@ -987,6 +1019,156 @@ function loadLanguage() {
 }
 function saveLanguage() { saveJSON('xenos-language', state.language); }
 function getLanguagePoints() { return (state.language && state.language.points) || 0; }
+
+function loadEnglishCheckin() {
+  const raw = loadJSON('xenos-english-checkin', null);
+  const base = JSON.parse(JSON.stringify(DEFAULT_ENGLISH_CHECKIN));
+  if (!raw || typeof raw !== 'object') return base;
+  return { ...base, ...raw, history: raw.history && typeof raw.history === 'object' ? raw.history : {} };
+}
+function saveEnglishCheckin() { saveJSON('xenos-english-checkin', state.englishCheckin); }
+
+function getEnglishToday() {
+  const today = getTodayKey();
+  if (!state.englishCheckin.history[today]) {
+    state.englishCheckin.history[today] = {
+      mode: state.englishCheckin.dailyMode || 'standard',
+      restDay: false,
+      tasks: {},
+      weekly: {},
+      note: ''
+    };
+    ENGLISH_DAILY_TASKS.forEach(t => { state.englishCheckin.history[today].tasks[t.key] = { done: false, note: '' }; });
+    ENGLISH_WEEKLY_TASKS.forEach(t => { state.englishCheckin.history[today].weekly[t.key] = { done: false, note: '' }; });
+  }
+  return state.englishCheckin.history[today];
+}
+
+function getEnglishWeekKey(d) {
+  const dt = d ? parseDateKey(d) : new Date();
+  const oneJan = new Date(dt.getFullYear(), 0, 1);
+  const dayOfYear = Math.floor((dt - oneJan) / 86400000) + 1;
+  const week = Math.ceil(dayOfYear / 7);
+  return `${dt.getFullYear()}-W${week}`;
+}
+
+function getEnglishWeeklyState() {
+  const weekKey = getEnglishWeekKey();
+  const entries = Object.entries(state.englishCheckin.history || {})
+    .filter(([k]) => getEnglishWeekKey(k) === weekKey);
+  const tasks = {};
+  ENGLISH_WEEKLY_TASKS.forEach(t => { tasks[t.key] = { done: false, note: '' }; });
+  for (const [, day] of entries) {
+    ENGLISH_WEEKLY_TASKS.forEach(t => {
+      const w = (day.weekly || {})[t.key];
+      if (w && w.done) tasks[t.key] = { done: true, note: w.note || '' };
+    });
+  }
+  return tasks;
+}
+
+function setEnglishWeeklyDone(taskKey, done, note) {
+  const today = getTodayKey();
+  const day = getEnglishToday();
+  if (!day.weekly) day.weekly = {};
+  if (!day.weekly[taskKey]) day.weekly[taskKey] = { done: false, note: '' };
+  const prev = day.weekly[taskKey].done;
+  day.weekly[taskKey].done = done;
+  if (note !== undefined) day.weekly[taskKey].note = note;
+  const task = ENGLISH_WEEKLY_TASKS.find(t => t.key === taskKey);
+  if (task) state.englishCheckin.totalPoints = (state.englishCheckin.totalPoints || 0) + (done ? 1 : -1) * task.points * (prev === done ? 0 : 1);
+  saveEnglishCheckin();
+}
+
+function toggleEnglishTask(type, taskKey) {
+  const today = getTodayKey();
+  const day = getEnglishToday();
+  const pool = type === 'weekly' ? day.weekly : day.tasks;
+  if (!pool[taskKey]) pool[taskKey] = { done: false, note: '' };
+  pool[taskKey].done = !pool[taskKey].done;
+  const task = type === 'weekly'
+    ? ENGLISH_WEEKLY_TASKS.find(t => t.key === taskKey)
+    : ENGLISH_DAILY_TASKS.find(t => t.key === taskKey);
+  if (task) {
+    state.englishCheckin.totalPoints = (state.englishCheckin.totalPoints || 0) + (pool[taskKey].done ? task.points : -task.points);
+  }
+  saveEnglishCheckin();
+}
+
+function setEnglishTaskNote(type, taskKey, note) {
+  const day = getEnglishToday();
+  const pool = type === 'weekly' ? day.weekly : day.tasks;
+  if (!pool[taskKey]) pool[taskKey] = { done: false, note: '' };
+  pool[taskKey].note = note;
+  saveEnglishCheckin();
+}
+
+function setEnglishDailyMode(mode) {
+  state.englishCheckin.dailyMode = mode;
+  const day = getEnglishToday();
+  day.mode = mode;
+  saveEnglishCheckin();
+}
+
+function setEnglishRestDay(restDay) {
+  const day = getEnglishToday();
+  day.restDay = restDay;
+  saveEnglishCheckin();
+}
+
+function getEnglishRestDaysLeft() {
+  const weekKey = getEnglishWeekKey();
+  const today = getTodayKey();
+  let used = 0;
+  Object.entries(state.englishCheckin.history || {}).forEach(([k, d]) => {
+    if (getEnglishWeekKey(k) === weekKey && d.restDay) used++;
+  });
+  return Math.max(0, 1 - used);
+}
+
+function calcEnglishStreak() {
+  const h = state.englishCheckin.history || {};
+  let streak = 0;
+  const d = new Date();
+  while (true) {
+    const k = dateStr(d);
+    const day = h[k];
+    if (!day) break;
+    if (day.restDay) { streak++; d.setDate(d.getDate() - 1); continue; }
+    const allDone = ENGLISH_DAILY_TASKS.every(t => (day.tasks || {})[t.key] && (day.tasks || {})[t.key].done);
+    if (allDone) { streak++; d.setDate(d.getDate() - 1); }
+    else break;
+  }
+  return streak;
+}
+
+function getEnglishStageProgress() {
+  const now = new Date();
+  const month = now.getMonth() + 1;
+  const year = now.getFullYear();
+  return ENGLISH_STAGES.map(s => {
+    const start = new Date(year, s.startMonth - 1, 1);
+    const end = new Date(year, s.endMonth, 0, 23, 59, 59);
+    const total = (end - start) + 1;
+    let pct = 0, active = false, past = false;
+    if (month < s.startMonth) pct = 0;
+    else if (month > s.endMonth) { pct = 100; past = true; }
+    else {
+      active = true;
+      const elapsed = Math.max(0, now - start) + 1;
+      pct = Math.min(100, Math.round(elapsed / total * 100));
+    }
+    return { ...s, pct, active, past };
+  });
+}
+
+function getEnglishDailyDone() {
+  const day = getEnglishToday();
+  if (day.restDay) return { exempt: true, done: !!(day.tasks || {}).words && (day.tasks || {}).words.done, total: ENGLISH_DAILY_TASKS.length };
+  let done = 0;
+  ENGLISH_DAILY_TASKS.forEach(t => { if ((day.tasks || {})[t.key] && (day.tasks || {})[t.key].done) done++; });
+  return { done, total: ENGLISH_DAILY_TASKS.length };
+}
 
 function loadVideoEdit() {
   const v = loadJSON('xenos-video-edit', null);
@@ -7380,7 +7562,7 @@ content.addEventListener('touchend', (e) => {
 (function initLongPressDelete() {
   let timer = null;
   let activeRow = null;
-  const SELECTOR = '.task-row, .plan-item, .exercise-row, .proj-task, .voice-item, .reward-row, .br-branch-card, .study-plan-item';
+  const SELECTOR = '.task-row, .plan-item, .exercise-row, .proj-task, .voice-item, .reward-row, .br-branch-card, .study-plan-item, .eng-task-row';
   const LONG_PRESS_MS = 600;
 
   function clearActive() {
@@ -7455,7 +7637,7 @@ document.addEventListener('keydown', (e) => {
 });
 
 // 列表项删除统一委托处理：点击 🗑 删除对应条目并刷新当前页
-// del-type: plan=计划, exercise=今日运动, domain-task=领域每日打卡任务
+// del-type: plan=计划, exercise=今日运动, domain-task=领域每日打卡任务, eng-task=英语打卡任务记录
 document.addEventListener('click', (e) => {
   const del = e.target.closest('.item-delete');
   if (!del) return;
@@ -7484,6 +7666,22 @@ document.addEventListener('click', (e) => {
   if (type === 'plan') {
     deletePlanById(id);
     renderContent();
+  }
+  if (type === 'eng-task') {
+    const taskType = del.dataset.type;
+    const taskKey = del.dataset.key;
+    const day = getEnglishToday();
+    const pool = taskType === 'weekly' ? day.weekly : day.tasks;
+    if (pool[taskKey] && pool[taskKey].done) {
+      const task = taskType === 'weekly'
+        ? ENGLISH_WEEKLY_TASKS.find(t => t.key === taskKey)
+        : ENGLISH_DAILY_TASKS.find(t => t.key === taskKey);
+      if (task) state.englishCheckin.totalPoints = (state.englishCheckin.totalPoints || 0) - task.points;
+    }
+    if (pool[taskKey]) { pool[taskKey].done = false; pool[taskKey].note = ''; }
+    saveEnglishCheckin();
+    renderContent();
+    return;
   }
   if (type === 'branch-focus') {
     const name = del.dataset.focusName;
@@ -8345,84 +8543,120 @@ function renderBranchesPage() {
   if (slowManage) slowManage.addEventListener('click', openSlowBranchPicker);
 }
 
-// ============ 学习成长（Screenshot 3） ============
+// ============ 学习成长：英语打卡（v9144） ============
 function renderStudyPage() {
   const page = document.createElement('div');
   page.className = 'page';
   if (greetLine) greetLine.textContent = '英语';
 
-  const learned = Object.keys(state.language.learned || {}).length;
-  const TARGET = 2000;
-  const goalPct = Math.min(100, Math.round(learned / TARGET * 100)) || 0;
+  const today = getTodayKey();
+  const day = getEnglishToday();
+  const mode = day.mode || state.englishCheckin.dailyMode || 'standard';
+  const restDaysLeft = getEnglishRestDaysLeft();
+  const weeklyState = getEnglishWeeklyState();
+  const streak = calcEnglishStreak();
+  const stages = getEnglishStageProgress();
+  const dailyDone = getEnglishDailyDone();
+  const todayPoints = (state.englishCheckin.totalPoints || 0);
 
-  const todayCount = state.language.todayCount || 0;
-  const dailyGoal = state.language.dailyGoal || 20;
-  const wordPct = Math.min(100, Math.round(todayCount / dailyGoal * 100));
+  function modeLabel(m) { return m === 'simplified' ? '精简版 20‑30 分钟' : '标准版 45‑60 分钟'; }
+  function restNote(m) { return m === 'simplified' ? '仅完成单词复习' : '仅完成单词复习'; }
 
-  const planItems = [
-    { name: '背单词 30 个', pct: wordPct, done: todayCount >= dailyGoal, val: todayCount + '/' + dailyGoal, bar: 'bar-orange' }
-  ];
-
-  const studyTrend = [];
-  for (let i = 6; i >= 0; i--) studyTrend.push(getFocusMinutes(shiftDate(getTodayKey(), -i)));
-
-  const streak = calcStreak();
-
-  function isEnglishPlan(text) {
-    const t = (text || '').toLowerCase();
-    const keywords = ['英语', '英文', '单词', '词汇', '听力', '阅读', '口语', '写作', '语法', '音标', '翻译', '短文', '句子', '词组', '听写', '朗读', '背诵', '雅思', '托福', '四六级', '四级', '六级', '专四', '专八', '考研英语', 'cet', '外语'];
-    return keywords.some(k => t.includes(k));
-  }
-
-  function studyProgressHTML() {
-    return planItems.map(it => `
-      <div class="study-progress-item ${it.done ? 'done' : ''}">
-        <div class="spi-check">${it.done ? '✓' : ''}</div>
-        <div class="spi-body">
-          <div class="spi-row"><span class="spi-name">${it.name}</span><span class="spi-val">${it.val}</span></div>
-          <div class="spi-bar ${it.bar}"><i style="width:${it.pct}%"></i></div>
+  function dailyTaskHTML(t) {
+    const td = (day.tasks || {})[t.key] || { done: false, note: '' };
+    const exempt = day.restDay && t.key !== 'words';
+    const disabled = day.restDay && t.key !== 'words';
+    return `
+      <div class="eng-task-row ${td.done ? 'done' : ''} ${disabled ? 'exempt' : ''}" data-type="daily" data-key="${t.key}">
+        <div class="eng-task-main" style="--eng-color:${t.color};--eng-bg:${t.bg}">
+          <div class="eng-task-check ${td.done ? 'on' : ''}">${td.done ? '✓' : ''}</div>
+          <div class="eng-task-info">
+            <div class="eng-task-name">${t.name}</div>
+            <div class="eng-task-sub">${exempt ? restNote(mode) : t.sub}</div>
+          </div>
+          <span class="eng-task-points">+${t.points}</span>
         </div>
-      </div>`).join('');
-  }
-
-  function studyPlanListHTML() {
-    const englishPlans = state.plans.filter(p => isEnglishPlan(p.text));
-    if (!englishPlans.length) return '<p style="font-size:12px;color:var(--text-muted);margin:0;">还没有英语学习计划，去「当日计划」添加吧～</p>';
-    return englishPlans.map(p => `
-      <div class="study-plan-item ${p.done ? 'done' : ''}" data-pid="${p.id}">
-        <div class="spi-check ${p.done ? 'on' : ''}">${p.done ? '✓' : ''}</div>
-        <span class="spi-name">${escapeHTML(p.text)}</span>
-        <span class="task-points">+${p.points}</span>
-        <button class="item-delete" data-id="${p.id}" data-del-type="plan" aria-label="删除">
+        <div class="eng-task-note">
+          <input type="text" placeholder="记录笔记（可选）" value="${escapeHTML(td.note || '')}" data-note-for="daily" data-key="${t.key}">
+        </div>
+        <button class="item-delete" data-del-type="eng-task" data-type="daily" data-key="${t.key}" aria-label="删除记录">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
         </button>
+      </div>`;
+  }
+
+  function weeklyTaskHTML(t) {
+    const ws = weeklyState[t.key] || { done: false, note: '' };
+    return `
+      <div class="eng-task-row ${ws.done ? 'done' : ''}" data-type="weekly" data-key="${t.key}">
+        <div class="eng-task-main" style="--eng-color:${t.color};--eng-bg:${t.bg}">
+          <div class="eng-task-check ${ws.done ? 'on' : ''}">${ws.done ? '✓' : ''}</div>
+          <div class="eng-task-info">
+            <div class="eng-task-name">${t.name}</div>
+            <div class="eng-task-sub">本周累计</div>
+          </div>
+          <span class="eng-task-points">+${t.points}</span>
+        </div>
+        <div class="eng-task-note">
+          <input type="text" placeholder="记录笔记（可选）" value="${escapeHTML(ws.note || '')}" data-note-for="weekly" data-key="${t.key}">
+        </div>
+        <button class="item-delete" data-del-type="eng-task" data-type="weekly" data-key="${t.key}" aria-label="删除记录">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+        </button>
+      </div>`;
+  }
+
+  function stagesHTML() {
+    return `<div class="eng-stages">${stages.map((s, idx) => `
+      <div class="eng-stage ${s.active ? 'active' : ''} ${s.past ? 'past' : ''}">
+        <div class="eng-stage-top">
+          <span class="eng-stage-num">0${idx + 1}</span>
+          <div class="eng-stage-meta">
+            <div class="eng-stage-name">${s.name}</div>
+            <div class="eng-stage-months">${s.months}</div>
+          </div>
+          <span class="eng-stage-pct">${s.pct}%</span>
+        </div>
+        <div class="eng-stage-bar"><i style="width:${s.pct}%;background:${s.color}"></i></div>
       </div>
-    `).join('');
+    `).join('')}</div>`;
   }
 
-  function bindStudyPlanList(wrap) {
-    if (!wrap) return;
-    wrap.querySelectorAll('.study-plan-item').forEach(row => {
-      row.addEventListener('click', (e) => {
-        if (e.target.closest('.item-delete')) return;
-        const pid = row.dataset.pid;
-        togglePlanDone(pid);
-      });
-    });
+  function historyHTML() {
+    const days = [];
+    for (let i = 0; i < 14; i++) {
+      const k = shiftDate(today, -i);
+      const d = (state.englishCheckin.history || {})[k];
+      let pct = 0;
+      if (d) {
+        if (d.restDay) pct = d.tasks && d.tasks.words && d.tasks.words.done ? 100 : 0;
+        else {
+          const total = ENGLISH_DAILY_TASKS.length;
+          const done = ENGLISH_DAILY_TASKS.filter(t => d.tasks && d.tasks[t.key] && d.tasks[t.key].done).length;
+          pct = Math.round(done / total * 100);
+        }
+      }
+      days.push({ key: k, label: i === 0 ? '今天' : formatDateCN(k).replace(/周.*/, ''), pct });
+    }
+    return `<div class="eng-history-grid">${days.map(d => `
+      <div class="eng-history-day ${d.pct >= 100 ? 'full' : d.pct > 0 ? 'part' : ''}">
+        <div class="eng-history-ring"><svg viewBox="0 0 36 36"><path class="eng-h-ring-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/><path class="eng-h-ring-bar" stroke-dasharray="${d.pct}, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/></svg></div>
+        <div class="eng-history-label">${d.label}</div>
+      </div>
+    `).join('')}</div>`;
   }
 
-  function renderStudyPlanList() {
-    const wrap = page.querySelector('#study-plan-list');
-    if (wrap) { wrap.innerHTML = studyPlanListHTML(); bindStudyPlanList(wrap); }
+  function getEnglishTodayPoints() {
+    let pts = 0;
+    ENGLISH_DAILY_TASKS.forEach(t => { if ((day.tasks || {})[t.key] && (day.tasks || {})[t.key].done) pts += t.points; });
+    ENGLISH_WEEKLY_TASKS.forEach(t => { if ((day.weekly || {})[t.key] && (day.weekly || {})[t.key].done) pts += t.points; });
+    return pts;
   }
 
-  function renderStudyTabBody(body) {
-    body.innerHTML = `
-      <div class="soft-card-title"><span class="sct-check">☑</span> 英语学习进度</div>
-      ${studyProgressHTML()}
-      <div class="soft-card-title" style="margin-top:10px;"><span class="sct-check">☑</span> 今日学习计划</div>
-      <div id="study-plan-list">${studyPlanListHTML()}</div>`;
-    bindStudyPlanList(body.querySelector('#study-plan-list'));
+  function dailySummary() {
+    const tp = getEnglishTodayPoints();
+    if (day.restDay) return `休息日 · 仅需完成「背单词」· 今日 ${tp} 积分`;
+    return `已完成 ${dailyDone.done}/${dailyDone.total} · 今日 ${tp} 积分`;
   }
 
   page.innerHTML = `
@@ -8433,48 +8667,147 @@ function renderStudyPage() {
       <h3 class="sub-title">英语 <span class="sub-spark">✨</span></h3>
     </div>
 
-    <div class="study-goal section-card">
-      ${learned > 0 ? miniRingHTML(goalPct, 'ring-purple', goalPct + '%', '完成进度') : '<div class="sg-no-progress">开始背诵后展示进度</div>'}
+    <div class="study-goal section-card" style="background:var(--card);border:1px solid var(--border);">
+      <div class="sg-ring-wrap">${dailyDone.exempt ? miniRingHTML(dailyDone.done ? 100 : 0, 'ring-purple', dailyDone.done ? '✓' : '0/1', '单词复习') : miniRingHTML(Math.round(dailyDone.done / dailyDone.total * 100), 'ring-purple', `${dailyDone.done}/${dailyDone.total}`, '今日完成')}</div>
       <div class="sg-info">
-        <h4>四级核心词汇</h4>
-        <p class="sg-sub">目标：掌握 ${TARGET} 个高频词汇</p>
+        <h4>英语学习打卡</h4>
+        <p class="sg-sub">${dailySummary()}</p>
         <span class="sg-streak">🔥 连续学习 ${streak} 天</span>
       </div>
     </div>
-    <div class="study-stats">
-      <div class="study-stat"><b>${learned.toLocaleString()}</b><span>已学单词（词）</span></div>
-      <div class="study-stat"><b>${goalPct}%</b><span>掌握率</span></div>
-    </div>
 
-    <div class="section-card" id="study-tab-body">
-      <div class="soft-card-title"><span class="sct-check">☑</span> 英语学习进度</div>
-      ${studyProgressHTML()}
-      <div class="soft-card-title" style="margin-top:10px;"><span class="sct-check">☑</span> 今日学习计划</div>
-      <div id="study-plan-list">${studyPlanListHTML()}</div>
+    <div class="section-card">
+      <div class="soft-card-title">打卡模式</div>
+      <div class="eng-mode-tabs">
+        <button class="eng-mode-tab ${mode === 'standard' ? 'active' : ''}" data-mode="standard">标准版<span>45‑60 分钟</span></button>
+        <button class="eng-mode-tab ${mode === 'simplified' ? 'active' : ''}" data-mode="simplified">精简版<span>20‑30 分钟</span></button>
+      </div>
+      <p class="eng-mode-tip">当前选择：${modeLabel(mode)}，学习内容全部在外部软件完成，此处仅作打卡记录。</p>
     </div>
 
     <div class="section-card">
-      <div class="soft-card-title">📈 本周学习时长 <span class="soft-card-note">平均 6.2 小时</span></div>
-      ${inlineLineChart(studyTrend, '#A99BD6', 150)}
+      <div class="soft-card-title"><span class="sct-check">☑</span> 今日学习任务</div>
+      <div class="eng-daily-list">
+        ${ENGLISH_DAILY_TASKS.map(dailyTaskHTML).join('')}
+      </div>
+      <label class="eng-rest-row">
+        <input type="checkbox" id="eng-rest-day" ${day.restDay ? 'checked' : ''}>
+        <span>英语轻休息日（本周剩余 ${restDaysLeft} 次）</span>
+      </label>
     </div>
 
-    <div class="study-ai">
-      <div class="study-ai-inner">
-        <h4>🤖 AI 学习建议</h4>
-        <p>今天单词进度${wordPct >= 100 ? '已达标，奖励自己休息一下' : '还差 ' + (dailyGoal - todayCount) + ' 个'}，建议把听力放在通勤碎片时间；阅读短文可结合已背单词做语境记忆。</p>
+    <div class="section-card">
+      <div class="soft-card-title">📅 每周任务</div>
+      <div class="eng-weekly-list">
+        ${ENGLISH_WEEKLY_TASKS.map(weeklyTaskHTML).join('')}
       </div>
+    </div>
+
+    <div class="section-card">
+      <div class="soft-card-title">🗓 长期进度看板</div>
+      ${stagesHTML()}
+    </div>
+
+    <div class="section-card">
+      <div class="soft-card-title">📈 历史打卡 <span class="hp-more hp-link" id="eng-history-btn">查看 ›</span></div>
+      ${historyHTML()}
     </div>
 
     <div class="study-tip">
       <span class="study-tip-bulb">💡</span>
-      <p>小贴士：把最难的任务放在精力最好的上午，用 25 分钟番茄钟降低启动阻力。</p>
+      <p>小贴士：把最难的口语练习放在精力最好的上午，用 25 分钟番茄钟降低启动阻力。</p>
     </div>
   `;
   content.appendChild(page);
 
+  // 返回按钮
   page.querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', () => selectItem(b.dataset.go)));
-  const studyBody = page.querySelector('#study-tab-body');
-  if (studyBody) renderStudyTabBody(studyBody);
+
+  // 模式切换
+  page.querySelectorAll('.eng-mode-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      setEnglishDailyMode(tab.dataset.mode);
+      renderContent();
+    });
+  });
+
+  // 任务勾选 + 笔记输入
+  page.querySelectorAll('.eng-task-row').forEach(row => {
+    row.addEventListener('click', (e) => {
+      if (e.target.closest('.item-delete, input')) return;
+      const type = row.dataset.type;
+      const key = row.dataset.key;
+      const t = type === 'weekly' ? ENGLISH_WEEKLY_TASKS.find(x => x.key === key) : ENGLISH_DAILY_TASKS.find(x => x.key === key);
+      if (!t) return;
+      if (day.restDay && type === 'daily' && key !== 'words') return;
+      toggleEnglishTask(type, key);
+      renderContent();
+    });
+  });
+
+  page.querySelectorAll('.eng-task-note input').forEach(inp => {
+    inp.addEventListener('change', () => {
+      setEnglishTaskNote(inp.dataset.noteFor, inp.dataset.key, inp.value.trim());
+    });
+  });
+
+  // 休息日
+  const restCheck = page.querySelector('#eng-rest-day');
+  if (restCheck) {
+    restCheck.addEventListener('change', () => {
+      if (restCheck.checked && restDaysLeft <= 0 && !day.restDay) {
+        toast('本周休息日已用完');
+        restCheck.checked = false;
+        return;
+      }
+      setEnglishRestDay(restCheck.checked);
+      renderContent();
+    });
+  }
+
+  // 历史记录弹窗
+  const historyBtn = page.querySelector('#eng-history-btn');
+  if (historyBtn) {
+    historyBtn.addEventListener('click', () => {
+      openEnglishHistoryModal();
+    });
+  }
+}
+
+function openEnglishHistoryModal() {
+  const today = getTodayKey();
+  const rows = [];
+  for (let i = 0; i < 30; i++) {
+    const k = shiftDate(today, -i);
+    const d = (state.englishCheckin.history || {})[k];
+      let status = '未打卡';
+    let pts = 0;
+    if (d) {
+      if (d.restDay) {
+        status = d.tasks && d.tasks.words && d.tasks.words.done ? '休息日完成' : '休息日未完成';
+        pts = d.tasks && d.tasks.words && d.tasks.words.done ? ENGLISH_DAILY_TASKS[0].points : 0;
+      } else {
+        const total = ENGLISH_DAILY_TASKS.length;
+        const done = ENGLISH_DAILY_TASKS.filter(t => d.tasks && d.tasks[t.key] && d.tasks[t.key].done).length;
+        status = done >= total ? '全部完成' : `完成 ${done}/${total}`;
+        ENGLISH_DAILY_TASKS.forEach(t => { if (d.tasks && d.tasks[t.key] && d.tasks[t.key].done) pts += t.points; });
+        ENGLISH_WEEKLY_TASKS.forEach(t => { if (d.weekly && d.weekly[t.key] && d.weekly[t.key].done) pts += t.points; });
+      }
+    }
+    rows.push({ date: formatDateCN(k), status, pts });
+  }
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay active';
+  overlay.innerHTML = `
+    <div class="modal-card" style="max-width:420px;max-height:80vh;overflow:auto;">
+      <div class="modal-head"><h4>📈 英语打卡历史（近 30 天）</h4><button class="modal-close" aria-label="关闭">✕</button></div>
+      <div class="eng-history-list">${rows.map(r => `
+        <div class="eng-history-row"><span class="eng-h-date">${r.date}</span><span class="eng-h-status">${r.status} · ${r.pts} 积分</span></div>
+      `).join('')}</div>
+    </div>`;
+  document.body.appendChild(overlay);
+  overlay.querySelector('.modal-close').addEventListener('click', () => overlay.remove());
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
 }
 
 // ============ 生活秩序 ============
