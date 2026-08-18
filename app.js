@@ -334,7 +334,11 @@ const ICONS = {
   timeline: '<path d="M3 12h18"/><path d="M7 12V7M12 12V4M17 12v-4"/><circle cx="7" cy="12" r="1.4" fill="currentColor"/><circle cx="12" cy="12" r="1.4" fill="currentColor"/><circle cx="17" cy="12" r="1.4" fill="currentColor"/>',
   bulb: '<path d="M9 18h6"/><path d="M10 21h4"/><path d="M12 3a6 6 0 0 0-4 10.5c.7.7 1 1.3 1 2.5h6c0-1.2.3-1.8 1-2.5A6 6 0 0 0 12 3z"/>',
   time: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
-  link: '<path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/>'
+  link: '<path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/>',
+  palette: '<path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z"/><circle cx="15" cy="8" r="1.5" fill="currentColor"/><circle cx="8.5" cy="10" r="1.5" fill="currentColor"/><circle cx="12" cy="16" r="2" fill="currentColor"/>',
+  bell: '<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>',
+  lock: '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+  save: '<path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8"/><path d="M7 3v5"/>'
 };
 
 function icon(name, size = 16) {
@@ -382,7 +386,6 @@ const DEFAULT_GROUPS = [
     collapsed: false,
     items: [
       { id: 'i-book', name: '书籍阅读', icon: 'book' },
-      { id: 'i-history', name: '历史', icon: 'history' },
       { id: 'i-study', name: '学习成长', icon: 'bookOpen' },
       { id: 'i-video-edit', name: '视频剪辑', icon: 'video' },
       { id: 'i-3d', name: '3D建模', icon: 'model3d' }
@@ -395,7 +398,6 @@ const DEFAULT_GROUPS = [
     collapsed: false,
     items: [
       { id: 'i-panel', name: '系统面板', icon: 'panel' },
-      { id: 'i-content', name: '内容素材库', icon: 'content' },
       { id: 'i-memos', name: '碎碎念', icon: 'note' }
     ]
   },
@@ -415,7 +417,7 @@ const DEFAULT_GROUPS = [
     icon: 'user',
     collapsed: false,
     items: [
-      { id: 'i-intro', name: '自我介绍', icon: 'intro' },
+      { id: 'i-intro', name: '自我介绍', icon: 'user' },
       { id: 'i-settings', name: '设置', icon: 'settings' }
     ]
   }
@@ -449,8 +451,7 @@ const DOMAIN_CONFIG = {
     tags: ['护肤', '仪态', '穿搭', '妆容'],
     tools: [
       { name: '护肤日常', sub: '清洁 / 保湿 / 防晒', icon: 'sparkles', action: 'looks-content', payload: '护肤' },
-      { name: '仪态练习', sub: '体态 / 气质 / 穿搭', icon: 'user', action: 'looks-content', payload: '仪态' },
-      { name: '灵感素材', sub: '穿搭参考', icon: 'content', target: '内容素材库' }
+      { name: '仪态练习', sub: '体态 / 气质 / 穿搭', icon: 'user', action: 'looks-content', payload: '仪态' }
     ],
     tasks: [
       { text: '早晚护肤', points: 2 },
@@ -1478,6 +1479,13 @@ function loadGroups() {
     if (raw) {
       const parsed = JSON.parse(raw);
       if (parsed && parsed.version === SCHEMA_VERSION && Array.isArray(parsed.data)) {
+        // v9154：清理已删除的「历史」与「内容素材库」入口
+        const removed = new Set(['历史', '内容素材库']);
+        parsed.data.forEach(g => {
+          if (Array.isArray(g.items)) {
+            g.items = g.items.filter(i => !removed.has(i.name));
+          }
+        });
         return parsed.data;
       }
     }
@@ -6799,13 +6807,12 @@ function renderSystemPanel() {
     { name: '语音复盘', icon: 'mic', meta: `${state.voiceReviews.length} 条`, target: '语音复盘' },
     { name: '奖励池', icon: 'rewards', meta: `${getAvailablePoints()} 分可用`, target: '奖励池' },
     { name: '成就殿堂', icon: 'trophy', meta: `${DEFAULT_ACHIEVEMENTS.filter(a => state.achievements[a.id]).length} 枚徽章`, target: '成就殿堂' },
-    { name: '内容素材库', icon: 'content', meta: `${state.contentItems.length} 条素材`, target: '内容素材库' },
     { name: '碎碎念', icon: 'note', meta: `${state.memos.length} 条`, target: '碎碎念' },
     { name: '当日计划', icon: 'calendar', meta: `${prog.done}/${prog.total}`, target: '每日计划' },
     { name: '饮食', icon: 'utensils', meta: `${getDietTotals().total} kcal`, target: '饮食' },
     { name: '健身', icon: 'dumbbell', meta: `${getTodayExerciseMinutes()} 分钟`, target: '健身' },
     { name: '记账存钱', icon: 'wallet', meta: `¥${formatMoney(calcAssetTotal())}`, target: '记账存钱' },
-    { name: '自我介绍', icon: 'intro', meta: state.profile.name || '未填写', target: '自我介绍' },
+    { name: '自我介绍', icon: 'user', meta: state.profile.name || '未填写', target: '自我介绍' },
     { name: '设置', icon: 'settings', meta: `v${APP_VERSION}`, target: '设置' }
   ];
 
@@ -8115,7 +8122,7 @@ function renderSelfIntro() {
   page.innerHTML = `
     <div class="domain-hero">
       <div class="domain-head">
-        <div class="domain-icon">${icon('intro', 24)}</div>
+        <div class="domain-icon">${icon('user', 24)}</div>
         <div>
           <h3 class="domain-title">${escapeHTML(p.name || 'Xenos')}</h3>
           <p class="domain-subtitle">认识自己，是所有改变的起点</p>
@@ -9921,9 +9928,7 @@ function renderSettingsPage() {
     </div>
 
     <div class="me-grid">
-      <div class="me-card" data-me="stage"><span class="mc-emoji">🎯</span><span class="mc-title">人生阶段</span><span class="mc-desc">当前：备考成长季</span></div>
-      <div class="me-card" data-me="home"><span class="mc-emoji">🏠</span><span class="mc-title">首页布局</span><span class="mc-desc">标准布局</span></div>
-      <div class="me-card me-card-wide" data-me="theme"><span class="mc-emoji">🎨</span><span class="mc-title">主题外观</span><span class="mc-desc">花园兔兔</span>
+      <div class="me-card me-card-wide" data-me="theme"><span class="mc-emoji" style="color:var(--primary)">${icon('palette', 20)}</span><span class="mc-title">主题外观</span><span class="mc-desc">花园兔兔</span>
         <div class="theme-previews">
           <span class="theme-prev tp-garden" title="花园兔兔">🐰</span>
           <span class="theme-prev tp-cream" title="奶油暖阳">☀️</span>
@@ -9931,9 +9936,9 @@ function renderSettingsPage() {
           <span class="theme-prev tp-night" title="星夜静谧">🌙</span>
         </div>
       </div>
-      <div class="me-card" data-me="focus"><span class="mc-emoji">⏰</span><span class="mc-title">提醒与专注</span><span class="mc-desc">专注提醒 已开启</span></div>
-      <div class="me-card" data-me="privacy"><span class="mc-emoji">🔒</span><span class="mc-title">数据与隐私</span><span class="mc-desc">数据统计 / 隐私</span></div>
-      <div class="me-card" data-me="export"><span class="mc-emoji">💾</span><span class="mc-title">导出备份</span><span class="mc-desc">导出 / 云端</span></div>
+      <div class="me-card" data-me="focus"><span class="mc-emoji" style="color:var(--purple)">${icon('bell', 20)}</span><span class="mc-title">提醒与专注</span><span class="mc-desc">专注提醒 已开启</span></div>
+      <div class="me-card" data-me="privacy"><span class="mc-emoji" style="color:var(--green)">${icon('lock', 20)}</span><span class="mc-title">数据与隐私</span><span class="mc-desc">数据统计 / 隐私</span></div>
+      <div class="me-card" data-me="export"><span class="mc-emoji" style="color:var(--gold-deep)">${icon('save', 20)}</span><span class="mc-title">导出备份</span><span class="mc-desc">导出 / 云端</span></div>
     </div>
 
     <div class="me-milestones">
@@ -9943,7 +9948,7 @@ function renderSettingsPage() {
     </div>
 
     <div class="section-card" id="me-focus-card" hidden style="margin-top:14px;">
-      <div class="soft-card-title">⏰ 提醒与专注</div>
+      <div class="soft-card-title">${icon('bell', 16)} 提醒与专注</div>
       <div class="setting-row"><div class="setting-label">专注提醒<small>开始专注时通知</small></div><span class="switch-on">已开启</span></div>
       <div class="setting-row"><div class="setting-label">每日计划提醒<small>晚间固定提醒</small></div><span class="setting-val">21:00</span></div>
       <div class="setting-row"><div class="setting-label">习惯打卡提醒<small>每日打卡</small></div><span class="switch-on">已开启</span></div>
@@ -9955,7 +9960,7 @@ function renderSettingsPage() {
     </div>
 
     <div class="section-card" id="me-privacy-card" hidden style="margin-top:14px;">
-      <div class="soft-card-title">🔒 数据与隐私</div>
+      <div class="soft-card-title">${icon('lock', 16)} 数据与隐私</div>
       <div class="setting-row"><div class="setting-label">数据统计<small>查看本地数据概览</small></div><button class="ghost-btn" data-go="本周洞察">查看</button></div>
       <div class="setting-row"><div class="setting-label">隐私设置<small>控制数据共享</small></div><button class="ghost-btn" id="me-privacy-set">设置</button></div>
       <div class="setting-row"><div class="setting-label">账号安全<small>备份与恢复</small></div><button class="ghost-btn" id="me-account">管理</button></div>
@@ -9991,7 +9996,6 @@ function renderSettingsPage() {
   page.querySelectorAll('.me-card').forEach(card => {
     card.addEventListener('click', () => {
       const kind = card.dataset.me;
-      if (kind === 'home') { selectItem('工作台首页'); return; }
       if (kind === 'export') { exportData(); return; }
       if (kind === 'focus') { toggleCard('#me-focus-card'); return; }
       if (kind === 'privacy') { toggleCard('#me-privacy-card'); return; }
