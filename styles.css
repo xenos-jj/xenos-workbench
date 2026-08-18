@@ -4258,51 +4258,6 @@ select.pf-input {
 .hs-title { font-size: 11px; font-weight: 600; margin: 3px 0; color: var(--text); }
 .hs-note { font-size: 11px; color: var(--text-muted); line-height: 1.5; }
 
-/* 外语学习 */
-.lang-picker { display: flex; flex-wrap: wrap; gap: 6px; }
-.lang-chip {
-  border: 1px solid var(--border); background: var(--card); color: var(--text);
-  border-radius: 12px; padding: 5px 12px; font-size: 11px; cursor: pointer;
-}
-.lang-chip.active { background: var(--primary); color: #fff; border-color: var(--primary); }
-.lang-level { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
-.lang-goal { display: flex; align-items: center; gap: 8px; margin-top: 12px; font-size: 11px; color: var(--text-muted); }
-.flashcard {
-  position: relative;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  background: linear-gradient(150deg, #FDFAF4, #F4EDE1);
-  padding: 30px 18px;
-  text-align: center;
-  cursor: pointer;
-}
-.fc-speak {
-  position: absolute; top: 10px; right: 10px;
-  width: 34px; height: 34px; border-radius: 50%;
-  border: 1px solid var(--border); background: #fff; color: var(--gold-deep);
-  display: inline-flex; align-items: center; justify-content: center; cursor: pointer;
-  font-size: 15px;
-}
-.fc-word { font-size: 25px; font-weight: 700; color: var(--text); margin-top: 6px; }
-.fc-phonetic { font-size: 11px; color: var(--text-muted); margin: 6px 0; }
-.fc-meaning { font-size: 11px; color: var(--text); }
-.fc-actions { display: flex; gap: 10px; margin-top: 14px; }
-.fc-actions .btn, .fc-actions .gold-btn { flex: 1; }
-.phonetics-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(78px, 1fr)); gap: 8px; }
-.ph-cell {
-  display: flex; flex-direction: column; align-items: center; gap: 3px;
-  border: 1px solid var(--border-soft); background: var(--card);
-  border-radius: 10px; padding: 10px 6px; cursor: pointer; color: var(--text);
-}
-.ph-cell:hover { background: var(--primary-hover); }
-.ph-cell.done { background: var(--green-light); border-color: var(--green); color: var(--green); }
-.ph-sym { font-size: 13px; font-weight: 700; }
-.ph-word { font-size: 10px; color: var(--text-muted); }
-.listen-box { display: flex; gap: 10px; margin-top: 8px; }
-.listen-answer {
-  margin-top: 10px; font-size: 11px; color: var(--text);
-  background: var(--primary-light); border-radius: 10px; padding: 10px 12px;
-}
 
 /* 视频剪辑 */
 .proj-row {
@@ -6929,87 +6884,6 @@ select.pf-input {
   cursor: pointer;
 }
 
-/* ---------- 外语学习重构 v9141 ---------- */
-.lang-page { padding-bottom: 24px; }
-.lang-nav {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 10px 0 14px;
-}
-.lang-nav-title { font-size: 15px; font-weight: 600; color: var(--text); }
-.lang-stats-card { padding: 16px; }
-.lang-stats-row { display: flex; justify-content: space-around; text-align: center; margin-bottom: 14px; }
-.lang-stat-num { font-size: 22px; font-weight: 700; color: var(--primary); }
-.lang-stat-label { font-size: 10px; color: var(--text-muted); margin-top: 2px; font-family: var(--font-small); }
-.lang-goal-line { display: flex; align-items: center; font-size: 12px; color: var(--text-muted); }
-.lang-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 14px; }
-.lang-module-card {
-  background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
-  padding: 16px 12px; text-align: center; cursor: pointer;
-  transition: transform .12s ease, box-shadow .12s ease;
-}
-.lang-module-card:active { transform: scale(0.98); }
-.lang-module-icon {
-  width: 44px; height: 44px; border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  margin: 0 auto 8px;
-}
-.lang-module-name { font-size: 14px; font-weight: 600; color: var(--text); }
-.lang-module-desc { font-size: 10px; color: var(--text-muted); margin-top: 3px; font-family: var(--font-small); }
-
-.lang-recite-meta { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-.lang-recite-tag { font-size: 10px; padding: 3px 8px; border-radius: 999px; background: #FDF6E3; color: #c79a4a; font-family: var(--font-small); }
-.lang-recite-tag.review { background: #F3F1F4; color: #8978c3; }
-.fc-example { margin-top: 16px; padding-top: 12px; border-top: 1px dashed var(--border); text-align: left; }
-.fc-en { font-size: 13px; color: var(--text); margin-bottom: 4px; }
-.fc-cn { font-size: 12px; color: var(--text-muted); }
-
-.lang-game-btns { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; }
-.lang-game-btn {
-  background: #FFF9F2; border: 1px solid var(--border); border-radius: var(--radius);
-  padding: 14px; text-align: left; cursor: pointer;
-}
-.lang-game-title { font-size: 14px; font-weight: 600; color: var(--text); }
-.lang-game-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
-.lang-game-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-size: 13px; }
-.lang-match-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.lang-match-col { display: flex; flex-direction: column; gap: 8px; }
-.lang-match-cell {
-  background: var(--bg-soft); border: 1px solid var(--border); border-radius: var(--radius-xs);
-  padding: 10px; font-size: 12px; text-align: center; cursor: pointer;
-}
-.lang-match-cell.sel { border-color: var(--primary); background: #FFF5EA; }
-.lang-match-cell.done { opacity: 0.35; pointer-events: none; background: #F4F5E5; }
-.lang-game-done { text-align: center; padding: 24px 0; }
-
-.lang-fill-q { background: var(--bg-soft); border-radius: var(--radius); padding: 16px; margin-bottom: 14px; }
-.lang-fill-meaning { font-size: 15px; font-weight: 600; color: var(--text); }
-.lang-fill-example { font-size: 13px; color: var(--text-muted); margin-top: 8px; }
-.lang-fill-options { display: flex; flex-direction: column; gap: 8px; }
-.lang-fill-opt {
-  background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-xs);
-  padding: 12px; font-size: 13px; text-align: left; cursor: pointer;
-}
-.lang-fill-opt.right { border-color: #a0bb7a; background: #F4F5E5; }
-.lang-fill-opt.wrong { border-color: #E8B4A8; background: #FDF1E6; }
-.lang-fill-opt.disabled { pointer-events: none; }
-.lang-fill-result { text-align: center; margin-top: 14px; font-size: 13px; }
-
-.lang-speak-list { display: flex; flex-direction: column; gap: 8px; }
-.lang-speak-item {
-  background: var(--bg-soft); border: 1px solid var(--border); border-radius: var(--radius-xs);
-  padding: 12px; text-align: left; cursor: pointer;
-}
-.lang-speak-title { font-size: 13px; font-weight: 600; color: var(--text); }
-.lang-speak-sub { font-size: 10px; color: var(--text-muted); margin-top: 2px; font-family: var(--font-small); }
-.lang-speak-progress { font-size: 11px; color: var(--text-muted); margin-bottom: 10px; font-family: var(--font-small); }
-.lang-speak-line { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border-soft); }
-.lang-speak-en { flex: 1; font-size: 14px; color: var(--text); padding-right: 10px; }
-.lang-speak-play { width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--border); background: var(--card); display: flex; align-items: center; justify-content: center; cursor: pointer; }
-.lang-speak-btns { display: flex; gap: 10px; margin-top: 16px; }
-
-.lang-passage-title { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 10px; }
-.lang-passage-text { margin-top: 12px; padding: 12px; background: var(--bg-soft); border-radius: var(--radius-xs); font-size: 13px; color: var(--text); line-height: 1.7; }
-.lang-passage-q { margin: 16px 0 10px; font-size: 14px; font-weight: 600; color: var(--text); }
 
 
 /* ===== 本周洞察 v9150：DIY 模块 / 卡片 / 折线 / 热力 / 建议 ===== */
