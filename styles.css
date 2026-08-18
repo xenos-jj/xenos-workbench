@@ -3444,7 +3444,7 @@ button, input {
 .task-row.done .task-text { color: var(--text-muted); text-decoration: line-through; }
 .task-points { font-size: 8.5px; font-family: var(--font-small); font-weight: 600; color: var(--gold-deep); flex-shrink: 0; }
 
-/* ---- 每日复盘 ---- */
+/* ---- 每日计划 ---- */
 .review-datebar {
   display: flex;
   align-items: center;
@@ -3636,7 +3636,7 @@ button, input {
   text-align: center;
   box-shadow: var(--shadow);
 }
-.rw-val { font-size: 18px; font-weight: 700; color: var(--gold-deep); line-height: 1; }
+.rw-val { font-size: 18px; font-weight: 700; color: var(--gold-deep); line-height: 1; font-family: var(--font-small); }
 .rw-label { font-size: 10px; color: var(--text-muted); margin-top: 6px; }
 .reward-list { display: flex; flex-direction: column; gap: 9px; }
 .reward-tier-card {
@@ -3677,7 +3677,7 @@ button, input {
 .reward-emoji { font-size: 15px; flex-shrink: 0; }
 .reward-name { flex: 1; font-size: 11px; color: var(--text); }
 .reward-name small { display: block; font-size: 9.5px; color: var(--text-muted); margin-top: 2px; }
-.reward-cost { font-size: 11.5px; font-weight: 700; color: var(--gold-deep); flex-shrink: 0; }
+.reward-cost { font-size: 11.5px; font-weight: 700; color: var(--gold-deep); flex-shrink: 0; font-family: var(--font-small); }
 .reward-btn {
   height: 26px;
   padding: 0 11px;

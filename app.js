@@ -178,13 +178,13 @@ const INSIGHT_MODULES = [
   },
   {
     id: 'review',
-    name: '每日复盘',
+    name: '每日计划',
     icon: 'review',
     color: '#7FB0A0',
     bg: '#EAF4F1',
-    metricName: '累计复盘',
+    metricName: '累计记录',
     metricUnit: '篇',
-    avgName: '日均复盘',
+    avgName: '日均记录',
     avgUnit: '篇',
     compute(weekStart) {
       const daily = [], dailyItems = [], levels = [];
@@ -355,7 +355,7 @@ const DEFAULT_GROUPS = [
     collapsed: false,
     items: [
       { id: 'i-home', name: '工作台首页', icon: 'home' },
-      { id: 'i-review', name: '每日复盘', icon: 'review', todo: true },
+      { id: 'i-review', name: '每日计划', icon: 'review', todo: true },
       { id: 'i-money', name: '记账', icon: 'coins' },
       { id: 'i-insight', name: '本周洞察', icon: 'insight' },
       { id: 'i-branches', name: '我的支线', icon: 'layers' }
@@ -504,43 +504,43 @@ const DEFAULT_PROFILE = {
 };
 
 const DEFAULT_REWARDS = [
-  // 小奖励（0–100 分）柔和浅暖米色 / 淡奶咖色
-  { id: 'rw-s1', tier: 'small', emoji: '🍰', img: '', name: '甜品', desc: '甜一下', cost: 60 },
-  { id: 'rw-s2', tier: 'small', emoji: '🧋', img: '', name: '一杯奶茶', desc: '日常小犒赏', cost: 50 },
-  { id: 'rw-s3', tier: 'small', emoji: '🍿', img: '', name: '零食', desc: '解馋小快乐', cost: 40 },
-  { id: 'rw-s4', tier: 'small', emoji: '🍓', img: '', name: '新鲜水果', desc: '健康小补给', cost: 45 },
-  // 中奖励（100–300 分）清新浅豆绿色
-  { id: 'rw-m1', tier: 'medium', emoji: '🎬', img: '', name: '看一场影院电影', desc: '影院大屏观影', cost: 200 },
-  { id: 'rw-m2', tier: 'medium', emoji: '🤖', img: '', name: 'AI 动漫观影', desc: '沉浸式追番', cost: 120 },
-  { id: 'rw-m3', tier: 'medium', emoji: '📺', img: '', name: '综艺畅看', desc: '休闲放松时刻', cost: 130 },
-  { id: 'rw-m4', tier: 'medium', emoji: '📖', img: '', name: '小说会员', desc: '随心看网文', cost: 160 },
-  { id: 'rw-m5', tier: 'medium', emoji: '🎞️', img: '', name: '影视会员', desc: '海量剧集随心刷', cost: 180 },
-  { id: 'rw-m6', tier: 'medium', emoji: '🏬', img: '', name: '商场观影', desc: '商圈影院体验', cost: 220 },
-  { id: 'rw-m7', tier: 'medium', emoji: '🥡', img: '', name: '点外卖', desc: '省心干饭自由', cost: 250 },
-  { id: 'rw-m8', tier: 'medium', emoji: '📚', img: '', name: '买一本想读的书', desc: '知识投资', cost: 150 },
-  // 大奖励（300–1000 分）温柔浅香芋紫色
-  { id: 'rw-l1', tier: 'large', emoji: '🏋️', img: '', name: '单次健身消费', desc: '运动焕新状态', cost: 400 },
-  { id: 'rw-l2', tier: 'large', emoji: '🚗', img: '', name: '短途出门游玩', desc: '短途散心出行', cost: 700 },
-  { id: 'rw-l3', tier: 'large', emoji: '🧵', img: '', name: '手工 DIY 体验', desc: '动手创作乐趣', cost: 550 },
-  { id: 'rw-l4', tier: 'large', emoji: '💍', img: '', name: '配饰选购', desc: '穿搭小点缀', cost: 800 },
-  // 超大奖励（1000–3000 分）暖橘浅橙色
-  { id: 'rw-x1', tier: 'xlarge', emoji: '👗', img: '', name: '心仪已久的一件衣服', desc: '穿搭大额犒赏', cost: 1500 },
-  { id: 'rw-x2', tier: 'xlarge', emoji: '🛋️', img: '', name: '心仪已久的家具', desc: '居家品质升级', cost: 2200 },
-  { id: 'rw-x3', tier: 'xlarge', emoji: '🎁', img: '', name: '心仪已久的一件好物', desc: '大额犒赏', cost: 1500 }
+  // 小奖励（0–1000 分）柔和浅暖米色 / 淡奶咖色
+  { id: 'rw-s1', tier: 'small', emoji: '🍰', img: '', name: '甜品', desc: '甜一下', cost: 600 },
+  { id: 'rw-s2', tier: 'small', emoji: '🧋', img: '', name: '一杯奶茶', desc: '日常小犒赏', cost: 500 },
+  { id: 'rw-s3', tier: 'small', emoji: '🍿', img: '', name: '零食', desc: '解馋小快乐', cost: 400 },
+  { id: 'rw-s4', tier: 'small', emoji: '🍓', img: '', name: '新鲜水果', desc: '健康小补给', cost: 450 },
+  // 中奖励（1000–3000 分）清新浅豆绿色
+  { id: 'rw-m1', tier: 'medium', emoji: '🎬', img: '', name: '看一场影院电影', desc: '影院大屏观影', cost: 2000 },
+  { id: 'rw-m2', tier: 'medium', emoji: '🤖', img: '', name: 'AI 动漫观影', desc: '沉浸式追番', cost: 1200 },
+  { id: 'rw-m3', tier: 'medium', emoji: '📺', img: '', name: '综艺畅看', desc: '休闲放松时刻', cost: 1300 },
+  { id: 'rw-m4', tier: 'medium', emoji: '📖', img: '', name: '小说会员', desc: '随心看网文', cost: 1600 },
+  { id: 'rw-m5', tier: 'medium', emoji: '🎞️', img: '', name: '影视会员', desc: '海量剧集随心刷', cost: 1800 },
+  { id: 'rw-m6', tier: 'medium', emoji: '🏬', img: '', name: '商场观影', desc: '商圈影院体验', cost: 2200 },
+  { id: 'rw-m7', tier: 'medium', emoji: '🥡', img: '', name: '点外卖', desc: '省心干饭自由', cost: 2500 },
+  { id: 'rw-m8', tier: 'medium', emoji: '📚', img: '', name: '买一本想读的书', desc: '知识投资', cost: 1500 },
+  // 大奖励（3000–10000 分）温柔浅香芋紫色
+  { id: 'rw-l1', tier: 'large', emoji: '🏋️', img: '', name: '单次健身消费', desc: '运动焕新状态', cost: 4000 },
+  { id: 'rw-l2', tier: 'large', emoji: '🚗', img: '', name: '短途出门游玩', desc: '短途散心出行', cost: 7000 },
+  { id: 'rw-l3', tier: 'large', emoji: '🧵', img: '', name: '手工 DIY 体验', desc: '动手创作乐趣', cost: 5500 },
+  { id: 'rw-l4', tier: 'large', emoji: '💍', img: '', name: '配饰选购', desc: '穿搭小点缀', cost: 8000 },
+  // 超大奖励（10000–30000 分）暖橘浅橙色
+  { id: 'rw-x1', tier: 'xlarge', emoji: '👗', img: '', name: '心仪已久的一件衣服', desc: '穿搭大额犒赏', cost: 15000 },
+  { id: 'rw-x2', tier: 'xlarge', emoji: '🛋️', img: '', name: '心仪已久的家具', desc: '居家品质升级', cost: 22000 },
+  { id: 'rw-x3', tier: 'xlarge', emoji: '🎁', img: '', name: '心仪已久的一件好物', desc: '大额犒赏', cost: 15000 }
 ];
 
 const REWARD_TIERS = [
-  { key: 'small', name: '小奖励', icon: 'flower', min: 0, max: 100, bg: '#FDF6ED', border: '#F3E8DA', text: '#A68B6F' },
-  { key: 'medium', name: '中奖励', icon: 'star', min: 100, max: 300, bg: '#F0F7EB', border: '#DDEED5', text: '#6E9A5E' },
-  { key: 'large', name: '大奖励', icon: 'crown', min: 300, max: 1000, bg: '#F2EFF9', border: '#E6E0F3', text: '#8F7DB8' },
-  { key: 'xlarge', name: '超大奖励', icon: 'sparkle', min: 1000, max: 3000, bg: '#FFF4EB', border: '#F9E3CF', text: '#D99861' }
+  { key: 'small', name: '小奖励', icon: 'flower', min: 0, max: 1000, bg: '#FDF6ED', border: '#F3E8DA', text: '#A68B6F' },
+  { key: 'medium', name: '中奖励', icon: 'star', min: 1000, max: 3000, bg: '#F0F7EB', border: '#DDEED5', text: '#6E9A5E' },
+  { key: 'large', name: '大奖励', icon: 'crown', min: 3000, max: 10000, bg: '#F2EFF9', border: '#E6E0F3', text: '#8F7DB8' },
+  { key: 'xlarge', name: '超大奖励', icon: 'sparkle', min: 10000, max: 30000, bg: '#FFF4EB', border: '#F9E3CF', text: '#D99861' }
 ];
 
 function rewardTierByCost(cost) {
   const c = Number(cost) || 0;
-  if (c >= 1000) return 'xlarge';
-  if (c >= 300) return 'large';
-  if (c >= 100) return 'medium';
+  if (c >= 10000) return 'xlarge';
+  if (c >= 3000) return 'large';
+  if (c >= 1000) return 'medium';
   return 'small';
 }
 function rewardTierMeta(key) { return REWARD_TIERS.find(t => t.key === key) || REWARD_TIERS[0]; }
@@ -554,7 +554,7 @@ const DEFAULT_ACHIEVEMENTS = [
   { id: 'ac-6', icon: 'meditate', name: '心流达人', desc: '累计专注 600 分钟', type: 'focus', need: 600 },
   { id: 'ac-7', icon: 'gem', name: '积分百分', desc: '累计获得 100 积分', type: 'points', need: 100 },
   { id: 'ac-8', icon: 'crown', name: '积分千分', desc: '累计获得 1000 积分', type: 'points', need: 1000 },
-  { id: 'ac-9', icon: 'review', name: '复盘习惯', desc: '完成 7 次每日复盘', type: 'review', need: 7 },
+  { id: 'ac-9', icon: 'review', name: '复盘习惯', desc: '完成 7 次每日计划', type: 'review', need: 7 },
   { id: 'ac-10', icon: 'mic', name: '开口说话', desc: '完成 3 次语音复盘', type: 'voice', need: 3 },
   { id: 'ac-11', icon: 'muscle', name: '运动起步', desc: '累计运动 300 分钟', type: 'exercise', need: 300 },
   { id: 'ac-12', icon: 'gift', name: '第一次兑换', desc: '兑换任意一个奖励', type: 'redeem', need: 1 }
@@ -970,7 +970,8 @@ function resetRewardsDefaults() {
   const redeemed = (state.rewards && Array.isArray(state.rewards.redeemed)) ? state.rewards.redeemed : [];
   state.rewards = {
     items: JSON.parse(JSON.stringify(DEFAULT_REWARDS)),
-    redeemed
+    redeemed,
+    version: 1
   };
   saveRewards();
 }
@@ -1019,9 +1020,16 @@ function saveVoiceReviews() { saveJSON('xenos-voice-reviews', state.voiceReviews
 function loadRewards() {
   const r = loadJSON('xenos-rewards', null);
   if (!r || !Array.isArray(r.items)) {
-    return { items: JSON.parse(JSON.stringify(DEFAULT_REWARDS)), redeemed: [] };
+    return { items: JSON.parse(JSON.stringify(DEFAULT_REWARDS)), redeemed: [], version: 1 };
   }
-  return { items: r.items, redeemed: Array.isArray(r.redeemed) ? r.redeemed : [] };
+  // v9151：奖励兑换积分统一 ×10
+  if (!r.version || r.version < 1) {
+    r.items.forEach(item => { item.cost = Math.round((item.cost || 0) * 10); });
+    (r.redeemed || []).forEach(x => { x.cost = Math.round((x.cost || 0) * 10); });
+    r.version = 1;
+    saveJSON('xenos-rewards', r);
+  }
+  return { items: r.items, redeemed: Array.isArray(r.redeemed) ? r.redeemed : [], version: 1 };
 }
 function saveRewards() { saveJSON('xenos-rewards', state.rewards); }
 
@@ -2635,7 +2643,7 @@ function updateBackBtn() {
 // 页面路由表：菜单项名称 -> 渲染函数
 const PAGE_ROUTES = {
   '工作台首页': renderOverview,
-  '每日复盘': renderDailyReview,
+  '每日计划': renderDailyReview,
   '本周洞察': renderInsightPage,
   '语音复盘': renderVoiceReview,
   '奖励池': renderRewards,
@@ -6166,7 +6174,7 @@ function toggleDomainTask(key, taskId) {
   renderContent();
 }
 
-// ============ 每日复盘 ============
+// ============ 每日计划 ============
 function getReview(dateKey) {
   if (!state.dailyReviews[dateKey]) {
     state.dailyReviews[dateKey] = { ...DEFAULT_DAILY_REVIEW };
@@ -6204,15 +6212,15 @@ function renderDailyReview() {
       <div class="review-stat" data-jump="本周洞察"><div class="rs-val">${calcStreak()}</div><div class="rs-label">连续天数</div></div>
     </div>
 
+    <div id="review-plan-mount"></div>
+
     <div class="soft-card">
       <div class="soft-card-title">${icon('note', 16)} 反思与规划</div>
       <textarea class="soft-textarea" id="rv-reflection" placeholder="今天做得好的三件事 / 可以改进的一件事 / 明天最重要的一件事...">${escapeHTML(review.reflection || '')}</textarea>
       <div class="focus-actions" style="margin-top:10px;">
-        <button class="gold-btn" id="rv-save">保存复盘</button>
+        <button class="gold-btn" id="rv-save">保存</button>
       </div>
     </div>
-
-    <div id="review-plan-mount"></div>
   `;
   content.appendChild(page);
 
@@ -6755,7 +6763,7 @@ function renderSystemPanel() {
   page.className = 'page';
 
   const cells = [
-    { name: '每日复盘', icon: 'review', meta: `${getReviewCount()} 次`, target: '每日复盘' },
+    { name: '每日计划', icon: 'review', meta: `${getReviewCount()} 次`, target: '每日计划' },
     { name: '本周洞察', icon: 'chart', meta: `Lv.${lv.level}`, target: '本周洞察' },
     { name: '语音复盘', icon: 'mic', meta: `${state.voiceReviews.length} 条`, target: '语音复盘' },
     { name: '奖励池', icon: 'rewards', meta: `${getAvailablePoints()} 分可用`, target: '奖励池' },
@@ -9258,7 +9266,7 @@ function renderSettingsPage() {
     <div class="section-card" id="me-focus-card" hidden style="margin-top:14px;">
       <div class="soft-card-title">⏰ 提醒与专注</div>
       <div class="setting-row"><div class="setting-label">专注提醒<small>开始专注时通知</small></div><span class="switch-on">已开启</span></div>
-      <div class="setting-row"><div class="setting-label">每日复盘提醒<small>晚间固定提醒</small></div><span class="setting-val">21:00</span></div>
+      <div class="setting-row"><div class="setting-label">每日计划提醒<small>晚间固定提醒</small></div><span class="setting-val">21:00</span></div>
       <div class="setting-row"><div class="setting-label">习惯打卡提醒<small>每日打卡</small></div><span class="switch-on">已开启</span></div>
       <div class="setting-row"><div class="setting-label">专注默认时长</div>
         <div class="focus-presets" style="justify-content:flex-start;">
