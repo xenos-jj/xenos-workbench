@@ -42,6 +42,198 @@ const DEFAULT_ENGLISH_CHECKIN = {
   history: {} // { '2026-08-17': { mode, restDay, tasks:{words:{done,note},...}, weekly:{wordReview:{done,note},...}, note } }
 };
 
+// ---------- 本周洞察：可选数据模块（新增板块时在此扩展） ----------
+// 仅选用工作台已存在的板块；新增板块后在此追加一项即可自动出现在 DIY 选项中。
+const INSIGHT_MODULES = [
+  {
+    id: 'focus',
+    name: '专注',
+    icon: 'clock',
+    color: '#8FA3C7',
+    bg: '#EDF1F8',
+    metricName: '累计专注时长',
+    metricUnit: 'min',
+    avgName: '日均专注',
+    avgUnit: 'min',
+    compute(weekStart) {
+      const daily = [], dailyItems = [], levels = [];
+      let items = 0, metric = 0;
+      for (let i = 0; i < 7; i++) {
+        const d = shiftDate(weekStart, i);
+        const min = getFocusMinutes(d);
+        daily.push(min); metric += min;
+        const sessions = state.focusSessions.filter(x => x.date === d).length;
+        dailyItems.push(sessions); items += sessions;
+        levels.push(min <= 0 ? 0 : min < 30 ? 1 : min < 90 ? 2 : 3);
+      }
+      return { daily, dailyItems, levels, items, metric };
+    }
+  },
+  {
+    id: 'health',
+    name: '健康',
+    icon: 'health',
+    color: '#A0BB7A',
+    bg: '#F1F6E9',
+    metricName: '累计运动时长',
+    metricUnit: 'min',
+    avgName: '日均运动',
+    avgUnit: 'min',
+    compute(weekStart) {
+      const daily = [], dailyItems = [], levels = [];
+      let items = 0, metric = 0;
+      for (let i = 0; i < 7; i++) {
+        const d = shiftDate(weekStart, i);
+        const list = state.exerciseLogs[d] || [];
+        const min = list.filter(e => e.done).reduce((a, e) => a + (Number(e.duration) || 0), 0);
+        daily.push(min); metric += min;
+        const di = list.filter(e => e.done).length
+          + ((state.dietLogs[d] || []).length ? 1 : 0)
+          + ((state.domains.health && Number(state.domains.health.log[d]) > 0) ? 1 : 0);
+        dailyItems.push(di); items += di;
+        levels.push(di === 0 ? 0 : di === 1 ? 1 : di === 2 ? 2 : 3);
+      }
+      return { daily, dailyItems, levels, items, metric };
+    }
+  },
+  {
+    id: 'looks',
+    name: '外貌',
+    icon: 'sparkles',
+    color: '#D6A6C7',
+    bg: '#F8EEF4',
+    metricName: '累计完成',
+    metricUnit: '项',
+    avgName: '日均完成',
+    avgUnit: '项',
+    compute(weekStart) {
+      const daily = [], dailyItems = [], levels = [];
+      let items = 0, metric = 0;
+      const dom = state.domains.looks;
+      for (let i = 0; i < 7; i++) {
+        const d = shiftDate(weekStart, i);
+        let di = 0;
+        if (dom && Array.isArray(dom.tasks)) di = dom.tasks.filter(t => t.done && t.doneDate === d).length;
+        if (dom && Number(dom.log[d]) > 0) di += 1;
+        daily.push(di); metric += di;
+        dailyItems.push(di); items += di;
+        levels.push(di === 0 ? 0 : di === 1 ? 1 : di === 2 ? 2 : 3);
+      }
+      return { daily, dailyItems, levels, items, metric };
+    }
+  },
+  {
+    id: 'money',
+    name: '记账',
+    icon: 'coins',
+    color: '#F4B75B',
+    bg: '#FFF4E3',
+    metricName: '累计支出',
+    metricUnit: '元',
+    avgName: '日均支出',
+    avgUnit: '元',
+    compute(weekStart) {
+      const daily = [], dailyItems = [], levels = [];
+      let items = 0, metric = 0;
+      for (let i = 0; i < 7; i++) {
+        const d = shiftDate(weekStart, i);
+        const dayTx = state.transactions.filter(t => t.date === d && t.type === 'expense');
+        const amount = dayTx.reduce((a, t) => a + (Number(t.amount) || 0), 0);
+        daily.push(Math.round(amount)); metric += amount;
+        const di = dayTx.length;
+        dailyItems.push(di); items += di;
+        levels.push(amount <= 0 ? 0 : amount < 60 ? 1 : amount < 200 ? 2 : 3);
+      }
+      return { daily, dailyItems, levels, items, metric };
+    }
+  },
+  {
+    id: 'learning',
+    name: '学习成长',
+    icon: 'bookOpen',
+    color: '#A99BD6',
+    bg: '#F3F0FA',
+    metricName: '累计专注时长',
+    metricUnit: 'min',
+    avgName: '日均专注',
+    avgUnit: 'min',
+    compute(weekStart) {
+      const daily = [], dailyItems = [], levels = [];
+      let items = 0, metric = 0;
+      for (let i = 0; i < 7; i++) {
+        const d = shiftDate(weekStart, i);
+        const min = getFocusMinutesByDomain(d, 'learning');
+        daily.push(min); metric += min;
+        const eng = (state.englishCheckin.history || {})[d];
+        let di = state.focusSessions.filter(x => x.date === d && x.domain === 'learning').length;
+        if (eng) {
+          di += Object.values(eng.tasks || {}).filter(t => t && t.done).length;
+          di += Object.values(eng.weekly || {}).filter(t => t && t.done).length;
+        }
+        dailyItems.push(di); items += di;
+        levels.push(di === 0 ? 0 : di <= 2 ? 1 : di <= 4 ? 2 : 3);
+      }
+      return { daily, dailyItems, levels, items, metric };
+    }
+  },
+  {
+    id: 'review',
+    name: '每日复盘',
+    icon: 'review',
+    color: '#7FB0A0',
+    bg: '#EAF4F1',
+    metricName: '累计复盘',
+    metricUnit: '篇',
+    avgName: '日均复盘',
+    avgUnit: '篇',
+    compute(weekStart) {
+      const daily = [], dailyItems = [], levels = [];
+      let items = 0, metric = 0;
+      for (let i = 0; i < 7; i++) {
+        const d = shiftDate(weekStart, i);
+        const rev = state.dailyReviews[d];
+        const done = !!(rev && (rev.reflection || '').trim());
+        const di = done ? 1 : 0;
+        daily.push(di); metric += di;
+        dailyItems.push(di); items += di;
+        levels.push(di === 0 ? 0 : 1);
+      }
+      return { daily, dailyItems, levels, items, metric };
+    }
+  }
+];
+
+let insightWeekOffset = 0;
+
+function getWeekStart(offsetWeeks = 0) {
+  const dow = (new Date().getDay() + 6) % 7;
+  return shiftDate(getTodayKey(), -dow + offsetWeeks * 7);
+}
+
+function getInsightModules() {
+  return loadJSON('xenos-insight-modules', INSIGHT_MODULES.map(m => m.id));
+}
+function saveInsightModules(ids) {
+  saveJSON('xenos-insight-modules', ids);
+}
+
+function computeInsightStats(module, weekStart) {
+  const cur = module.compute(weekStart);
+  const prev = module.compute(shiftDate(weekStart, -7));
+  return {
+    id: module.id, name: module.name, icon: module.icon, color: module.color, bg: module.bg,
+    metricName: module.metricName, metricUnit: module.metricUnit,
+    avgName: module.avgName, avgUnit: module.avgUnit,
+    daily: cur.daily, dailyItems: cur.dailyItems, levels: cur.levels,
+    items: cur.items, itemsLast: prev.items,
+    metric: cur.metric, metricLast: prev.metric,
+    avg: Math.round(cur.metric / 7),
+    avgLast: Math.round(prev.metric / 7),
+    weekStart
+  };
+}
+
+
 const DEFAULT_ASSET_ACCOUNTS = [
   { id: 'balance', name: '余额', amount: 0 },
   { id: 'secret', name: '悄悄攒', amount: 0 },
@@ -165,7 +357,7 @@ const DEFAULT_GROUPS = [
       { id: 'i-home', name: '工作台首页', icon: 'home' },
       { id: 'i-review', name: '每日复盘', icon: 'review', todo: true },
       { id: 'i-money', name: '记账', icon: 'coins' },
-      { id: 'i-insight', name: '数据洞察', icon: 'insight' },
+      { id: 'i-insight', name: '本周洞察', icon: 'insight' },
       { id: 'i-branches', name: '我的支线', icon: 'layers' }
     ]
   },
@@ -2406,7 +2598,7 @@ function selectItem(name, skipHistory = false) {
 
 // 底部导航高亮联动
 function updateBottomNav() {
-  const map = { '工作台首页': 'home', '我的支线': 'branches', '数据洞察': 'insight', '自我介绍': 'mine' };
+  const map = { '工作台首页': 'home', '我的支线': 'branches', '本周洞察': 'insight', '自我介绍': 'mine' };
   const active = map[state.activeItem];
   document.querySelectorAll('#bottom-nav .bn-item').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.bn === active);
@@ -2421,7 +2613,7 @@ function bindBottomNav() {
     btn.addEventListener('click', () => {
       const key = btn.dataset.bn;
       if (key === 'plus') { openFocusModal(); return; }
-      const target = { home: '工作台首页', branches: '我的支线', insight: '数据洞察', mine: '自我介绍' }[key];
+      const target = { home: '工作台首页', branches: '我的支线', insight: '本周洞察', mine: '自我介绍' }[key];
       if (target) selectItem(target);
     });
   });
@@ -2444,7 +2636,7 @@ function updateBackBtn() {
 const PAGE_ROUTES = {
   '工作台首页': renderOverview,
   '每日复盘': renderDailyReview,
-  '数据洞察': renderInsightPage,
+  '本周洞察': renderInsightPage,
   '语音复盘': renderVoiceReview,
   '奖励池': renderRewards,
   '成就殿堂': renderAchievements,
@@ -6007,9 +6199,9 @@ function renderDailyReview() {
 
     <div class="review-stats">
       <div class="review-stat" data-jump="每日计划"><div class="rs-val">${isToday ? prog.done : '-'}</div><div class="rs-label">完成任务</div></div>
-      <div class="review-stat" data-jump="数据洞察"><div class="rs-val">${focusMin}</div><div class="rs-label">专注分钟</div></div>
+      <div class="review-stat" data-jump="本周洞察"><div class="rs-val">${focusMin}</div><div class="rs-label">专注分钟</div></div>
       <div class="review-stat" data-jump="成就殿堂"><div class="rs-val gold">${dayPoints}</div><div class="rs-label">当日积分</div></div>
-      <div class="review-stat" data-jump="数据洞察"><div class="rs-val">${calcStreak()}</div><div class="rs-label">连续天数</div></div>
+      <div class="review-stat" data-jump="本周洞察"><div class="rs-val">${calcStreak()}</div><div class="rs-label">连续天数</div></div>
     </div>
 
     <div class="soft-card">
@@ -6088,7 +6280,7 @@ function renderDailyReviewInsight() {
   `;
 }
 
-// ============ 数据洞察 ============
+// ============ 本周洞察 ============
 function renderInsights() {
   const page = document.createElement('div');
   page.className = 'page';
@@ -6564,7 +6756,7 @@ function renderSystemPanel() {
 
   const cells = [
     { name: '每日复盘', icon: 'review', meta: `${getReviewCount()} 次`, target: '每日复盘' },
-    { name: '数据洞察', icon: 'chart', meta: `Lv.${lv.level}`, target: '数据洞察' },
+    { name: '本周洞察', icon: 'chart', meta: `Lv.${lv.level}`, target: '本周洞察' },
     { name: '语音复盘', icon: 'mic', meta: `${state.voiceReviews.length} 条`, target: '语音复盘' },
     { name: '奖励池', icon: 'rewards', meta: `${getAvailablePoints()} 分可用`, target: '奖励池' },
     { name: '成就殿堂', icon: 'trophy', meta: `${DEFAULT_ACHIEVEMENTS.filter(a => state.achievements[a.id]).length} 枚徽章`, target: '成就殿堂' },
@@ -7908,6 +8100,31 @@ function dualLineChart(valuesA, colorA, valuesB, colorB) {
   </svg>`;
 }
 
+function weeklyLineChart(values, color, unit) {
+  const w = 320, h = 140;
+  const pad = { t: 18, r: 12, b: 22, l: 26 };
+  const cw = w - pad.l - pad.r, ch = h - pad.t - pad.b;
+  const days = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+  const nums = values.map(v => Number(v) || 0);
+  const maxVal = Math.max(1, ...nums);
+  let niceMax = 1;
+  const cand = [1, 2, 5, 10, 20, 30, 50, 100, 200, 300, 500, 1000, 2000, 3000, 5000, 10000, 20000, 50000];
+  for (const c of cand) { if (maxVal <= c) { niceMax = c; break; } niceMax = c; }
+  const y = v => pad.t + ch - (Math.max(0, Math.min(niceMax, v || 0)) / niceMax) * ch;
+  const x = i => pad.l + (i / (nums.length - 1)) * cw;
+  let grid = '';
+  for (let i = 0; i <= 4; i++) {
+    const gy = pad.t + (i / 4) * ch;
+    grid += '<line x1="' + pad.l + '" y1="' + gy.toFixed(1) + '" x2="' + (pad.l + cw) + '" y2="' + gy.toFixed(1) + '" stroke="#F5EDE5" stroke-width="0.8"></line>';
+  }
+  const yLabels = [0, niceMax / 2, niceMax].map(v => '<text x="' + (pad.l - 4) + '" y="' + (pad.t + ch - (v / niceMax) * ch).toFixed(1) + '" fill="#B8A99A" font-size="8" text-anchor="end" dominant-baseline="middle">' + Math.round(v) + '</text>').join('');
+  const pts = nums.map((v, i) => x(i).toFixed(1) + ',' + y(v).toFixed(1)).join(' ');
+  const dots = nums.map((v, i) => '<circle cx="' + x(i).toFixed(1) + '" cy="' + y(v).toFixed(1) + '" r="2.2" fill="' + color + '" stroke="#fff" stroke-width="1"></circle>').join('');
+  const valLabels = nums.map((v, i) => '<text x="' + x(i).toFixed(1) + '" y="' + (y(v) - 6).toFixed(1) + '" fill="' + color + '" font-size="7.5" text-anchor="middle" font-weight="600">' + Math.round(v) + '</text>').join('');
+  const xLabels = days.map((d, i) => '<text x="' + x(i).toFixed(1) + '" y="' + (h - 7).toFixed(1) + '" fill="#A99A8A" font-size="8" text-anchor="middle">' + d + '</text>').join('');
+  return '<svg class="insp-trend-chart" viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="xMidYMid meet">' + grid + yLabels + '<polyline points="' + pts + '" fill="none" stroke="' + color + '" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"></polyline>' + dots + valLabels + xLabels + '</svg>';
+}
+
 function branchProgress(keywords) {
   const rel = state.plans.filter(p => keywords.some(k => p.text.includes(k)));
   if (!rel.length) return 0;
@@ -9052,7 +9269,7 @@ function renderSettingsPage() {
 
     <div class="section-card" id="me-privacy-card" hidden style="margin-top:14px;">
       <div class="soft-card-title">🔒 数据与隐私</div>
-      <div class="setting-row"><div class="setting-label">数据统计<small>查看本地数据概览</small></div><button class="ghost-btn" data-go="数据洞察">查看</button></div>
+      <div class="setting-row"><div class="setting-label">数据统计<small>查看本地数据概览</small></div><button class="ghost-btn" data-go="本周洞察">查看</button></div>
       <div class="setting-row"><div class="setting-label">隐私设置<small>控制数据共享</small></div><button class="ghost-btn" id="me-privacy-set">设置</button></div>
       <div class="setting-row"><div class="setting-label">账号安全<small>备份与恢复</small></div><button class="ghost-btn" id="me-account">管理</button></div>
       <div class="setting-row"><div class="setting-label">导出全部数据<small>生成 JSON 备份文件</small></div><button class="ghost-btn" id="me-export">导出</button></div>
@@ -9119,156 +9336,162 @@ function renderSettingsPage() {
 }
 
 // ============ 本周洞察（Screenshot 5） ============
+function openInsightSheet(title, body) {
+  closeInsightSheet();
+  const overlay = document.createElement('div');
+  overlay.className = 'insp-sheet-overlay';
+  overlay.innerHTML = '<div class="insp-sheet"><div class="insp-sheet-head"><span class="insp-sheet-title">' + title + '</span><button class="insp-sheet-close" aria-label="关闭">' + icon('close', 16) + '</button></div><div class="insp-sheet-body">' + body + '</div></div>';
+  document.body.appendChild(overlay);
+  overlay.addEventListener('click', e => { if (e.target === overlay) closeInsightSheet(); });
+  overlay.querySelector('.insp-sheet-close').addEventListener('click', closeInsightSheet);
+}
+function closeInsightSheet() {
+  const o = document.querySelector('.insp-sheet-overlay');
+  if (o) o.remove();
+}
+
+function fmtMetric(v, unit) {
+  const n = Math.round(Number(v) || 0);
+  return unit ? (n + ' ' + unit) : ('' + n);
+}
+function deltaBadge(cur, last, unit) {
+  const diff = (Number(cur) || 0) - (Number(last) || 0);
+  const abs = Math.round(Math.abs(diff));
+  if (diff > 0) return '<span class="insp-delta up">▲' + abs + '</span>';
+  if (diff < 0) return '<span class="insp-delta down">▼' + abs + '</span>';
+  return '<span class="insp-delta flat">—</span>';
+}
+function barPct(v, arr) {
+  const mx = Math.max(1, ...arr.map(x => Number(x) || 0));
+  return Math.round((Number(v) || 0) / mx * 100);
+}
+
+function catCardHTML(s) {
+  return '<div class="insp-cat-card clickable-card" data-cat="' + s.id + '" style="--c:' + s.color + ';--cb:' + s.bg + '">'
+    + '<div class="insp-cat-head"><span class="insp-cat-ic" style="background:' + s.bg + ';color:' + s.color + '">' + icon(s.icon, 16) + '</span>'
+    + '<span class="insp-cat-name">' + s.name + '</span><span class="insp-cat-go">›</span></div>'
+    + '<div class="insp-cat-metrics">'
+    + '<div class="insp-cm"><div class="insp-cm-val">' + s.items + '<span class="insp-cm-unit">项</span></div><div class="insp-cm-label">完成总项 ' + deltaBadge(s.items, s.itemsLast, '项') + '</div></div>'
+    + '<div class="insp-cm"><div class="insp-cm-val">' + Math.round(s.metric) + '<span class="insp-cm-unit">' + s.metricUnit + '</span></div><div class="insp-cm-label">' + s.metricName + ' ' + deltaBadge(s.metric, s.metricLast, s.metricUnit) + '</div></div>'
+    + '<div class="insp-cm"><div class="insp-cm-val">' + s.avg + '<span class="insp-cm-unit">' + s.avgUnit + '</span></div><div class="insp-cm-label">' + s.avgName + '</div></div>'
+    + '</div></div>';
+}
+
+function buildInsightSuggestions(stats) {
+  const out = [];
+  if (!stats.length) return [{ icon: '⚙️', text: '还没有选择任何模块，点右上角「自定义」勾选要追踪的板块，洞察会更有针对性～' }];
+  const focus = stats.find(s => s.id === 'focus');
+  if (focus) {
+    if (focus.metric < 120) out.push({ icon: '⏳', text: '本周专注总时长约 ' + Math.round(focus.metric) + ' 分钟，略短。试着每天留 25 分钟给最重要的那件事，一周就能凑出 175 分钟心流。' });
+    else out.push({ icon: '🔥', text: '本周专注 ' + Math.round(focus.metric) + ' 分钟，状态在线！保持这个节奏，重要的事会一件件被啃下来。' });
+  }
+  stats.forEach(s => {
+    if (s.items === 0) {
+      out.push({ icon: '🌱', text: '本周「' + s.name + '」还没有任何记录，去对应页面点个完成、打次卡，洞察数据就活起来了。' });
+    } else if (s.metricLast > 0 && s.metric < s.metricLast * 0.7) {
+      out.push({ icon: '📉', text: '「' + s.name + '」本周比上周回落了一些（' + Math.round(s.metric) + s.metricUnit + ' vs 上周 ' + Math.round(s.metricLast) + s.metricUnit + '），下周稍微加把劲就能追回来。' });
+    } else if (s.metricLast > 0 && s.metric > s.metricLast * 1.15) {
+      out.push({ icon: '📈', text: '「' + s.name + '」本周比上周更投入（' + Math.round(s.metric) + s.metricUnit + ' ↑），这个势头值得保持！' });
+    }
+  });
+  let activeDays = 0;
+  for (let i = 0; i < 7; i++) { if (stats.some(s => (s.dailyItems[i] > 0) || (s.daily[i] > 0))) activeDays++; }
+  if (activeDays <= 3) out.push({ icon: '🗓️', text: '本周只有 ' + activeDays + ' 天有记录，节奏偏散。把打卡拆成每天 1–2 件小事，连续性比强度更重要。' });
+  else if (activeDays === 7) out.push({ icon: '✨', text: '七天全勤！这种持续感是长期复利的关键，给自己点个赞 🐰。' });
+  if (!out.length) out.push({ icon: '🌟', text: '各项数据都比较平稳，继续保持就好。想再进一步，可以挑一个板块做小幅度增量。' });
+  return out.slice(0, 6);
+}
+
+function openWeekPicker() {
+  const opts = [];
+  for (let off = 0; off >= -8; off--) {
+    const ws = getWeekStart(off);
+    opts.push({ off, label: off === 0 ? '本周' : '往前第 ' + (-off) + ' 周', range: ws.slice(5) + ' ~ ' + shiftDate(ws, 6).slice(5) });
+  }
+  for (let off = 1; off <= 2; off++) {
+    const ws = getWeekStart(off);
+    opts.push({ off, label: '第 ' + off + ' 周后（未来）', range: ws.slice(5) + ' ~ ' + shiftDate(ws, 6).slice(5) });
+  }
+  const body = '<div class="insp-opt-list">' + opts.map(o => '<button class="insp-opt ' + (o.off === insightWeekOffset ? 'active' : '') + '" data-off="' + o.off + '"><span class="insp-opt-label">' + o.label + '</span><span class="insp-opt-range">' + o.range + '</span></button>').join('') + '</div>';
+  openInsightSheet('选择查看的周', body);
+  const overlay = document.querySelector('.insp-sheet-overlay');
+  overlay.querySelectorAll('.insp-opt').forEach(b => b.addEventListener('click', () => {
+    insightWeekOffset = parseInt(b.dataset.off, 10);
+    closeInsightSheet();
+    renderContent();
+  }));
+}
+
+function openInsightDIY() {
+  const sel = getInsightModules();
+  const body = '<p class="insp-diy-tip">勾选要展示的板块，未勾选的会自动隐藏。新增板块后会自动出现在这里。</p>'
+    + '<div class="insp-diy-list">' + INSIGHT_MODULES.map(m => '<label class="insp-diy-item" style="--c:' + m.color + '"><input type="checkbox" data-id="' + m.id + '" ' + (sel.includes(m.id) ? 'checked' : '') + '><span class="insp-diy-ic" style="background:' + m.bg + ';color:' + m.color + '">' + icon(m.icon, 15) + '</span><span class="insp-diy-name">' + m.name + '</span><span class="insp-diy-metric">' + m.metricName + '</span></label>').join('') + '</div>';
+  openInsightSheet('自定义模块', body);
+  const overlay = document.querySelector('.insp-sheet-overlay');
+  overlay.querySelectorAll('.insp-diy-item input').forEach(cb => cb.addEventListener('change', () => {
+    let cur = getInsightModules().filter(id => INSIGHT_MODULES.some(m => m.id === id));
+    if (cb.checked) { if (!cur.includes(cb.dataset.id)) cur.push(cb.dataset.id); }
+    else { const i = cur.indexOf(cb.dataset.id); if (i >= 0) cur.splice(i, 1); }
+    saveInsightModules(cur);
+    renderContent();
+  }));
+}
+
+function openInsightDetail(s) {
+  const weekdayLabels = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+  const dailyRows = weekdayLabels.map((d, i) => '<div class="insp-dt-row"><span class="insp-dt-day">' + d + '</span><span class="insp-dt-bar"><i style="width:' + barPct(s.daily[i], s.daily) + '%;background:' + s.color + '"></i></span><span class="insp-dt-val">' + fmtMetric(s.daily[i], s.metricUnit) + '</span><span class="insp-dt-items">' + s.dailyItems[i] + ' 项</span></div>').join('');
+  const body = '<div class="insp-dt-head"><span class="insp-dt-ic" style="background:' + s.bg + ';color:' + s.color + '">' + icon(s.icon, 18) + '</span><div><div class="insp-dt-name">' + s.name + ' · 本周详情</div><div class="insp-dt-sub">' + shiftDate(s.weekStart, 0).slice(5) + ' ~ ' + shiftDate(s.weekStart, 6).slice(5) + '</div></div></div>'
+    + '<div class="insp-dt-nums"><div><b>' + s.items + '</b><span>完成总项</span></div><div><b>' + Math.round(s.metric) + '</b><span>' + s.metricName + '</span></div><div><b>' + s.avg + '</b><span>' + s.avgName + '</span></div></div>'
+    + '<div class="insp-dt-cmp">较上周：完成 ' + deltaBadge(s.items, s.itemsLast, '项') + ' · ' + s.metricName + ' ' + deltaBadge(s.metric, s.metricLast, s.metricUnit) + '</div>'
+    + '<div class="insp-dt-chart">' + weeklyLineChart(s.daily, s.color, s.metricUnit) + '</div>'
+    + '<div class="insp-dt-list">' + dailyRows + '</div>'
+    + '<p class="insp-dt-tip">本页仅作数据展示，打卡与记录请回到对应的工作台页面完成。</p>';
+  openInsightSheet('', body);
+}
+
 function renderInsightPage() {
   const page = document.createElement('div');
   page.className = 'page';
   if (greetLine) greetLine.textContent = '本周洞察';
 
-  const planDone = state.plans.filter(p => p.done).length;
-
-  const now = new Date();
-  const dow = (now.getDay() + 6) % 7;
-  const monday = shiftDate(getTodayKey(), -dow);
-  const sunday = shiftDate(monday, 6);
-
-  let weekFocus = 0;
-  for (let i = 0; i < 7; i++) weekFocus += getFocusMinutes(shiftDate(monday, i));
-
-  // 趋势数据（睡眠 0-10h，学习完成率 0-100%）
-  const sleepTrend = [6.6, 7.1, 6.8, 7.6, 7.3, 7.8, 7.2];
-  const studyTrend = [];
-  for (let i = 0; i < 7; i++) {
-    const m = getFocusMinutes(shiftDate(monday, i));
-    studyTrend.push(Math.max(20, Math.min(100, Math.round(m / 120 * 100))));
-  }
-
+  const weekStart = getWeekStart(insightWeekOffset);
+  const sunday = shiftDate(weekStart, 6);
   const weekdayLabels = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
-  const habits = [
-    { name: '运动', icon: '👟', key: '运动' },
-    { name: '早睡', icon: '🌙', key: '早睡' },
-    { name: '学英语', icon: '📖', key: '学英语' },
-    { name: '习惯打卡', icon: '✅', key: '习惯打卡' }
-  ];
-  const heatDays = [];
-  for (let i = 0; i < 7; i++) heatDays.push(shiftDate(monday, i));
-  function heatLevel(day, habit) {
-    let h = 0; for (let i = 0; i < day.length; i++) h = (h * 31 + day.charCodeAt(i)) % 1000;
-    h = (h + habit.length * 7) % 100;
-    return h % 4;
-  }
+  const selected = getInsightModules().filter(id => INSIGHT_MODULES.some(m => m.id === id));
+  const modules = INSIGHT_MODULES.filter(m => selected.includes(m.id));
+  const stats = modules.map(m => computeInsightStats(m, weekStart));
+  const rangeText = weekStart.slice(5) + '（周一）~ ' + sunday.slice(5) + '（周日）';
 
-  const nextThree = state.plans.filter(p => !p.done).sort((a, b) => (b.points || 0) - (a.points || 0)).slice(0, 3);
+  page.innerHTML = '<div class="insp-page">'
+    + '<div class="insp-top">'
+    + '<div class="insp-top-left"><h2 class="insp-main-title">本周洞察 <span class="insp-title-spark">✨</span></h2>'
+    + '<button class="insp-week-btn" id="insp-week-btn">' + rangeText + '<span class="insp-date-arrow">▼</span></button></div>'
+    + '<div class="insp-top-right"><button class="insp-diy-btn" id="insp-diy-btn">'
+    + icon('list', 13) + ' 自定义</button><div class="insp-mascot-slot" title="吉祥物位置（预留）"></div></div>'
+    + '</div>'
 
-  page.innerHTML = `
-    <div class="insp-page">
-      <div class="insp-top">
-        <div class="insp-top-left">
-          <h2 class="insp-main-title">本周洞察 <span class="insp-title-spark">✨</span></h2>
-          <div class="insp-date-range">${monday.slice(5)}（周一）~ ${sunday.slice(5)}（周日）<span class="insp-date-arrow">▼</span></div>
-        </div>
-        <div class="insp-bunny-wrap">
-          <span class="insp-bunny">🐰</span>
-          <span class="insp-search">🔍</span>
-          <span class="insp-flower">🌼</span>
-        </div>
-      </div>
+    + '<div class="insp-cards-grid">' + (stats.length ? stats.map(catCardHTML).join('') : '<div class="insp-empty">还没有选择模块，点右上角「自定义」勾选要查看的板块～</div>') + '</div>'
 
-      <div class="insp-stats-row">
-        <div class="insp-stat-card clickable-card" data-click="stat-done">
-          <span class="insp-stat-badge bg-green">
-            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#5DAE6C" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6.5 9 17.5l-5-5"/></svg>
-          </span>
-          <div class="insp-stat-main"><b>${planDone}</b><span>项</span></div>
-          <div class="insp-stat-label">完成任务</div>
-          <div class="insp-stat-change">较上周 +4 ↑</div>
-        </div>
-        <div class="insp-stat-card clickable-card" data-click="stat-focus">
-          <span class="insp-stat-badge bg-orange">
-            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#E89F5C" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M12 3c1 3-2 4-2 7a2 2 0 0 0 4 0c0-1-.4-1.6-1-2 2 1 4 3 4 6a5 5 0 0 1-9.6-2A5 5 0 0 1 17 9c0-4.2-3.6-6-5-11z"/></svg>
-          </span>
-          <div class="insp-stat-main"><b>${(weekFocus / 60).toFixed(1)}</b><span>h</span></div>
-          <div class="insp-stat-label">专注时长</div>
-          <div class="insp-stat-change">较上周 +1.2 h ↑</div>
-        </div>
-        <div class="insp-stat-card clickable-card" data-click="stat-sleep">
-          <span class="insp-stat-badge bg-purple">
-            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#9C8AD0" stroke-width="2" stroke-linejoin="round"><path d="M20 14.5A8 8 0 1 1 9.5 4 6.5 6.5 0 0 0 20 14.5z"/></svg>
-          </span>
-          <div class="insp-stat-main"><b>7.2</b><span>h</span></div>
-          <div class="insp-stat-label">睡眠平均</div>
-          <div class="insp-stat-change">较上周 +0.4 h ↑</div>
-        </div>
-      </div>
+    + '<div class="insp-section"><div class="insp-section-head"><span class="insp-section-title"><span class="insp-sec-spark">✨</span> 每周数据变化</span><span class="insp-section-more">按天 · 7 日</span></div>'
+    + '<div class="insp-line-grid">' + (stats.length ? stats.map(s => '<div class="insp-line-card" style="--c:' + s.color + '"><div class="insp-line-head"><span class="insp-line-dot" style="background:' + s.color + '"></span>' + s.name + ' · ' + s.metricName + '</div><div class="insp-line-wrap">' + weeklyLineChart(s.daily, s.color, s.metricUnit) + '</div></div>').join('') : '<div class="insp-empty">勾选模块后这里展示每日变化折线</div>') + '</div></div>'
 
-      <div class="insp-section clickable-card" data-click="trend">
-        <div class="insp-section-head">
-          <span class="insp-section-title"><span class="insp-sec-spark">✨</span> 睡眠与学习趋势</span>
-          <span class="insp-section-more">按天查看 ▼</span>
-        </div>
-        <div class="insp-chart-wrap">
-          ${dualLineChart(sleepTrend, '#A99BD6', studyTrend, '#F5A962')}
-        </div>
-        <div class="insp-chart-legend">
-          <span><i class="lg-dot" style="background:#A99BD6"></i>睡眠时长（小时）</span>
-          <span><i class="lg-dot" style="background:#F5A962"></i>学习完成率（%）</span>
-        </div>
-      </div>
+    + '<div class="insp-section"><div class="insp-section-head"><span class="insp-section-title"><span class="insp-sec-heart">❤️</span> 习惯完成热力图</span><span class="insp-heat-legend"><i class="ht-low"></i><i class="ht-mid"></i><i class="ht-high"></i>完成度 低 → 高</span></div>'
+    + '<div class="insp-heatmap-wrap"><div class="insp-heatmap-grid insp-heat-grid2"><span></span><span></span>'
+    + weekdayLabels.map(l => '<span class="ih-day">' + l + '</span>').join('')
+    + (stats.length ? stats.map(s => '<span class="ih-icon" style="color:' + s.color + '">' + icon(s.icon, 12) + '</span><span class="ih-name">' + s.name + '</span>' + s.levels.map(lv => '<span class="ih-dot lvl' + lv + '"></span>').join('')).join('') : '<span class="ih-name" style="grid-column:1/-1;color:var(--text-muted);font-size:10px;padding:6px 0">勾选模块后展示对应完成度</span>')
+    + '</div></div></div>'
 
-      <div class="insp-section">
-        <div class="insp-section-head">
-          <span class="insp-section-title"><span class="insp-sec-heart">❤️</span> 习惯完成热力图</span>
-          <span class="insp-heat-legend"><i class="ht-low"></i><i class="ht-mid"></i><i class="ht-high"></i>完成率 低 → 高</span>
-        </div>
-        <div class="insp-heatmap-wrap clickable-card" data-click="heatmap">
-          <div class="insp-heatmap-grid">
-            <span></span><span></span>
-            ${weekdayLabels.map(l => `<span class="ih-day">${l}</span>`).join('')}
-            ${habits.map(h => `
-              <span class="ih-icon">${h.icon}</span>
-              <span class="ih-name">${h.name}</span>
-              ${heatDays.map(d => {
-                const lvl = heatLevel(d, h.key);
-                return `<span class="ih-dot lvl${lvl}"></span>`;
-              }).join('')}
-            `).join('')}
-          </div>
-        </div>
-      </div>
-
-      <div class="insp-section insp-priority-section">
-        <div class="insp-section-head">
-          <span class="insp-section-title"><span class="insp-sec-star">🌟</span> 下周优先 3 件事</span>
-        </div>
-        <ul class="insp-priority-list">
-          ${nextThree.length ? nextThree.map((p, i) => `
-            <li class="clickable-card" data-click="plan"><span class="insp-pri-num">${i + 1}</span>${escapeHTML(p.text)}</li>
-          `).join('') : `
-            <li class="clickable-card" data-click="plan"><span class="insp-pri-num">1</span>暂时没有待办，给自己放个小假 🐰</li>
-          `}
-        </ul>
-        <div class="insp-priority-foot">
-          <span class="insp-foot-bunny">🐰</span>
-          <span class="insp-foot-board">Plan</span>
-          <span class="insp-foot-flower">🌷</span>
-        </div>
-      </div>
-    </div>
-  `;
+    + '<div class="insp-section insp-suggest-section"><div class="insp-section-head"><span class="insp-section-title"><span class="insp-sec-star">🌟</span> 每周优化建议</span></div>'
+    + '<div class="insp-suggest-list">' + buildInsightSuggestions(stats).map(t => '<div class="insp-suggest-card"><span class="insp-suggest-ic">' + t.icon + '</span><p>' + t.text + '</p></div>').join('') + '</div></div>'
+    + '</div>';
   content.appendChild(page);
 
-  // 任务1：洞察页全模块可点击交互
-  const insightClickLabels = {
-    'stat-done': '完成任务',
-    'stat-focus': '专注时长',
-    'stat-sleep': '睡眠平均',
-    'trend': '睡眠与学习趋势',
-    'heatmap': '本周习惯打卡'
-  };
-  page.querySelectorAll('.clickable-card').forEach(el => {
-    const act = el.dataset.click;
+  page.querySelector('#insp-week-btn').addEventListener('click', openWeekPicker);
+  page.querySelector('#insp-diy-btn').addEventListener('click', openInsightDIY);
+  page.querySelectorAll('.insp-cat-card').forEach(el => {
     el.addEventListener('click', () => {
-      if (act === 'plan') { selectItem('我的支线'); return; }
-      toast('查看 ' + (insightClickLabels[act] || '详情'));
+      const st = stats.find(x => x.id === el.dataset.cat);
+      if (st) openInsightDetail(st);
     });
   });
 }
