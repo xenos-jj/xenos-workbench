@@ -2779,16 +2779,39 @@ function getPlanTag(text) {
 }
 
 function getPlanBadgeColor(tag) {
-  const colors = {
-    '运动': '#6CB99A',
-    '英语': '#E8A86B',
-    '睡眠': '#8FA4C7',
-    '生活': '#D6A6C7',
-    '健康': '#8FBFA9',
-    '阅读': '#9AABA3',
-    '日常': '#9AABA3'
+  const map = {
+    '运动': { color: '#5A9A7F', bg: '#EAF5F0', border: '#CFE5D4' },
+    '英语': { color: '#C47E3E', bg: '#FFF4E6', border: '#F9D7B4' },
+    '睡眠': { color: '#6B7FA3', bg: '#EDF1F8', border: '#D1DAE8' },
+    '生活': { color: '#B07A9E', bg: '#F8EEF4', border: '#EAD0E2' },
+    '健康': { color: '#6E8A69', bg: '#F1F6E9', border: '#CFE5D4' },
+    '阅读': { color: '#7A8F85', bg: '#F0F4F2', border: '#D1DDD7' },
+    '日常': { color: '#A99A8A', bg: '#F8F4EF', border: '#E8DDD1' }
   };
-  return colors[tag] || '#9AABA3';
+  return map[tag] || map['日常'];
+}
+
+function getPlansForDate(dateKey) {
+  if (dateKey === getTodayKey()) return state.plans;
+  const hist = state.planHistory[dateKey];
+  if (hist && hist.length) return hist;
+  // 无历史记录时，用当前计划模板作为默认（全部未完成），显示不再空白
+  return state.plans.map(p => ({ id: p.id, text: p.text, group: p.group, points: p.points, done: false }));
+}
+
+function ensurePlanHistory(dateKey) {
+  if (!state.planHistory[dateKey] || !state.planHistory[dateKey].length) {
+    state.planHistory[dateKey] = state.plans.map(p => ({ id: p.id, text: p.text, group: p.group, points: p.points, done: false }));
+  }
+}
+
+function togglePlanForDate(planId, dateKey) {
+  ensurePlanHistory(dateKey);
+  const item = state.planHistory[dateKey].find(p => p.id === planId);
+  if (!item) return false;
+  item.done = !item.done;
+  savePlanHistory();
+  return true;
 }
 
 function renderDailyPlan(host, embedded = false) {
@@ -2857,12 +2880,8 @@ function renderDailyPlan(host, embedded = false) {
     const openHistory = () => {
       const d = historyDate?.value;
       if (!d) return;
-      if (d === getTodayKey()) {
-        state.planDate = null;
-        renderContent();
-      } else {
-        renderPlanHistory(d);
-      }
+      state.reviewDate = d;
+      renderContent();
     };
     if (historyBtn) historyBtn.addEventListener('click', openHistory);
     if (historyDate) historyDate.addEventListener('change', openHistory);
@@ -2905,7 +2924,7 @@ function renderDailyPlan(host, embedded = false) {
 
   function renderPlanItemContent(li, plan) {
     const tag = getPlanTag(plan.text);
-    const tagColor = getPlanBadgeColor(tag);
+    const tagStyle = getPlanBadgeColor(tag);
     li.className = 'plan-item' + (plan.done ? ' done' : '');
     li.dataset.id = plan.id;
 
@@ -2924,7 +2943,7 @@ function renderDailyPlan(host, embedded = false) {
     } else {
       li.innerHTML = `
         <span class="plan-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
-        <span class="plan-tag" style="background:${tagColor}">${tag}</span>
+        <span class="plan-tag" style="color:${tagStyle.color};background:${tagStyle.bg};border-color:${tagStyle.border}">${tag}</span>
         <span class="plan-text">${plan.text}</span>
         <span class="plan-points">+${plan.points}</span>
         <span class="plan-item-actions">
@@ -3094,82 +3113,6 @@ function getWeeklyPlanInsight() {
   return insights;
 }
 
-function renderPlanHistory(dateKey) {
-  content.innerHTML = '';
-  const card = document.createElement('div');
-  card.className = 'content-card plan-card';
-  const plans = state.planHistory[dateKey] || [];
-  const doneCount = plans.filter(p => p.done).length;
-  const total = plans.length;
-  const percent = total ? Math.round((doneCount / total) * 100) : 0;
-  const earnedPoints = plans.filter(p => p.done).reduce((s, p) => s + (p.points || 0), 0);
-  const d = new Date(dateKey);
-  const weekdays = ['周日','周一','周二','周三','周四','周五','周六'];
-  const dateString = `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日 ${weekdays[d.getDay()]}`;
-
-  card.innerHTML = `
-    <div class="plan-overview">
-      <div class="plan-progress-circle">
-        <svg viewBox="0 0 80 80">
-          <circle class="pc-bg" cx="40" cy="40" r="34"></circle>
-          <circle class="pc-fg" cx="40" cy="40" r="34" style="stroke-dasharray: ${(2 * Math.PI * 34).toFixed(1)}; stroke-dashoffset: ${(2 * Math.PI * 34 * (1 - percent / 100)).toFixed(1)}"></circle>
-        </svg>
-        <div class="pc-text">${percent}<span>%</span></div>
-      </div>
-      <div class="plan-overview-info">
-        <h3 class="plan-title">历史计划</h3>
-        <p class="plan-desc">${dateString} 的完成情况</p>
-        <div class="plan-overview-stats">
-          <div class="pos-stat"><span class="pos-num">${doneCount}/${total}</span><span class="pos-label">已完成</span></div>
-          <div class="pos-stat"><span class="pos-num pos-points">+${earnedPoints}</span><span class="pos-label">当日积分</span></div>
-        </div>
-      </div>
-      <div class="plan-date">${dateString}</div>
-    </div>
-    <div id="plan-history-groups"></div>
-    <div class="plan-datebar" style="margin-top:12px;">
-      <button class="text-btn" id="plan-back-today">返回今日计划</button>
-    </div>
-  `;
-  content.appendChild(card);
-
-  const groupsWrap = card.querySelector('#plan-history-groups');
-  const groups = {};
-  plans.forEach(p => {
-    const g = p.group || '其他';
-    if (!groups[g]) groups[g] = [];
-    groups[g].push(p);
-  });
-  Object.keys(groups).forEach(g => {
-    const section = document.createElement('div');
-    section.className = 'plan-group-section';
-    section.innerHTML = `
-      <div class="plan-group-title"><span class="plan-group-name">${g}</span><span class="plan-group-count">${groups[g].filter(i => i.done).length}/${groups[g].length}</span></div>
-      <ul class="plan-list"></ul>
-    `;
-    const ul = section.querySelector('.plan-list');
-    groups[g].forEach(plan => {
-      const tag = getPlanTag(plan.text);
-      const tagColor = getPlanBadgeColor(tag);
-      const li = document.createElement('li');
-      li.className = 'plan-item' + (plan.done ? ' done' : '');
-      li.innerHTML = `
-        <span class="plan-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
-        <span class="plan-tag" style="background:${tagColor}">${tag}</span>
-        <span class="plan-text">${escapeHTML(plan.text)}</span>
-        <span class="plan-points">+${plan.points}</span>
-      `;
-      ul.appendChild(li);
-    });
-    groupsWrap.appendChild(section);
-  });
-
-  card.querySelector('#plan-back-today').addEventListener('click', () => {
-    state.planDate = null;
-    renderContent();
-  });
-}
-
 function renderHistoricalPlan(host, dateKey) {
   const card = document.createElement('div');
   card.className = 'content-card plan-card';
@@ -3231,7 +3174,7 @@ function renderHistoricalPlan(host, dateKey) {
       li.className = 'plan-item' + (plan.done ? ' done' : '');
       li.innerHTML = `
         <span class="plan-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
-        <span class="plan-tag" style="background:${tagColor}">${tag}</span>
+        <span class="plan-tag" style="color:${tagStyle.color};background:${tagStyle.bg};border-color:${tagStyle.border}">${tag}</span>
         <span class="plan-text">${escapeHTML(plan.text)}</span>
         <span class="plan-points">+${plan.points}</span>
       `;

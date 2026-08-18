@@ -865,10 +865,11 @@ button, input {
 .plan-tag {
   font-size: 9px; font-family: var(--font-small);
   font-weight: 600;
-  color: #fff;
-  background: var(--primary);
-  padding: 1px 6px;
-  border-radius: 4px;
+  color: var(--text-muted);
+  background: var(--bg-soft);
+  border: 1px solid var(--border);
+  padding: 1px 5px;
+  border-radius: 6px;
   flex-shrink: 0;
   line-height: 1.4;
 }
