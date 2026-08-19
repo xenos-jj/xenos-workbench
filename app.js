@@ -320,6 +320,7 @@ const ICONS = {
   timer: '<circle cx="12" cy="13" r="7"/><path d="M12 9v4l3 2"/><path d="M12 4V2"/><path d="M15 3H9"/>',
   meditate: '<path d="M12 5a3 3 0 1 0 0 6 3 3 0 1 0 0-6z"/><path d="M6 19c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M6 19h12"/>',
   gem: '<path d="M6 8l6-5 6 5-6 10-6-10z"/><path d="M6 8h12"/><path d="M9 8l3 10 3-10"/>',
+  crown: '<path d="M4 16l2-8 4 4 4-6 4 6 4-4 2 8H4z"/><path d="M5 19h14"/>',
   muscle: '<path d="M6 11c0-2 1.5-4 3.5-4s3.5 2 3.5 4"/><path d="M18 11c0-2-1.5-4-3.5-4s-3.5 2-3.5 4"/><path d="M9 16c2 1 4 1 6 0"/>',
   food: '<path d="M6 8h12"/><path d="M5 8c0 4 3 8 7 8s7-4 7-8"/><path d="M8 8v2M12 8v3M16 8v2"/>',
   card: '<rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 10h18"/><circle cx="7" cy="14" r="1" fill="currentColor"/><path d="M11 14h8"/>',
@@ -557,8 +558,7 @@ const DEFAULT_ACHIEVEMENTS = [
   { id: 'ac-7', icon: 'gem', name: '积分百分', desc: '累计获得 100 积分', type: 'points', need: 100 },
   { id: 'ac-8', icon: 'crown', name: '积分千分', desc: '累计获得 1000 积分', type: 'points', need: 1000 },
   { id: 'ac-9', icon: 'review', name: '复盘习惯', desc: '完成 7 次每日计划', type: 'review', need: 7 },
-  { id: 'ac-10', icon: 'mic', name: '开口说话', desc: '完成 3 次语音复盘', type: 'voice', need: 3 },
-  { id: 'ac-11', icon: 'muscle', name: '运动起步', desc: '累计运动 300 分钟', type: 'exercise', need: 300 },
+  { id: 'ac-10', icon: 'muscle', name: '运动起步', desc: '累计运动 300 分钟', type: 'exercise', need: 300 },
   { id: 'ac-12', icon: 'gift', name: '第一次兑换', desc: '兑换任意一个奖励', type: 'redeem', need: 1 }
 ];
 
@@ -859,8 +859,6 @@ const state = {
   dietLogs: loadDietLogs(),
   exerciseLogs: loadExerciseLogs(),
   workoutVideos: loadWorkoutVideos(),
-  dietView: 'overview',
-  dietRecordsDate: null,
   ingredients: loadIngredients(),
   ingredientLogs: loadIngredientLogs(),
   ingredientFilter: 'all',
@@ -882,7 +880,6 @@ const state = {
   // ---- 新模块 ----
   profile: loadProfile(),
   dailyReviews: loadDailyReviews(),
-  voiceReviews: loadVoiceReviews(),
   rewards: loadRewards(),
   achievements: loadAchievements(),
   contentItems: loadContentItems(),
@@ -1019,9 +1016,6 @@ function saveProfile() { saveJSON('xenos-profile', state.profile); }
 
 function loadDailyReviews() { return loadJSON('xenos-daily-reviews', {}); }
 function saveDailyReviews() { saveJSON('xenos-daily-reviews', state.dailyReviews); }
-
-function loadVoiceReviews() { return loadJSON('xenos-voice-reviews', []); }
-function saveVoiceReviews() { saveJSON('xenos-voice-reviews', state.voiceReviews); }
 
 function loadRewards() {
   const r = loadJSON('xenos-rewards', null);
@@ -2892,7 +2886,6 @@ const PAGE_ROUTES = {
   '工作台首页': renderOverview,
   '每日计划': renderDailyReview,
   '本周洞察': renderInsightPage,
-  '语音复盘': renderVoiceReview,
   '奖励池': renderRewards,
   '成就殿堂': renderAchievements,
   '系统面板': renderSystemPanel,
@@ -4700,10 +4693,6 @@ function renderMeasurements() {
 // ---------- Diet page ----------
 function renderDiet() {
   content.innerHTML = '';
-  if (state.dietView === 'records') {
-    renderDietRecords();
-    return;
-  }
   renderDietOverview();
 }
 
@@ -4792,7 +4781,7 @@ function renderDietOverview() {
   const card = document.createElement('div');
   card.className = 'content-card diet-card';
 
-  const { tdee, total, gap } = getDietTotals();
+  const { tdee, total, gap, base } = getDietTotals();
   const today = new Date();
   const weekdays = ['周日','周一','周二','周三','周四','周五','周六'];
   const dateString = `${today.getFullYear()}年${today.getMonth()+1}月${today.getDate()}日 ${weekdays[today.getDay()]}`;
@@ -4803,7 +4792,6 @@ function renderDietOverview() {
         <h3 class="page-title-main">饮食</h3>
         <p class="page-subtitle">${dateString}</p>
       </div>
-      <button class="text-btn diet-records-link" id="diet-records-link">饮食记录 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></button>
     </div>
 
     <div class="section-card diet-dashboard">
@@ -4825,24 +4813,24 @@ function renderDietOverview() {
       </div>
       <div class="meal-cards" id="meal-cards">
         <div class="meal-card" data-type="早餐">
-          <div class="meal-card-icon">🍳</div>
+          <div class="meal-card-icon">${icon('sunrise', 26)}</div>
           <div class="meal-card-name">早餐</div>
-          <button class="meal-card-add">+</button>
+          <button class="meal-card-add">${icon('plus', 12)}</button>
         </div>
         <div class="meal-card" data-type="午餐">
-          <div class="meal-card-icon">🍲</div>
+          <div class="meal-card-icon">${icon('utensils', 26)}</div>
           <div class="meal-card-name">午餐</div>
-          <button class="meal-card-add">+</button>
+          <button class="meal-card-add">${icon('plus', 12)}</button>
         </div>
         <div class="meal-card" data-type="晚餐">
-          <div class="meal-card-icon">🍕</div>
+          <div class="meal-card-icon">${icon('food', 26)}</div>
           <div class="meal-card-name">晚餐</div>
-          <button class="meal-card-add">+</button>
+          <button class="meal-card-add">${icon('plus', 12)}</button>
         </div>
       </div>
       <div class="meal-extra-actions">
-        <button class="text-btn" id="snack-btn">+ 加餐</button>
-        <button class="text-btn" id="photo-record-btn">📷 拍照录入</button>
+        <button class="text-btn" id="snack-btn">${icon('plus', 12)} 加餐</button>
+        <button class="text-btn" id="photo-record-btn">${icon('image', 14)} 拍照录入</button>
       </div>
       <input type="file" id="overview-photo" accept="image/*" capture="environment" hidden>
     </div>
@@ -4878,7 +4866,69 @@ function renderDietOverview() {
     <button class="text-btn diet-insight-link" id="diet-insight-link">查看每周食材统计 ›</button>
   `;
   content.appendChild(costCard);
-  costCard.querySelector('#diet-insight-link').addEventListener('click', () => selectItem('本周洞察'));
+  costCard.querySelector('#diet-insight-link').addEventListener('click', () => {
+    const el = document.getElementById('diet-weekly-stats');
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+
+  // ---- 饮食分析 ----
+  const anaCard = document.createElement('div');
+  anaCard.className = 'content-card section-card diet-analysis-card';
+  const todayLog = getTodayDiet();
+  const mealTypes = ['早餐', '午餐', '晚餐', '加餐'];
+  const mealTypeMeta = {
+    '早餐': { bg: 'var(--primary-light)', color: 'var(--gold)', icon: 'sunrise' },
+    '午餐': { bg: 'var(--green-light)', color: 'var(--green)', icon: 'utensils' },
+    '晚餐': { bg: 'var(--pink-light)', color: 'var(--pink)', icon: 'food' },
+    '加餐': { bg: 'var(--purple-light)', color: 'var(--purple)', icon: 'plus' }
+  };
+  const typeCalories = {};
+  todayLog.meals.forEach(m => {
+    const c = (m.items || []).reduce((s, it) => s + (Number(it.calories) || 0), 0);
+    typeCalories[m.type] = (typeCalories[m.type] || 0) + c;
+  });
+  const typeItemsHTML = mealTypes.map(type => {
+    const c = typeCalories[type] || 0;
+    const pct = total > 0 ? Math.round(c / total * 100) : 0;
+    const meta = mealTypeMeta[type];
+    return `<div class="da-type"><span class="da-type-icon" style="background:${meta.bg};color:${meta.color}">${icon(meta.icon, 14)}</span><span class="da-type-name">${type}</span><span class="da-type-bar"><i style="width:${pct}%;background:${meta.color}"></i></span><span class="da-type-val">${c} <small>kcal</small></span><span class="da-type-pct">${pct}%</span></div>`;
+  }).join('');
+
+  const weekDays = [];
+  for (let i = 6; i >= 0; i--) weekDays.push(shiftDate(getTodayKey(), -i));
+  const weekCalories = weekDays.map(d => {
+    const log = state.dietLogs[d];
+    if (!log) return 0;
+    return (log.meals || []).reduce((s, m) => s + (m.items || []).reduce((is, it) => is + (Number(it.calories) || 0), 0), 0);
+  });
+  const weekLabels = weekDays.map(d => {
+    const date = parseDateKey(d);
+    return (date.getMonth() + 1) + '/' + date.getDate();
+  });
+  const avg7 = Math.round(weekCalories.reduce((a, b) => a + b, 0) / 7);
+
+  const suggestion = (() => {
+    if (total > tdee * 1.05) return `今日摄入 ${total} kcal 已超过消耗 ${tdee} kcal，建议晚餐适当控制。`;
+    if (total < base * 0.7) return `今日摄入 ${total} kcal 偏低，可适当加餐补充能量。`;
+    if ((typeCalories['晚餐'] || 0) > total * 0.45) return '晚餐热量占比较高，建议把部分热量前置到午餐。';
+    if ((typeCalories['早餐'] || 0) < total * 0.15 && total > 0) return '早餐摄入偏少，建议早晨多吃一点开启一天代谢。';
+    if (avg7 > tdee * 1.1) return `本周日均摄入 ${avg7} kcal 偏高，注意控制总热量。`;
+    return '今日饮食结构较为均衡，继续保持～';
+  })();
+
+  anaCard.innerHTML = `
+    <div class="section-header">
+      <span class="section-icon">${icon('chart', 16)}</span>
+      <span class="section-title">饮食分析</span>
+    </div>
+    <div class="da-types">${typeItemsHTML}</div>
+    <div class="da-chart-wrap">
+      <div class="da-chart-title">近 7 天摄入趋势</div>
+      ${weeklyLineChart(weekCalories, '#E8A598', 'kcal', weekLabels)}
+    </div>
+    <div class="da-insight">${icon('bulb', 14)}<span>${suggestion}</span></div>
+  `;
+  content.appendChild(anaCard);
 
   // ---- 食材库存管理 ----
   const ingCard = document.createElement('div');
@@ -4897,11 +4947,12 @@ function renderDietOverview() {
   renderIngredientsCardInner(ingCard);
   wireIngredientCard(ingCard);
 
-  card.querySelector('#diet-records-link').addEventListener('click', () => {
-    state.dietView = 'records';
-    state.dietRecordsDate = null;
-    renderDiet();
-  });
+  // ---- 每周食材统计 ----
+  const statsCard = document.createElement('div');
+  statsCard.className = 'content-card diet-weekly-stats';
+  statsCard.id = 'diet-weekly-stats';
+  statsCard.innerHTML = renderWeeklyIngredientStatsHTML(getWeekStart());
+  content.appendChild(statsCard);
 
   // meal cards add (event delegation + per-button binding for mobile robustness)
   const mealCards = card.querySelector('#meal-cards');
@@ -5001,156 +5052,6 @@ function renderDietOverview() {
     state.dietMemos.splice(idx, 1);
     saveDietMemos();
     renderMemos();
-  });
-}
-
-function renderDietRecords() {
-  content.innerHTML = '';
-  const card = document.createElement('div');
-  card.className = 'content-card diet-card';
-
-  const { tdee, total } = getDietTotals();
-  const weekdays = ['周日','周一','周二','周三','周四','周五','周六'];
-  const viewKey = state.dietRecordsDate || getTodayKey();
-  const viewDate = parseDateKey(viewKey);
-  const dateString = `${viewDate.getFullYear()}年${viewDate.getMonth()+1}月${viewDate.getDate()}日 ${weekdays[viewDate.getDay()]}`;
-  const todayLog = getDietLog(viewKey);
-  const viewCost = getDietCostForDate(viewKey);
-
-  card.innerHTML = `
-    <div class="diet-records-header">
-      <button class="text-btn" id="back-to-overview"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg> 返回</button>
-      <h3 class="page-title-main">饮食记录</h3>
-      <span class="section-meta">${total} / ${tdee} kcal · 花费 ¥${viewCost.toFixed(2)}</span>
-    </div>
-
-    <div class="records-search">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-      <input type="text" id="food-search" class="small-input" placeholder="请输入食物名称">
-    </div>
-
-    <div class="records-date">
-      <button class="text-btn" id="prev-date"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
-      <span>${dateString}</span>
-      <button class="text-btn" id="next-date"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></button>
-    </div>
-
-    <div class="section-card records-meals" id="records-meals"></div>
-
-    <div class="records-bottom">
-      <button class="records-bottom-btn" id="today-recipes">
-        <span class="rbb-icon">📋</span>
-        <span>今日食谱</span>
-      </button>
-      <button class="records-bottom-btn" id="diet-analysis">
-        <span class="rbb-icon">${icon('chart', 16)}</span>
-        <span>饮食分析</span>
-      </button>
-    </div>
-  `;
-  content.appendChild(card);
-
-  card.querySelector('#back-to-overview').addEventListener('click', () => {
-    state.dietView = 'overview';
-    state.dietRecordsDate = null;
-    renderDiet();
-  });
-
-  card.querySelector('#prev-date').addEventListener('click', () => {
-    state.dietRecordsDate = shiftDate(viewKey, -1);
-    renderDietRecords();
-  });
-  card.querySelector('#next-date').addEventListener('click', () => {
-    state.dietRecordsDate = shiftDate(viewKey, 1);
-    renderDietRecords();
-  });
-
-  const mealsWrap = card.querySelector('#records-meals');
-  const suggestions = {
-    '早餐': '建议 ' + Math.round(tdee * 0.25) + '~' + Math.round(tdee * 0.35) + ' 千卡',
-    '午餐': '建议 ' + Math.round(tdee * 0.35) + '~' + Math.round(tdee * 0.45) + ' 千卡',
-    '晚餐': '建议 ' + Math.round(tdee * 0.25) + '~' + Math.round(tdee * 0.35) + ' 千卡',
-    '加餐': '建议 0~' + Math.round(tdee * 0.1) + ' 千卡'
-  };
-  function renderRecordsMeals() {
-    mealsWrap.innerHTML = '';
-    const mealTypes = ['早餐', '午餐', '晚餐', '加餐'];
-    const groups = {};
-    todayLog.meals.forEach(m => {
-      if (!groups[m.type]) groups[m.type] = [];
-      groups[m.type].push(m);
-    });
-
-    mealTypes.forEach(type => {
-      const items = groups[type] || [];
-      const groupTotal = items.reduce((s, m) => s + m.items.reduce((is, it) => is + (it.calories || 0), 0), 0);
-      const groupCost = items.reduce((s, m) => s + (Number(m.cost) || 0), 0);
-      const section = document.createElement('div');
-      section.className = 'record-meal-group';
-      section.innerHTML = `
-        <div class="record-meal-title">
-          <span class="record-meal-icon">${type === '早餐' ? '🍳' : type === '午餐' ? '🍲' : type === '晚餐' ? '🍕' : '🍊'}</span>
-          <span>${type}</span>
-          <span class="record-meal-kcal">${groupTotal} kcal</span>
-          <span class="record-meal-cost">¥${groupCost.toFixed(2)}</span>
-          <button class="text-btn record-add-btn" data-type="${type}">+</button>
-        </div>
-        <div class="record-meal-suggest">${suggestions[type]}</div>
-      `;
-      if (items.length === 0) {
-        section.innerHTML += `<p class="record-meal-empty">暂无记录</p>`;
-      } else {
-        items.forEach((meal, mIdx) => {
-          meal.items.forEach((it, iIdx) => {
-            const row = document.createElement('div');
-            row.className = 'record-meal-row';
-            row.innerHTML = `
-              <span class="meal-dot"></span>
-              <span class="meal-name">${it.name}</span>
-              <span class="meal-kcal">${it.calories} kcal</span>
-              <button class="icon-action delete" data-midx="${mIdx}" data-iidx="${iIdx}" data-type="${type}" data-action="delete-record-item"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
-            `;
-            section.appendChild(row);
-          });
-          if (meal.ingredients && meal.ingredients.length) {
-            const ingLine = document.createElement('div');
-            ingLine.className = 'record-meal-ing';
-            ingLine.innerHTML = '📦 消耗：' + meal.ingredients.map(i => `${escapeHtml(i.name)} ${Number(i.qty) || 0}${escapeHtml(i.unit || '')}`).join('、');
-            section.appendChild(ingLine);
-          }
-        });
-      }
-      mealsWrap.appendChild(section);
-    });
-  }
-  renderRecordsMeals();
-
-  mealsWrap.addEventListener('click', async (e) => {
-    const addBtn = e.target.closest('.record-add-btn');
-    if (addBtn) {
-      const type = addBtn.dataset.type;
-      const text = await openModal(`添加${type}：食物名称 + 份量，如米饭 100g`, '', '请输入食物名称 + 份量') || '';
-      if (text.trim()) {
-        addDietMeal(type, text);
-        renderDietRecords();
-      }
-      return;
-    }
-    const delBtn = e.target.closest('[data-action="delete-record-item"]');
-    if (!delBtn) return;
-    const type = delBtn.dataset.type;
-    const mIdx = parseInt(delBtn.dataset.midx);
-    const iIdx = parseInt(delBtn.dataset.iidx);
-    const typeMeals = todayLog.meals.filter(m => m.type === type);
-    const meal = typeMeals[mIdx];
-    if (!meal) return;
-    const realIdx = todayLog.meals.findIndex(m => m.id === meal.id);
-    if (realIdx > -1) {
-      todayLog.meals[realIdx].items.splice(iIdx, 1);
-      if (todayLog.meals[realIdx].items.length === 0) todayLog.meals.splice(realIdx, 1);
-      saveDietLogs();
-      renderDietRecords();
-    }
   });
 }
 
@@ -5633,6 +5534,18 @@ function getTotalEarnedPoints() {
     + getReviewCount() * 5
     + getLanguagePoints()
     + Math.max(0, state.points || 0);
+}
+
+function getPointRankingItems() {
+  return [
+    { name: '健康', icon: 'health', value: getDomainPoints('health') },
+    { name: '外貌', icon: 'sparkles', value: getDomainPoints('looks') },
+    { name: '记账', icon: 'coins', value: getDomainPoints('money') },
+    { name: '每日计划', icon: 'review', value: getPlanPoints() },
+    { name: '专注', icon: 'focus', value: getFocusPoints() },
+    { name: '每日复盘', icon: 'note', value: getReviewCount() * 5 },
+    { name: '外语学习', icon: 'language', value: getLanguagePoints() }
+  ];
 }
 
 function getSpentPoints() {
@@ -6832,10 +6745,8 @@ function renderInsights() {
   const totalExpense = state.transactions.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
   const lv = getLevelInfo();
 
-  const domainRank = Object.keys(DOMAIN_CONFIG)
-    .map(name => ({ name, icon: DOMAIN_CONFIG[name].icon, value: getDomainPoints(DOMAIN_CONFIG[name].key) }))
-    .sort((a, b) => b.value - a.value);
-  const maxDomain = Math.max(1, domainRank[0] ? domainRank[0].value : 1);
+  const pointRank = getPointRankingItems().sort((a, b) => b.value - a.value);
+  const maxPoint = Math.max(1, pointRank[0] ? pointRank[0].value : 1);
 
   // 近 7 天积分
   const days = [];
@@ -6853,18 +6764,17 @@ function renderInsights() {
       <div class="insight-card"><div class="ic-icon">${icon('dumbbell', 18)}</div><div class="ic-val">${totalExercise}<small>分</small></div><div class="ic-label">累计运动</div></div>
       <div class="insight-card"><div class="ic-icon">${icon('calendar', 18)}</div><div class="ic-val">${checkinDays}<small>天</small></div><div class="ic-label">打卡天数</div></div>
       <div class="insight-card"><div class="ic-icon">${icon('note', 18)}</div><div class="ic-val">${reviewCount}<small>次</small></div><div class="ic-label">复盘次数</div></div>
-      <div class="insight-card"><div class="ic-icon">${icon('mic', 18)}</div><div class="ic-val">${state.voiceReviews.length}<small>条</small></div><div class="ic-label">语音复盘</div></div>
       <div class="insight-card"><div class="ic-icon">${icon('coins', 18)}</div><div class="ic-val">¥${formatMoney(totalIncome)}</div><div class="ic-label">累计收入</div></div>
       <div class="insight-card"><div class="ic-icon">${icon('wallet', 18)}</div><div class="ic-val">¥${formatMoney(totalExpense)}</div><div class="ic-label">累计支出</div></div>
     </div>
 
     <div class="soft-card">
-      <div class="soft-card-title">${icon('leaf', 16)} 领域积分分布</div>
+      <div class="soft-card-title">${icon('leaf', 16)} 积分来源分布</div>
       <div class="bar-list">
-        ${domainRank.map(d => `
+        ${pointRank.map(d => `
           <div class="bar-row">
             <span class="bar-name"><span class="bar-ico">${icon(d.icon, 13)}</span>${d.name}</span>
-            <span class="bar-track"><span class="bar-fill" style="width:${Math.round((d.value / maxDomain) * 100)}%"></span></span>
+            <span class="bar-track"><span class="bar-fill" style="width:${Math.round((d.value / maxPoint) * 100)}%"></span></span>
             <span class="bar-val">${d.value} 分</span>
           </div>
         `).join('')}
@@ -6885,111 +6795,6 @@ function renderInsights() {
     </div>
   `;
   content.appendChild(page);
-}
-
-// ============ 语音复盘 ============
-function renderVoiceReview() {
-  const page = document.createElement('div');
-  page.className = 'page';
-  page.innerHTML = `
-    <div class="soft-card">
-      <div class="soft-card-title">${icon('mic', 16)} 语音复盘</div>
-      <div class="mic-wrap">
-        <button class="mic-btn${state.recording ? ' recording' : ''}" id="mic-btn">${icon('mic', 28)}</button>
-        <div class="mic-hint" id="mic-hint">${state.recording ? '正在聆听，再次点击结束' : '点击麦克风开始说，说完自动转成文字'}</div>
-      </div>
-      <p class="muted-note">若浏览器不支持语音识别，会切换为手动输入模式。</p>
-    </div>
-
-    <div class="soft-card">
-      <div class="soft-card-title">${icon('folder', 16)} 复盘记录<span class="stitle-meta">共 ${state.voiceReviews.length} 条</span></div>
-      <div class="voice-list" id="voice-list"></div>
-    </div>
-  `;
-  content.appendChild(page);
-
-  const list = page.querySelector('#voice-list');
-  function renderList() {
-    list.innerHTML = '';
-    if (!state.voiceReviews.length) {
-      list.innerHTML = '<p class="empty-note">还没有语音复盘记录</p>';
-      return;
-    }
-    [...state.voiceReviews].reverse().forEach(item => {
-      const row = document.createElement('div');
-      row.className = 'voice-item';
-      row.innerHTML = `
-        <span class="voice-wave">${icon('ear', 22)}</span>
-        <div class="voice-body">
-          <p class="voice-text">${escapeHTML(item.text)}</p>
-          <div class="voice-meta">${item.time}</div>
-        </div>
-        <button class="icon-action delete" data-del="${item.id}" aria-label="删除"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
-      `;
-      row.querySelector('[data-del]').addEventListener('click', () => {
-        state.voiceReviews = state.voiceReviews.filter(v => v.id !== item.id);
-        saveVoiceReviews();
-        renderContent();
-      });
-      list.appendChild(row);
-    });
-  }
-  renderList();
-
-  const micBtn = page.querySelector('#mic-btn');
-  const hint = page.querySelector('#mic-hint');
-
-  function addVoiceRecord(text) {
-    const value = (text || '').trim();
-    if (!value) return;
-    const now = new Date();
-    state.voiceReviews.push({
-      id: uid('vr'),
-      text: value,
-      date: dateStr(now),
-      time: `${formatLongDate(now)} ${pad2(now.getHours())}:${pad2(now.getMinutes())}`
-    });
-    saveVoiceReviews();
-    renderContent();
-  }
-
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  micBtn.addEventListener('click', async () => {
-    if (!SR) {
-      const text = await openModal('手动输入复盘内容', '', '说说今天的感受...');
-      addVoiceRecord(text);
-      return;
-    }
-    if (state.recording && state.recognition) {
-      state.recognition.stop();
-      return;
-    }
-    try {
-      const rec = new SR();
-      rec.lang = 'zh-CN';
-      rec.continuous = false;
-      rec.interimResults = false;
-      rec.onresult = (e) => {
-        const text = Array.from(e.results).map(r => r[0].transcript).join('');
-        addVoiceRecord(text);
-      };
-      rec.onerror = () => { hint.textContent = '识别失败，请重试或使用手动输入'; };
-      rec.onend = () => {
-        state.recording = false;
-        state.recognition = null;
-        micBtn.classList.remove('recording');
-        hint.textContent = '点击麦克风开始说，说完自动转成文字';
-      };
-      rec.start();
-      state.recognition = rec;
-      state.recording = true;
-      micBtn.classList.add('recording');
-      hint.textContent = '正在聆听，再次点击结束';
-    } catch (err) {
-      const text = await openModal('手动输入复盘内容', '', '说说今天的感受...');
-      addVoiceRecord(text);
-    }
-  });
 }
 
 // ============ 奖励池 ============
@@ -7209,7 +7014,6 @@ function getAchievementProgress(ac) {
     case 'focus': return getFocusMinutes();
     case 'points': return getTotalEarnedPoints();
     case 'review': return getReviewCount();
-    case 'voice': return state.voiceReviews.length;
     case 'exercise':
       return Object.values(state.exerciseLogs || {})
         .reduce((s, list) => s + list.filter(e => e.done).reduce((a, e) => a + (Number(e.duration) || 0), 0), 0);
@@ -7235,10 +7039,8 @@ function renderAchievements() {
   const lv = getLevelInfo();
   const unlocked = DEFAULT_ACHIEVEMENTS.filter(a => state.achievements[a.id]).length;
 
-  const domainRank = Object.keys(DOMAIN_CONFIG)
-    .map(name => ({ name, icon: DOMAIN_CONFIG[name].icon, value: getDomainPoints(DOMAIN_CONFIG[name].key) }))
-    .sort((a, b) => b.value - a.value);
-  const maxDomain = Math.max(1, domainRank[0] ? domainRank[0].value : 1);
+  const pointRank = getPointRankingItems().sort((a, b) => b.value - a.value);
+  const maxPoint = Math.max(1, pointRank[0] ? pointRank[0].value : 1);
 
   const page = document.createElement('div');
   page.className = 'page';
@@ -7270,12 +7072,12 @@ function renderAchievements() {
     </div>
 
     <div class="soft-card">
-      <div class="soft-card-title">${icon('chart', 16)} 领域积分排行</div>
+      <div class="soft-card-title">${icon('chart', 16)} 积分来源排行</div>
       <div class="bar-list">
-        ${domainRank.map(d => `
+        ${pointRank.map(d => `
           <div class="bar-row">
             <span class="bar-name"><span class="bar-ico">${icon(d.icon, 13)}</span>${d.name}</span>
-            <span class="bar-track"><span class="bar-fill" style="width:${Math.round((d.value / maxDomain) * 100)}%"></span></span>
+            <span class="bar-track"><span class="bar-fill" style="width:${Math.round((d.value / maxPoint) * 100)}%"></span></span>
             <span class="bar-val">${d.value} 分</span>
           </div>
         `).join('')}
@@ -7295,7 +7097,6 @@ function renderSystemPanel() {
   const cells = [
     { name: '每日计划', icon: 'review', meta: `${getReviewCount()} 次`, target: '每日计划' },
     { name: '本周洞察', icon: 'chart', meta: `Lv.${lv.level}`, target: '本周洞察' },
-    { name: '语音复盘', icon: 'mic', meta: `${state.voiceReviews.length} 条`, target: '语音复盘' },
     { name: '奖励池', icon: 'rewards', meta: `${getAvailablePoints()} 分可用`, target: '奖励池' },
     { name: '成就殿堂', icon: 'trophy', meta: `${DEFAULT_ACHIEVEMENTS.filter(a => state.achievements[a.id]).length} 枚徽章`, target: '成就殿堂' },
     { name: '碎碎念', icon: 'note', meta: `${state.memos.length} 条`, target: '碎碎念' },
@@ -8778,7 +8579,6 @@ importFile.addEventListener('change', (e) => {
       // 新模块数据
       state.profile = loadProfile();
       state.dailyReviews = loadDailyReviews();
-      state.voiceReviews = loadVoiceReviews();
       state.rewards = loadRewards();
       state.achievements = loadAchievements();
       state.contentItems = loadContentItems();
@@ -9197,11 +8997,11 @@ function dualLineChart(valuesA, colorA, valuesB, colorB) {
   </svg>`;
 }
 
-function weeklyLineChart(values, color, unit) {
+function weeklyLineChart(values, color, unit, labels) {
   const w = 320, h = 140;
   const pad = { t: 18, r: 12, b: 22, l: 26 };
   const cw = w - pad.l - pad.r, ch = h - pad.t - pad.b;
-  const days = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+  const days = labels || ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
   const nums = values.map(v => Number(v) || 0);
   const maxVal = Math.max(1, ...nums);
   let niceMax = 1;
@@ -9791,7 +9591,7 @@ function renderBranchesPage() {
       }).join('')}
 
       <div class="br-section-header">
-        <div class="br-sec-title"><span class="br-sec-icon">🌱</span> 保持中的支线</div>
+        <div class="br-sec-title"><span class="br-sec-icon">${icon('leaf', 14)}</span> 保持中的支线</div>
         <span class="br-manage" data-manage="keep">管理全部 ›</span>
       </div>
       <div class="br-keep-grid-clean">
@@ -9799,7 +9599,7 @@ function renderBranchesPage() {
           const pct = 0;
           const route = k.name === '攒钱' ? '记账' : k.name;
           return `<div class="br-keep-card-clean" data-route="${escapeHTML(route)}">
-            <div class="bkc-emoji">${k.emoji}</div>
+            <div class="bkc-emoji"><span class="bkc-icon-wrap">${k.emoji}</span></div>
             <div class="bkc-name">${k.name}</div>
             <div class="bkc-freq">${k.freq}</div>
             <div class="bkc-bar-row"><div class="bkc-bar"><i style="width:${pct}%;background:${k.color}"></i></div><span class="bkc-pct">${pct}%</span></div>
@@ -9814,7 +9614,7 @@ function renderBranchesPage() {
       <div class="br-slow-list-clean">
         ${slowList.map(s => `
           <div class="br-slow-card" data-route="${escapeHTML(s.name)}">
-            <div class="br-slow-left"><span class="bsi-emoji">${s.emoji}</span><span class="bsi-name">${s.name}</span></div>
+            <div class="br-slow-left"><span class="bsi-emoji"><span class="bsi-icon-wrap">${s.emoji}</span></span><span class="bsi-name">${s.name}</span></div>
             <span class="bsi-tag">待回归</span>
           </div>
         `).join('')}
@@ -10559,7 +10359,6 @@ function renderInsightPage() {
 
     + '<div class="insp-section insp-suggest-section"><div class="insp-section-head"><span class="insp-section-title"><span class="insp-sec-star">🌟</span> 每周优化建议</span></div>'
     + '<div class="insp-suggest-list">' + buildInsightSuggestions(stats).map(t => '<div class="insp-suggest-card"><span class="insp-suggest-ic">' + t.icon + '</span><p>' + t.text + '</p></div>').join('') + '</div></div>'
-    + renderWeeklyIngredientStatsHTML(weekStart)
     + '</div>';
   content.appendChild(page);
 
