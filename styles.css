@@ -5221,34 +5221,6 @@ select.pf-input {
 .hmt-bunny { width: 84px; height: 76px; flex-shrink: 0; }
 .hp-bunny-reading { display: block; width: 100%; height: 100%; }
 
-/* 今日支持任务 */
-.hp-support-scroll { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
-.hp-support-card {
-  display: flex;
-  flex-direction: column;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 12px;
-  box-shadow: var(--shadow);
-}
-.hp-support-card .hsc-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 8px; }
-.hp-support-card .hsc-icon { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; }
-.hp-support-card .hsc-arrow {
-  width: 22px; height: 22px; border-radius: 50%;
-  border: none; background: var(--bg-soft); color: var(--text-muted);
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer; transition: background .12s ease, color .12s ease;
-}
-.hp-support-card .hsc-arrow:hover { background: var(--primary-light); color: var(--primary-dark); }
-.hp-support-card .hsc-body { flex: 1; margin-bottom: 8px; }
-.hp-support-card .hsc-title { font-size: 11px; font-weight: 700; margin: 0 0 3px; color: var(--text); }
-.hp-support-card .hsc-sub { font-size: 9.5px; color: var(--text-muted); line-height: 1.35; }
-.hp-support-card .hsc-bar-wrap { margin-bottom: 4px; }
-.hp-support-card .hsc-bar { height: 5px; border-radius: 999px; overflow: hidden; }
-.hp-support-card .hsc-bar i { display: block; height: 100%; border-radius: 999px; }
-.hp-support-card .hsc-val { font-size: 9.5px; color: var(--text-muted); }
-
 /* 快速记录 */
 .hp-quick { min-width: 0; }
 .hp-quick-grid { display: flex; justify-content: space-around; align-items: center; flex-wrap: wrap; gap: 8px; }

@@ -666,7 +666,6 @@ const DEFAULT_SETTINGS = {
     { name: '攒钱', emoji: '💰', freq: '每周 2 天', color: '#f4b75b' },
     { name: '生活秩序', emoji: '📋', freq: '每周 2 天', color: '#a0bb7a' },
     { name: '内在成长', emoji: '🌱', freq: '每周 1 天', color: '#f4b75b' },
-    { name: '阅读积累', emoji: '📖', freq: '每周 4 天', color: '#8978c3' }
   ],
   slowBranches: [
     { name: '旅行体验', emoji: '✈️' },
@@ -2877,7 +2876,6 @@ const PAGE_ROUTES = {
   '项目计划': renderProjectPage,
   '生活秩序': renderLifeOrderPage,
   '内在成长': renderInnerGrowthPage,
-  '阅读积累': renderReadingAccumPage,
   '旅行体验': renderTravelPage,
   '社交拓展': renderSocialPage,
   // 成长提升
@@ -5605,7 +5603,6 @@ function routeForText(text) {
   const n = String(text || '');
   if (/英语|单词|听力|音标|外语|口语/.test(n)) return '学习成长';
   if (/健身|运动|锻炼|跑步|力量|瑜伽|体态|拉伸/.test(n)) return '健身';
-  if (/阅读|读书|书单|看书/.test(n)) return '阅读积累';
   if (/记账|存钱|理财|收支|预算|自媒体|副业|收入/.test(n)) return '记账';
   if (/冥想|护肤|睡眠|喝水|饮食|作息|早起|减肥/.test(n)) return '生活秩序';
   if (/写作|技能|复盘|计划|学习|提升|考证|备考/.test(n)) return '内在成长';
@@ -5618,8 +5615,6 @@ function openMainTaskPicker() {
   const SUGGESTS = [
     '完成英语核心词汇 30min',
     '每日 30 个单词',
-    '阅读 30 分钟',
-    '健身训练 20 分钟',
     '冥想 10 分钟',
     '写作 500 字',
     '学习一个新技能'
@@ -5701,82 +5696,6 @@ function openMainTaskPicker() {
 
 function saveMainTasks() { saveJSON('xenos-main-tasks', state.mainTasks || []); }
 function loadMainTasks() { return loadJSON('xenos-main-tasks', []); }
-
-// 首页「今日支持任务 / 今日支线」数据
-function loadSupportBranches() {
-  return loadJSON('xenos-support-branches', [
-    { id: 'sp1', title: '健身训练', sub: '20 分钟力量训练', kw: '健身', route: '健身', color: '#9ACB86', bg: '#F0F7EB', emoji: '🏋️' },
-    { id: 'sp2', title: '阅读 30 分钟', sub: '持续输入，稳步积累', kw: '阅读', route: '阅读积累', color: '#B8AAD8', bg: '#F2EFF9', emoji: '📚' },
-    { id: 'sp3', title: '自媒体更新', sub: '发布笔记 / 视频', kw: '自媒体', route: '记账', color: '#F7D88A', bg: '#FFF9E8', emoji: '📷' }
-  ]);
-}
-function saveSupportBranches(list) { saveJSON('xenos-support-branches', list || []); }
-
-// 今日支线「查看全部」弹窗：可添加不限量支线、按序排列、支持编辑/删除
-function openSupportBranchPicker() {
-  if (!state.supportBranches) state.supportBranches = loadSupportBranches();
-  const overlay = document.createElement('div');
-  overlay.className = 'modal active';
-  function bodyHTML() {
-    const items = state.supportBranches.map((c, i) => `
-      <div class="mtk-item">
-        <span class="mtk-swatch" style="background:${c.color}26;color:${c.color}">${c.emoji || '✦'}</span>
-        <span class="mtk-text">${escapeHTML(c.title)}</span>
-        <button class="mtk-edit" data-edit="${i}" aria-label="编辑">✎</button>
-        <button class="mtk-del" data-del="${i}" aria-label="删除">✕</button>
-      </div>`).join('');
-    return `
-      <div class="modal-card mtk-card">
-        <h3 class="modal-title">今日支线</h3>
-        <div class="mtk-add-row">
-          <input class="mtk-input" id="sp-input" placeholder="添加一条支线，如：练字 15 分钟">
-          <button class="btn btn-primary sp-add-btn">添加</button>
-        </div>
-        <div class="mtk-label">共 ${state.supportBranches.length} 条（按添加顺序排列）</div>
-        <div class="mtk-list">${items || '<p class="mtk-empty">还没有支线，先添加一条吧 ✨</p>'}</div>
-        <div class="modal-actions"><button class="btn btn-secondary sp-done">完成</button></div>
-      </div>`;
-  }
-  overlay.innerHTML = bodyHTML();
-  document.body.appendChild(overlay);
-  function rerender() { const card = overlay.querySelector('.mtk-card'); if (card) card.outerHTML = bodyHTML(); bind(); }
-  async function editItem(i) {
-    const c = state.supportBranches[i];
-    if (!c) return;
-    const nv = await openModal('编辑支线', c.title, '支线名称');
-    if (nv === null || !nv.trim()) return;
-    const ns = await openModal('编辑说明', c.sub || '', '一句话说明');
-    if (ns === null) return;
-    c.title = nv.trim();
-    c.sub = ns.trim();
-    saveSupportBranches(state.supportBranches);
-    rerender();
-  }
-  function bind() {
-    const card = overlay.querySelector('.mtk-card');
-    if (!card) return;
-    card.querySelector('.sp-add-btn').addEventListener('click', () => {
-      const inp = card.querySelector('#sp-input');
-      const v = inp.value.trim();
-      if (!v) return;
-      const route = routeForText(v);
-      const palette = { '健身': '#9ACB86', '阅读积累': '#B8AAD8', '记账': '#F7D88A', '学习成长': '#C9B6EC', '生活秩序': '#A6CF8C', '内在成长': '#F4B75B' };
-      const color = palette[route] || '#F4B75B';
-      state.supportBranches.push({ id: uid('sp'), title: v, sub: '按节奏稳步推进', kw: v.slice(0, 4), route, color, bg: color + '22', emoji: '✦' });
-      saveSupportBranches(state.supportBranches);
-      rerender();
-    });
-    card.querySelectorAll('[data-del]').forEach(b => b.addEventListener('click', () => {
-      state.supportBranches.splice(+b.dataset.del, 1);
-      saveSupportBranches(state.supportBranches);
-      rerender();
-    }));
-    card.querySelectorAll('[data-edit]').forEach(b => b.addEventListener('click', () => editItem(+b.dataset.edit)));
-    card.querySelector('.sp-done').addEventListener('click', () => { overlay.remove(); renderContent(); });
-  }
-  bind();
-  overlay.addEventListener('click', (e) => { if (e.target === overlay) { overlay.remove(); renderContent(); } });
-}
 
 // 本周睡眠趋势图（带坐标轴）
 function sleepTrendChart(values) {
@@ -5860,8 +5779,6 @@ function renderOverview() {
   if (!state.mainTasks) state.mainTasks = loadMainTasks();
   const mainTaskList = (state.mainTasks || []).filter(t => !t.done);
 
-  if (!state.supportBranches) state.supportBranches = loadSupportBranches();
-  const supportCards = state.supportBranches;
 
   // 图标 SVG
   const sportIcon = `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15l4-4 3 3 4-4 5 5"/><path d="M4 15v4h16v-4"/></svg>`;
@@ -5941,21 +5858,6 @@ function renderOverview() {
       </div>
     </div>
 
-    <div class="hp-section-title"><span class="hp-sec-heart">💗</span> 今日支持任务 <span class="hp-more hp-link" id="hp-support-more">查看全部 ›</span></div>
-    <div class="hp-support-scroll">
-      ${supportCards.map(c => `
-        <div class="hp-support-card" data-jump="${escapeHTML(c.route)}" style="border-color:${c.color}33;background:${c.bg}">
-          <div class="hsc-top">
-            <div class="hsc-icon" style="background:${c.color}26;color:${c.color}">${c.emoji}</div>
-            <button class="hsc-arrow" aria-label="去完成"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></button>
-          </div>
-          <div class="hsc-body">
-            <div class="hsc-title">${c.title}</div>
-            <div class="hsc-sub">${c.sub}</div>
-          </div>
-        </div>
-      `).join('')}
-    </div>
 
     <div class="hp-quick">
       <div class="hp-section-title">⚡ 快速记录</div>
@@ -5974,8 +5876,6 @@ function renderOverview() {
 
   const addBtn = page.querySelector('#hmt-add');
   if (addBtn) addBtn.addEventListener('click', openMainTaskPicker);
-  const supportMore = page.querySelector('#hp-support-more');
-  if (supportMore) supportMore.addEventListener('click', openSupportBranchPicker);
 
   // 今日主任务：轻点开始专注、长按出现删除按钮
   page.querySelectorAll('.hmt-item[data-main-id]').forEach(item => {
@@ -9849,45 +9749,6 @@ function renderInnerGrowthPage() {
   page.querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', () => selectItem(b.dataset.go)));
 }
 
-// ============ 阅读积累 ============
-function renderReadingAccumPage() {
-  const page = document.createElement('div');
-  page.className = 'page';
-  if (greetLine) greetLine.textContent = '阅读积累';
-  const streak = calcStreak();
-  const readBooks = Array.isArray(state.books) ? state.books.filter(b => b.status === 'read' || b.done).length : 0;
-  page.innerHTML = `
-    <div class="sub-page-head">
-      <button class="sub-back-btn" data-go="我的支线">‹</button>
-      <h3 class="sub-title">阅读积累 <span class="sub-spark">✨</span></h3>
-      <span class="sub-bunny">🐰📖</span>
-    </div>
-    <div class="study-goal section-card" style="background:linear-gradient(135deg,#EDEAF9 0%,#FFF5E9 100%);">
-      ${miniRingHTML(0, 'ring-purple', '0%', '本周完成')}
-      <div class="sg-info">
-        <h4>让阅读成为日常</h4>
-        <p class="sg-sub">不追求数量，只保留触动的句子</p>
-        <span class="sg-streak">🔥 连续记录 ${streak} 天</span>
-      </div>
-    </div>
-    <div class="study-stats">
-      <div class="study-stat"><b>${readBooks}</b><span>已读完</span></div>
-      <div class="study-stat"><b>0</b><span>本周页数</span></div>
-      <div class="study-stat"><b>0</b><span>笔记条数</span></div>
-    </div>
-    <div class="section-card">
-      <div class="soft-card-title">📚 正在读</div>
-      <p style="font-size:12px;color:var(--text-muted);margin:0;">还没有正在读的书，去「书籍阅读」添加一本吧～</p>
-      <div class="study-note-foot"><button class="btn btn-secondary pill-btn sm" data-go="书籍阅读">去书籍库</button></div>
-    </div>
-    <div class="study-tip">
-      <span class="study-tip-bulb">💡</span>
-      <p>小贴士：每天读 10 页，一年就是 3650 页。</p>
-    </div>
-  `;
-  content.appendChild(page);
-  page.querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', () => selectItem(b.dataset.go)));
-}
 
 // ============ 旅行体验 ============
 function renderTravelPage() {
