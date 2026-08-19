@@ -3018,6 +3018,449 @@ button, input {
   }
 }
 
+/* ---- 饮食 · 花费汇总 ---- */
+.diet-cost-card {
+  margin-bottom: 12px;
+}
+
+.diet-cost-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.diet-cost-item {
+  background: var(--bg);
+  border-radius: var(--radius-sm);
+  padding: 12px 10px;
+  text-align: left;
+}
+
+.diet-cost-label {
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.diet-cost-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--expense);
+}
+
+.diet-insight-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 12px;
+  font-size: 11px;
+  color: var(--primary-dark);
+}
+
+/* ---- 食材库存管理 ---- */
+.ingredient-card {
+  margin-bottom: 12px;
+}
+
+.ing-filter-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.ing-filter-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 5px 10px;
+  font-size: 11px;
+  color: var(--text);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.ing-filter-btn.active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+}
+
+.ing-filter-count {
+  font-size: 10px;
+  background: rgba(0,0,0,0.06);
+  border-radius: 999px;
+  padding: 0 6px;
+  line-height: 16px;
+}
+
+.ing-filter-btn.active .ing-filter-count {
+  background: rgba(255,255,255,0.25);
+}
+
+.ing-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.ing-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.ing-row:hover {
+  background: var(--primary-light);
+  border-color: var(--primary-hover);
+}
+
+.ing-row.dim {
+  opacity: 0.6;
+}
+
+.ing-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.ing-name-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ing-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.ing-meta {
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-top: 3px;
+}
+
+.ing-tag {
+  font-size: 9px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  font-weight: 600;
+}
+
+.tag-soon {
+  background: #FFF3D6;
+  color: #B8860B;
+}
+
+.tag-expired {
+  background: #FBE0DE;
+  color: var(--expense);
+}
+
+.tag-depleted {
+  background: #ECE7DD;
+  color: var(--text-muted);
+}
+
+.ing-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ing-actions .icon-action {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: var(--text-muted);
+  border: 1px solid transparent;
+}
+
+.ing-actions .icon-action:hover {
+  background: #fff;
+  border-color: var(--border);
+  color: var(--primary-dark);
+}
+
+.ing-actions .icon-action.delete:hover {
+  color: var(--expense);
+  border-color: var(--expense);
+}
+
+.ing-import-btn {
+  width: 100%;
+  background: var(--bg);
+  border: 1px dashed var(--primary-hover);
+  border-radius: var(--radius-sm);
+  padding: 10px;
+  font-size: 11px;
+  color: var(--primary-dark);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+}
+
+.ing-import-btn:hover {
+  background: var(--primary-light);
+}
+
+/* ---- 三餐录入弹窗中的食材勾选 ---- */
+.me-ing-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.me-ing-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 7px 10px;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.me-ing-row.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.me-ing-row .me-ing-check {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--primary);
+}
+
+.me-ing-name {
+  flex: 1;
+  color: var(--text);
+}
+
+.me-ing-unit {
+  color: var(--text-muted);
+  font-size: 10px;
+}
+
+.me-ing-qty {
+  width: 64px;
+  height: 28px;
+}
+
+.me-ing-left {
+  font-size: 10px;
+  color: var(--text-muted);
+  min-width: 42px;
+  text-align: right;
+}
+
+.me-ing-empty {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.xn-field-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text);
+  margin: 10px 0 5px;
+}
+
+.ing-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.ing-date-btn {
+  width: 100%;
+  text-align: left;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+  font-size: 11px;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.ing-date-btn:hover {
+  border-color: var(--primary-hover);
+}
+
+/* ---- 食材详情弹窗 ---- */
+.ing-detail-status {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 999px;
+  margin-bottom: 12px;
+}
+
+.status-ok { background: var(--green-light); color: var(--green); }
+.status-soon { background: #FFF3D6; color: #B8860B; }
+.status-expired { background: #FBE0DE; color: var(--expense); }
+.status-depleted { background: #ECE7DD; color: var(--text-muted); }
+
+.ing-detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.ing-detail-grid > div {
+  background: var(--bg);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+}
+
+.ing-detail-grid span {
+  display: block;
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.ing-detail-grid b {
+  font-size: 12px;
+  color: var(--text);
+  font-weight: 600;
+}
+
+.ing-detail-log {
+  margin-top: 12px;
+}
+
+.ing-detail-log-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+
+.ing-detail-log-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: var(--text-muted);
+  padding: 4px 0;
+  border-top: 1px solid var(--border);
+}
+
+/* ---- 饮食记录中的花费 / 消耗 ---- */
+.record-meal-cost {
+  font-size: 11px;
+  color: var(--expense);
+  font-weight: 600;
+}
+
+.record-meal-ing {
+  font-size: 10px;
+  color: var(--text-muted);
+  padding: 4px 0 2px 14px;
+  border-top: 1px dashed var(--border);
+}
+
+/* ---- 每周食材统计（洞察页） ---- */
+.wi-section {
+  margin-top: 4px;
+}
+
+.wi-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.wi-block {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.wi-block-head {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text);
+  padding: 8px 10px;
+  background: var(--primary-light);
+  border-bottom: 1px solid var(--border);
+}
+
+.wi-block-body {
+  padding: 8px 10px;
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.wi-stat-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--text);
+  padding: 4px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.wi-stat-row:last-child {
+  border-bottom: none;
+}
+
+.wi-name {
+  font-weight: 500;
+}
+
+.wi-qty {
+  color: var(--primary-dark);
+  font-weight: 600;
+}
+
+.wi-sub {
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.wi-stat-row.wi-waste .wi-name {
+  color: var(--expense);
+}
+
+@media (max-width: 768px) {
+  .wi-grid {
+    grid-template-columns: 1fr;
+  }
+  .ing-form-grid {
+    gap: 6px;
+  }
+}
+
 /* ============================================================
    人生系统 · 米色/暖金设计语言（新框架）
    ============================================================ */

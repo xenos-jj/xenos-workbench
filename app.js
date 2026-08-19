@@ -860,6 +860,10 @@ const state = {
   exerciseLogs: loadExerciseLogs(),
   workoutVideos: loadWorkoutVideos(),
   dietView: 'overview',
+  dietRecordsDate: null,
+  ingredients: loadIngredients(),
+  ingredientLogs: loadIngredientLogs(),
+  ingredientFilter: 'all',
   memos: loadMemos(),
   money: loadMoney(),
   budget: loadBudget(),
@@ -1637,6 +1641,32 @@ function loadDietLogs() {
 
 function saveDietLogs() {
   localStorage.setItem('xenos-diet-logs', JSON.stringify(state.dietLogs));
+}
+
+function loadIngredients() {
+  try {
+    const data = localStorage.getItem('xenos-ingredients');
+    return data ? JSON.parse(data) : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+function saveIngredients() {
+  localStorage.setItem('xenos-ingredients', JSON.stringify(state.ingredients));
+}
+
+function loadIngredientLogs() {
+  try {
+    const data = localStorage.getItem('xenos-ingredient-logs');
+    return data ? JSON.parse(data) : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+function saveIngredientLogs() {
+  localStorage.setItem('xenos-ingredient-logs', JSON.stringify(state.ingredientLogs));
 }
 
 function loadExerciseLogs() {
@@ -4831,17 +4861,54 @@ function renderDietOverview() {
   `;
   content.appendChild(card);
 
+  // ---- 饮食花费汇总 ----
+  const costCard = document.createElement('div');
+  costCard.className = 'content-card section-card diet-cost-card';
+  const todayCost = getDietCostForDate(getTodayKey());
+  const weekCost = getDietCostWeek(getWeekStart());
+  costCard.innerHTML = `
+    <div class="section-header">
+      <span class="section-icon">${icon('card', 16)}</span>
+      <span class="section-title">饮食花费</span>
+    </div>
+    <div class="diet-cost-grid">
+      <div class="diet-cost-item"><div class="diet-cost-label">今日总开销</div><div class="diet-cost-value">¥${todayCost.toFixed(2)}</div></div>
+      <div class="diet-cost-item"><div class="diet-cost-label">本周汇总</div><div class="diet-cost-value">¥${weekCost.toFixed(2)}</div></div>
+    </div>
+    <button class="text-btn diet-insight-link" id="diet-insight-link">查看每周食材统计 ›</button>
+  `;
+  content.appendChild(costCard);
+  costCard.querySelector('#diet-insight-link').addEventListener('click', () => selectItem('本周洞察'));
+
+  // ---- 食材库存管理 ----
+  const ingCard = document.createElement('div');
+  ingCard.className = 'content-card section-card ingredient-card';
+  ingCard.innerHTML = `
+    <div class="section-header">
+      <span class="section-icon">${icon('box', 16)}</span>
+      <span class="section-title">食材库存管理</span>
+      <button class="text-btn" id="ing-add-btn">+ 添加食材</button>
+    </div>
+    <div class="ing-filter-tabs" id="ing-filter-tabs"></div>
+    <div class="ing-list" id="ing-list"></div>
+    <button class="ing-import-btn" id="ing-import-btn">${icon('refresh', 13)} 批量导入示例食材</button>
+  `;
+  content.appendChild(ingCard);
+  renderIngredientsCardInner(ingCard);
+  wireIngredientCard(ingCard);
+
   card.querySelector('#diet-records-link').addEventListener('click', () => {
     state.dietView = 'records';
+    state.dietRecordsDate = null;
     renderDiet();
   });
 
   // meal cards add (event delegation + per-button binding for mobile robustness)
   const mealCards = card.querySelector('#meal-cards');
   async function triggerMealAdd(type) {
-    const text = await openModal(`添加${type}：食物名称 + 份量，如米饭 100g`, '', '请输入食物名称 + 份量') || '';
-    if (text.trim()) {
-      addDietMeal(type, text);
+    const res = await openMealEntry(type);
+    if (res) {
+      addDietMeal(type, res.food, res.cost, res.ingredients);
       renderDietOverview();
     }
   }
@@ -4860,9 +4927,9 @@ function renderDietOverview() {
 
   // snack
   card.querySelector('#snack-btn').addEventListener('click', async () => {
-    const text = await openModal('添加加餐：食物名称 + 份量，如苹果 1个', '', '请输入食物名称 + 份量') || '';
-    if (text.trim()) {
-      addDietMeal('加餐', text);
+    const res = await openMealEntry('加餐');
+    if (res) {
+      addDietMeal('加餐', res.food, res.cost, res.ingredients);
       renderDietOverview();
     }
   });
@@ -4943,16 +5010,18 @@ function renderDietRecords() {
   card.className = 'content-card diet-card';
 
   const { tdee, total } = getDietTotals();
-  const todayLog = getTodayDiet();
-  const today = new Date();
   const weekdays = ['周日','周一','周二','周三','周四','周五','周六'];
-  const dateString = `${today.getFullYear()}年${today.getMonth()+1}月${today.getDate()}日 ${weekdays[today.getDay()]}`;
+  const viewKey = state.dietRecordsDate || getTodayKey();
+  const viewDate = parseDateKey(viewKey);
+  const dateString = `${viewDate.getFullYear()}年${viewDate.getMonth()+1}月${viewDate.getDate()}日 ${weekdays[viewDate.getDay()]}`;
+  const todayLog = getDietLog(viewKey);
+  const viewCost = getDietCostForDate(viewKey);
 
   card.innerHTML = `
     <div class="diet-records-header">
       <button class="text-btn" id="back-to-overview"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg> 返回</button>
       <h3 class="page-title-main">饮食记录</h3>
-      <span class="section-meta">${total} / ${tdee} kcal</span>
+      <span class="section-meta">${total} / ${tdee} kcal · 花费 ¥${viewCost.toFixed(2)}</span>
     </div>
 
     <div class="records-search">
@@ -4983,7 +5052,17 @@ function renderDietRecords() {
 
   card.querySelector('#back-to-overview').addEventListener('click', () => {
     state.dietView = 'overview';
+    state.dietRecordsDate = null;
     renderDiet();
+  });
+
+  card.querySelector('#prev-date').addEventListener('click', () => {
+    state.dietRecordsDate = shiftDate(viewKey, -1);
+    renderDietRecords();
+  });
+  card.querySelector('#next-date').addEventListener('click', () => {
+    state.dietRecordsDate = shiftDate(viewKey, 1);
+    renderDietRecords();
   });
 
   const mealsWrap = card.querySelector('#records-meals');
@@ -5005,6 +5084,7 @@ function renderDietRecords() {
     mealTypes.forEach(type => {
       const items = groups[type] || [];
       const groupTotal = items.reduce((s, m) => s + m.items.reduce((is, it) => is + (it.calories || 0), 0), 0);
+      const groupCost = items.reduce((s, m) => s + (Number(m.cost) || 0), 0);
       const section = document.createElement('div');
       section.className = 'record-meal-group';
       section.innerHTML = `
@@ -5012,6 +5092,7 @@ function renderDietRecords() {
           <span class="record-meal-icon">${type === '早餐' ? '🍳' : type === '午餐' ? '🍲' : type === '晚餐' ? '🍕' : '🍊'}</span>
           <span>${type}</span>
           <span class="record-meal-kcal">${groupTotal} kcal</span>
+          <span class="record-meal-cost">¥${groupCost.toFixed(2)}</span>
           <button class="text-btn record-add-btn" data-type="${type}">+</button>
         </div>
         <div class="record-meal-suggest">${suggestions[type]}</div>
@@ -5031,6 +5112,12 @@ function renderDietRecords() {
             `;
             section.appendChild(row);
           });
+          if (meal.ingredients && meal.ingredients.length) {
+            const ingLine = document.createElement('div');
+            ingLine.className = 'record-meal-ing';
+            ingLine.innerHTML = '📦 消耗：' + meal.ingredients.map(i => `${escapeHtml(i.name)} ${Number(i.qty) || 0}${escapeHtml(i.unit || '')}`).join('、');
+            section.appendChild(ingLine);
+          }
         });
       }
       mealsWrap.appendChild(section);
@@ -5067,7 +5154,7 @@ function renderDietRecords() {
   });
 }
 
-function addDietMeal(type, text) {
+function addDietMeal(type, text, cost = 0, ingredients = []) {
   const todayLog = getTodayDiet();
   const match = text.match(/(.+?)\s*(\d+(?:\.\d+)?)\s*(g|克|ml|份|个|根|碗|勺|杯|片|串)?/);
   let name = text.trim();
@@ -5085,7 +5172,12 @@ function addDietMeal(type, text) {
   } else if (base) {
     calories = Math.round(base * qty);
   }
-  todayLog.meals.push({ id: uid('meal'), type, items: [{ name, qty, unit, calories }] });
+  const dateKey = getTodayKey();
+  const usedIngredients = (ingredients || []).map(it => {
+    deductIngredient(it.id, it.qty, type, dateKey);
+    return { id: it.id, name: it.name, unit: it.unit, qty: Number(it.qty) || 0 };
+  });
+  todayLog.meals.push({ id: uid('meal'), type, items: [{ name, qty, unit, calories }], cost: Number(cost) || 0, ingredients: usedIngredients });
   saveDietLogs();
 }
 
@@ -5100,6 +5192,368 @@ function loadDietMemos() {
 
 function saveDietMemos() {
   localStorage.setItem('xenos-diet-memos', JSON.stringify(state.dietMemos));
+}
+
+// ============ 饮食 · 食材库存 & 花费 ============
+function getDietLog(key) {
+  return state.dietLogs[key] || { meals: [], total: 0 };
+}
+
+function getDietCostForDate(key) {
+  const log = state.dietLogs[key];
+  if (!log) return 0;
+  return (log.meals || []).reduce((s, m) => s + (Number(m.cost) || 0), 0);
+}
+
+function getDietCostWeek(weekStart) {
+  let sum = 0;
+  for (let i = 0; i < 7; i++) sum += getDietCostForDate(shiftDate(weekStart, i));
+  return sum;
+}
+
+function ingredientStatus(ing) {
+  if (!ing) return 'ok';
+  if ((Number(ing.remaining) || 0) <= 0) return 'depleted';
+  if (!ing.expiryDate) return 'ok';
+  const today = getTodayKey();
+  if (ing.expiryDate < today) return 'expired';
+  if (ing.expiryDate <= shiftDate(today, 7)) return 'soon';
+  return 'ok';
+}
+
+function deductIngredient(id, qty, mealType, dateKey) {
+  const ing = state.ingredients.find(x => x.id === id);
+  if (!ing) return;
+  qty = Number(qty) || 0;
+  if (qty <= 0) return;
+  ing.remaining = Math.max(0, (Number(ing.remaining) || 0) - qty);
+  state.ingredientLogs.push({
+    id: uid('inglog'),
+    date: dateKey || getTodayKey(),
+    ingredientId: id,
+    ingredientName: ing.name,
+    mealType: mealType || '',
+    qty: qty,
+    unit: ing.unit || ''
+  });
+  saveIngredients();
+  saveIngredientLogs();
+}
+
+function addIngredient(data) {
+  state.ingredients.push({
+    id: uid('ing'),
+    name: (data.name || '').trim(),
+    unit: data.unit || '份',
+    remaining: Number(data.remaining) || 0,
+    purchaseDate: data.purchaseDate || getTodayKey(),
+    expiryDate: data.expiryDate || null
+  });
+  saveIngredients();
+}
+
+function updateIngredient(id, data) {
+  const ing = state.ingredients.find(x => x.id === id);
+  if (!ing) return;
+  if (data.name !== undefined) ing.name = (data.name || '').trim();
+  if (data.unit !== undefined) ing.unit = data.unit || '份';
+  if (data.remaining !== undefined) ing.remaining = Number(data.remaining) || 0;
+  if (data.purchaseDate !== undefined) ing.purchaseDate = data.purchaseDate;
+  if (data.expiryDate !== undefined) ing.expiryDate = data.expiryDate || null;
+  saveIngredients();
+}
+
+function deleteIngredient(id) {
+  state.ingredients = state.ingredients.filter(x => x.id !== id);
+  saveIngredients();
+}
+
+function getIngredientFiltered() {
+  const f = state.ingredientFilter;
+  if (f === 'all') return state.ingredients;
+  return state.ingredients.filter(ing => ingredientStatus(ing) === f);
+}
+
+function getWeekIngredientStats(weekStart) {
+  const end = shiftDate(weekStart, 6);
+  const inWeek = (k) => k >= weekStart && k <= end;
+  const consumedMap = {};
+  state.ingredientLogs.forEach(l => {
+    if (inWeek(l.date)) {
+      const key = l.ingredientName + '|' + (l.unit || '');
+      if (!consumedMap[key]) consumedMap[key] = { name: l.ingredientName, unit: l.unit || '', qty: 0 };
+      consumedMap[key].qty += Number(l.qty) || 0;
+    }
+  });
+  const consumed = Object.values(consumedMap).sort((a, b) => b.qty - a.qty);
+  const purchased = state.ingredients.filter(ing => ing.purchaseDate && inWeek(ing.purchaseDate));
+  const expiredWaste = state.ingredients.filter(ing => ing.expiryDate && inWeek(ing.expiryDate) && (Number(ing.remaining) || 0) > 0);
+  const soonList = state.ingredients.filter(ing => ingredientStatus(ing) === 'soon');
+  const suggestions = [];
+  if (soonList.length) suggestions.push('优先消耗临期食材：' + soonList.map(i => i.name).join('、') + '（共 ' + soonList.length + ' 项）');
+  if (expiredWaste.length) suggestions.push('本周有 ' + expiredWaste.length + ' 项食材过期未用完，下次采购适量减少');
+  if (consumed.length) suggestions.push('本周消耗最多：' + consumed.slice(0, 3).map(c => c.name).join('、') + '，可列入下周补货');
+  if (!suggestions.length) suggestions.push('本周食材记录良好，继续保持～');
+  return { consumed, purchased, expiredWaste, suggestions };
+}
+
+// 三餐录入弹窗：菜品 + 花费 + 勾选库存食材（自动扣减）
+function openMealEntry(type) {
+  const old = document.getElementById('meal-entry-modal');
+  if (old) old.remove();
+  const overlay = document.createElement('div');
+  overlay.className = 'modal xn-modal';
+  overlay.id = 'meal-entry-modal';
+  const ingRows = state.ingredients.length
+    ? state.ingredients.map(ing => {
+        const depleted = (Number(ing.remaining) || 0) <= 0;
+        return `<label class="me-ing-row${depleted ? ' disabled' : ''}" data-id="${ing.id}" data-name="${escapeHtml(ing.name)}" data-unit="${escapeHtml(ing.unit || '份')}">
+          <input type="checkbox" class="me-ing-check"${depleted ? ' disabled' : ''}>
+          <span class="me-ing-name">${escapeHtml(ing.name)}</span>
+          <span class="me-ing-unit">${escapeHtml(ing.unit || '份')}</span>
+          <input type="number" class="me-ing-qty small-input" placeholder="用量" min="0" step="0.1" disabled>
+          <span class="me-ing-left">剩 ${Number(ing.remaining) || 0}</span>
+        </label>`;
+      }).join('')
+    : '<p class="me-ing-empty">暂无库存食材，可先在下方「食材库存」中添加</p>';
+  overlay.innerHTML = `
+    <div class="modal-card xn-picker-card meal-entry-card">
+      <div class="xn-picker-head">
+        <h3 class="xn-picker-title" id="meal-entry-title">添加${type}</h3>
+        <button class="xn-picker-close" id="meal-entry-close" aria-label="关闭">✕</button>
+      </div>
+      <div class="xn-picker-body">
+        <label class="xn-field-label">菜品（名称 + 份量，如 米饭 100g）</label>
+        <input type="text" id="meal-entry-food" class="small-input" placeholder="米饭 100g">
+        <label class="xn-field-label">本餐花费（元）</label>
+        <input type="number" id="meal-entry-cost" class="small-input" placeholder="0" min="0" step="0.01">
+        <label class="xn-field-label">消耗库存食材（勾选并填用量，自动扣减）</label>
+        <div class="me-ing-list">${ingRows}</div>
+      </div>
+      <div class="xn-modal-actions">
+        <button class="xn-btn xn-btn-ghost" id="meal-entry-cancel">取消</button>
+        <button class="xn-btn xn-btn-primary" id="meal-entry-ok">添加</button>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+  requestAnimationFrame(() => overlay.classList.add('active'));
+
+  const foodInput = overlay.querySelector('#meal-entry-food');
+  const costInput = overlay.querySelector('#meal-entry-cost');
+  foodInput.focus();
+
+  overlay.querySelectorAll('.me-ing-check').forEach(cb => {
+    cb.addEventListener('change', () => {
+      const row = cb.closest('.me-ing-row');
+      const qty = row.querySelector('.me-ing-qty');
+      qty.disabled = !cb.checked;
+      if (cb.checked) qty.focus();
+    });
+  });
+
+  return new Promise((resolve) => {
+    let done = false;
+    const close = () => { if (!done) { done = true; overlay.classList.remove('active'); setTimeout(() => overlay.remove(), 150); } };
+    const finish = (val) => { done = true; overlay.classList.remove('active'); setTimeout(() => overlay.remove(), 150); resolve(val); };
+    overlay.querySelector('#meal-entry-close').onclick = () => finish(null);
+    overlay.querySelector('#meal-entry-cancel').onclick = () => finish(null);
+    overlay.onclick = (e) => { if (e.target === overlay) finish(null); };
+    overlay.querySelector('#meal-entry-ok').onclick = () => {
+      const food = foodInput.value.trim();
+      if (!food) { foodInput.focus(); return; }
+      const cost = parseFloat(costInput.value) || 0;
+      const ingredients = [];
+      overlay.querySelectorAll('.me-ing-row').forEach(row => {
+        const cb = row.querySelector('.me-ing-check');
+        if (cb.checked) {
+          const qty = parseFloat(row.querySelector('.me-ing-qty').value) || 0;
+          ingredients.push({ id: row.dataset.id, name: row.dataset.name, unit: row.dataset.unit, qty });
+        }
+      });
+      finish({ food, cost, ingredients });
+    };
+    foodInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') overlay.querySelector('#meal-entry-ok').click(); });
+  });
+}
+
+// 食材录入 / 编辑弹窗
+function openIngredientModal(editId) {
+  const old = document.getElementById('ing-edit-modal');
+  if (old) old.remove();
+  const editing = editId ? state.ingredients.find(x => x.id === editId) : null;
+  const overlay = document.createElement('div');
+  overlay.className = 'modal xn-modal';
+  overlay.id = 'ing-edit-modal';
+  overlay.innerHTML = `
+    <div class="modal-card xn-picker-card">
+      <div class="xn-picker-head">
+        <h3 class="xn-picker-title">${editing ? '编辑食材' : '添加食材'}</h3>
+        <button class="xn-picker-close" id="ing-edit-close" aria-label="关闭">✕</button>
+      </div>
+      <div class="xn-picker-body">
+        <label class="xn-field-label">食材名称</label>
+        <input type="text" id="ing-name" class="small-input" placeholder="如 鸡蛋" value="${editing ? escapeHtml(editing.name) : ''}">
+        <div class="ing-form-grid">
+          <div><label class="xn-field-label">单位</label><input type="text" id="ing-unit" class="small-input" placeholder="份/个/g" value="${editing ? escapeHtml(editing.unit || '份') : '份'}"></div>
+          <div><label class="xn-field-label">剩余数量</label><input type="number" id="ing-remaining" class="small-input" placeholder="0" min="0" step="0.1" value="${editing ? (Number(editing.remaining) || 0) : ''}"></div>
+        </div>
+        <div class="ing-form-grid">
+          <div><label class="xn-field-label">购买日期</label><button class="ing-date-btn" id="ing-purchase" data-field="purchase">${editing && editing.purchaseDate ? editing.purchaseDate : '选择日期'}</button></div>
+          <div><label class="xn-field-label">过期日期</label><button class="ing-date-btn" id="ing-expiry" data-field="expiry">${editing && editing.expiryDate ? editing.expiryDate : '选择日期（可选）'}</button></div>
+        </div>
+      </div>
+      <div class="xn-modal-actions">
+        <button class="xn-btn xn-btn-ghost" id="ing-edit-cancel">取消</button>
+        <button class="xn-btn xn-btn-primary" id="ing-edit-ok">${editing ? '保存' : '添加'}</button>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+  requestAnimationFrame(() => overlay.classList.add('active'));
+
+  const data = { name: '', unit: '份', remaining: 0, purchaseDate: editing ? (editing.purchaseDate || getTodayKey()) : getTodayKey(), expiryDate: editing ? (editing.expiryDate || null) : null };
+  if (editing) { data.name = editing.name; data.remaining = Number(editing.remaining) || 0; }
+
+  const nameInput = overlay.querySelector('#ing-name');
+  const unitInput = overlay.querySelector('#ing-unit');
+  const remInput = overlay.querySelector('#ing-remaining');
+  const purchaseBtn = overlay.querySelector('#ing-purchase');
+  const expiryBtn = overlay.querySelector('#ing-expiry');
+  nameInput.focus();
+
+  purchaseBtn.onclick = () => openDatePicker({ initial: data.purchaseDate || getTodayKey(), max: getTodayKey(), onSelect: (k) => { data.purchaseDate = k; purchaseBtn.textContent = k; } });
+  expiryBtn.onclick = () => openDatePicker({ initial: data.expiryDate || getTodayKey(), onSelect: (k) => { data.expiryDate = k; expiryBtn.textContent = k; }, onClear: () => { data.expiryDate = null; expiryBtn.textContent = '选择日期（可选）'; } });
+
+  return new Promise((resolve) => {
+    const close = () => { overlay.classList.remove('active'); setTimeout(() => overlay.remove(), 150); };
+    const finish = (val) => { close(); resolve(val); };
+    overlay.querySelector('#ing-edit-close').onclick = () => finish(null);
+    overlay.querySelector('#ing-edit-cancel').onclick = () => finish(null);
+    overlay.onclick = (e) => { if (e.target === overlay) finish(null); };
+    overlay.querySelector('#ing-edit-ok').onclick = () => {
+      const name = nameInput.value.trim();
+      if (!name) { nameInput.focus(); return; }
+      data.name = name;
+      data.unit = unitInput.value.trim() || '份';
+      data.remaining = parseFloat(remInput.value) || 0;
+      if (editing) updateIngredient(editing.id, data);
+      else addIngredient(data);
+      finish(true);
+    };
+  });
+}
+
+// 食材详情弹窗
+function openIngredientDetail(id) {
+  const ing = state.ingredients.find(x => x.id === id);
+  if (!ing) return;
+  const old = document.getElementById('ing-detail-modal');
+  if (old) old.remove();
+  const st = ingredientStatus(ing);
+  const stText = { ok: '正常', soon: '即将过期', expired: '已过期', depleted: '已耗尽' }[st];
+  const usedThisWeek = state.ingredientLogs.filter(l => l.ingredientId === id && l.date >= getWeekStart() && l.date <= shiftDate(getWeekStart(), 6));
+  const usedTotal = usedThisWeek.reduce((s, l) => s + (Number(l.qty) || 0), 0);
+  const overlay = document.createElement('div');
+  overlay.className = 'modal xn-modal';
+  overlay.id = 'ing-detail-modal';
+  overlay.innerHTML = `
+    <div class="modal-card xn-picker-card">
+      <div class="xn-picker-head">
+        <h3 class="xn-picker-title">${escapeHtml(ing.name)}</h3>
+        <button class="xn-picker-close" id="ing-detail-close" aria-label="关闭">✕</button>
+      </div>
+      <div class="xn-picker-body">
+        <div class="ing-detail-status status-${st}">${stText}</div>
+        <div class="ing-detail-grid">
+          <div><span>剩余数量</span><b>${Number(ing.remaining) || 0} ${escapeHtml(ing.unit || '份')}</b></div>
+          <div><span>购买日期</span><b>${ing.purchaseDate || '—'}</b></div>
+          <div><span>过期日期</span><b>${ing.expiryDate || '未设置'}</b></div>
+          <div><span>本周已用</span><b>${usedTotal} ${escapeHtml(ing.unit || '份')}</b></div>
+        </div>
+        ${usedThisWeek.length ? '<div class="ing-detail-log"><div class="ing-detail-log-title">本周消耗记录</div>' + usedThisWeek.map(l => `<div class="ing-detail-log-row"><span>${l.date}</span><span>${l.mealType || '餐'} · ${l.qty} ${escapeHtml(l.unit || '')}</span></div>`).join('') + '</div>' : ''}
+      </div>
+      <div class="xn-modal-actions">
+        <button class="xn-btn xn-btn-ghost" id="ing-detail-edit">编辑</button>
+        <button class="xn-btn xn-btn-danger" id="ing-detail-del">删除</button>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+  requestAnimationFrame(() => overlay.classList.add('active'));
+  overlay.querySelector('#ing-detail-close').onclick = () => { overlay.classList.remove('active'); setTimeout(() => overlay.remove(), 150); };
+  overlay.onclick = (e) => { if (e.target === overlay) { overlay.classList.remove('active'); setTimeout(() => overlay.remove(), 150); } };
+  overlay.querySelector('#ing-detail-edit').onclick = async () => { overlay.remove(); const ok = await openIngredientModal(id); if (ok) renderDiet(); };
+  overlay.querySelector('#ing-detail-del').onclick = async () => {
+    overlay.remove();
+    const sure = await appConfirm('确定删除「' + ing.name + '」？此操作不可撤销。', { danger: true, okText: '删除', cancelText: '取消' });
+    if (sure) { deleteIngredient(id); renderDiet(); }
+  };
+}
+
+function renderIngredientsCardInner(card) {
+  const list = getIngredientFiltered();
+  const counts = { all: state.ingredients.length, soon: state.ingredients.filter(i => ingredientStatus(i) === 'soon').length, expired: state.ingredients.filter(i => ingredientStatus(i) === 'expired').length, depleted: state.ingredients.filter(i => ingredientStatus(i) === 'depleted').length };
+  const filterBtns = [['all', '全部'], ['soon', '即将过期'], ['expired', '已过期'], ['depleted', '已耗尽']].map(([k, label]) => `<button class="ing-filter-btn${state.ingredientFilter === k ? ' active' : ''}" data-filter="${k}">${label}<span class="ing-filter-count">${counts[k]}</span></button>`).join('');
+  const rows = list.length ? list.map(ing => {
+    const st = ingredientStatus(ing);
+    const tag = st === 'soon' ? '<span class="ing-tag tag-soon">即将过期</span>' : st === 'expired' ? '<span class="ing-tag tag-expired">已过期</span>' : st === 'depleted' ? '<span class="ing-tag tag-depleted">已耗尽</span>' : '';
+    return `<div class="ing-row${st === 'depleted' || st === 'expired' ? ' dim' : ''}" data-id="${ing.id}">
+      <div class="ing-info">
+        <div class="ing-name-row"><span class="ing-name">${escapeHtml(ing.name)}</span>${tag}</div>
+        <div class="ing-meta">剩 ${Number(ing.remaining) || 0} ${escapeHtml(ing.unit || '份')} · 购 ${ing.purchaseDate || '—'}${ing.expiryDate ? ' · 期 ' + ing.expiryDate : ''}</div>
+      </div>
+      <div class="ing-actions">
+        <button class="icon-action" data-act="ing-minus" data-id="${ing.id}" title="减 1">−</button>
+        <button class="icon-action" data-act="ing-edit" data-id="${ing.id}" title="编辑">${icon('edit', 13)}</button>
+        <button class="icon-action delete" data-act="ing-del" data-id="${ing.id}" title="删除">${icon('delete', 13)}</button>
+      </div>
+    </div>`;
+  }).join('') : '<p class="memo-empty">库存为空，点击下方「添加食材」开始记录吧</p>';
+  card.querySelector('#ing-filter-tabs').innerHTML = filterBtns;
+  card.querySelector('#ing-list').innerHTML = rows;
+}
+
+function wireIngredientCard(card) {
+  card.querySelector('#ing-filter-tabs').addEventListener('click', (e) => {
+    const btn = e.target.closest('.ing-filter-btn');
+    if (!btn) return;
+    state.ingredientFilter = btn.dataset.filter;
+    renderIngredientsCardInner(card);
+    card.querySelectorAll('.ing-filter-btn').forEach(b => b.classList.toggle('active', b.dataset.filter === state.ingredientFilter));
+  });
+  card.querySelector('#ing-add-btn').addEventListener('click', async () => {
+    const ok = await openIngredientModal();
+    if (ok) renderDiet();
+  });
+  card.querySelector('#ing-import-btn').addEventListener('click', async () => {
+    const samples = [
+      { name: '鸡蛋', unit: '个', remaining: 10, purchaseDate: getTodayKey(), expiryDate: shiftDate(getTodayKey(), 12) },
+      { name: '牛奶', unit: '盒', remaining: 4, purchaseDate: getTodayKey(), expiryDate: shiftDate(getTodayKey(), 5) },
+      { name: '西红柿', unit: '个', remaining: 6, purchaseDate: getTodayKey(), expiryDate: shiftDate(getTodayKey(), 4) },
+      { name: '大米', unit: 'kg', remaining: 2, purchaseDate: getTodayKey(), expiryDate: shiftDate(getTodayKey(), 90) }
+    ];
+    const sure = await appConfirm('将导入 ' + samples.length + ' 个示例食材用于体验功能，确定吗？', { okText: '导入', cancelText: '取消' });
+    if (!sure) return;
+    samples.forEach(s => addIngredient(s));
+    renderDiet();
+  });
+  card.querySelector('#ing-list').addEventListener('click', async (e) => {
+    const actBtn = e.target.closest('[data-act]');
+    if (actBtn) {
+      const id = actBtn.dataset.id;
+      const act = actBtn.dataset.act;
+      if (act === 'ing-edit') { const ok = await openIngredientModal(id); if (ok) renderDiet(); }
+      else if (act === 'ing-del') {
+        const ing = state.ingredients.find(x => x.id === id);
+        const sure = await appConfirm('确定删除「' + (ing ? ing.name : '') + '」？', { danger: true, okText: '删除', cancelText: '取消' });
+        if (sure) { deleteIngredient(id); renderDiet(); }
+      } else if (act === 'ing-minus') {
+        const ing = state.ingredients.find(x => x.id === id);
+        if (ing) { updateIngredient(id, { remaining: Math.max(0, (Number(ing.remaining) || 0) - 1) }); renderDiet(); }
+      }
+      return;
+    }
+    const row = e.target.closest('.ing-row');
+    if (row) openIngredientDetail(row.dataset.id);
+  });
 }
 
 // ============ 新模块：通用工具与积分体系 ============
@@ -10050,6 +10504,27 @@ function openInsightDetail(s) {
   openInsightSheet('', body);
 }
 
+function renderWeeklyIngredientStatsHTML(weekStart) {
+  const stats = getWeekIngredientStats(weekStart);
+  const consumedHTML = stats.consumed.length
+    ? stats.consumed.map(c => `<div class="wi-stat-row"><span class="wi-name">${escapeHtml(c.name)}</span><span class="wi-qty">${Number(c.qty) || 0} ${escapeHtml(c.unit || '')}</span></div>`).join('')
+    : '<p class="memo-empty">本周还没有消耗食材记录</p>';
+  const purchasedHTML = stats.purchased.length
+    ? stats.purchased.map(p => `<div class="wi-stat-row"><span class="wi-name">${escapeHtml(p.name)}</span><span class="wi-sub">购 ${escapeHtml(p.purchaseDate || '—')}</span></div>`).join('')
+    : '<p class="memo-empty">本周暂无新增购入</p>';
+  const wasteHTML = stats.expiredWaste.length
+    ? stats.expiredWaste.map(w => `<div class="wi-stat-row wi-waste"><span class="wi-name">${escapeHtml(w.name)}</span><span class="wi-sub">期 ${escapeHtml(w.expiryDate || '—')} · 剩 ${Number(w.remaining) || 0}${escapeHtml(w.unit || '')}</span></div>`).join('')
+    : '<p class="memo-empty">本周无过期浪费 🎉</p>';
+  const suggestHTML = stats.suggestions.map(s => `<div class="insp-suggest-card"><span class="insp-suggest-ic">${icon('leaf', 14)}</span><p>${escapeHtml(s)}</p></div>`).join('');
+  return '<div class="insp-section wi-section"><div class="insp-section-head"><span class="insp-section-title"><span class="insp-sec-leaf">🌿</span> 每周食材统计</span><span class="insp-section-more">饮食 · 库存</span></div>'
+    + '<div class="wi-grid">'
+    + '<div class="wi-block"><div class="wi-block-head">本周消耗</div><div class="wi-block-body">' + consumedHTML + '</div></div>'
+    + '<div class="wi-block"><div class="wi-block-head">本周新增购入</div><div class="wi-block-body">' + purchasedHTML + '</div></div>'
+    + '<div class="wi-block"><div class="wi-block-head">本周过期浪费</div><div class="wi-block-body">' + wasteHTML + '</div></div>'
+    + '</div>'
+    + '<div class="insp-suggest-list">' + suggestHTML + '</div></div>';
+}
+
 function renderInsightPage() {
   const page = document.createElement('div');
   page.className = 'page';
@@ -10084,6 +10559,7 @@ function renderInsightPage() {
 
     + '<div class="insp-section insp-suggest-section"><div class="insp-section-head"><span class="insp-section-title"><span class="insp-sec-star">🌟</span> 每周优化建议</span></div>'
     + '<div class="insp-suggest-list">' + buildInsightSuggestions(stats).map(t => '<div class="insp-suggest-card"><span class="insp-suggest-ic">' + t.icon + '</span><p>' + t.text + '</p></div>').join('') + '</div></div>'
+    + renderWeeklyIngredientStatsHTML(weekStart)
     + '</div>';
   content.appendChild(page);
 
