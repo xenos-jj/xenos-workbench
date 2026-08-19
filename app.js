@@ -449,10 +449,7 @@ const DOMAIN_CONFIG = {
   '外貌': {
     key: 'looks', icon: 'sparkles', subtitle: '把自己当作长期作品来打磨',
     tags: ['护肤', '仪态', '穿搭', '妆容'],
-    tools: [
-      { name: '护肤日常', sub: '清洁 / 保湿 / 防晒', icon: 'sparkles', action: 'looks-content', payload: '护肤' },
-      { name: '仪态练习', sub: '体态 / 气质 / 穿搭', icon: 'user', action: 'looks-content', payload: '仪态' }
-    ],
+    tools: [],
     tasks: [
       { text: '早晚护肤', points: 2 },
       { text: '挺胸收腹 10 分钟', points: 2 },
@@ -905,10 +902,8 @@ const state = {
   reviewDate: null,
   contentTab: 'hot',
   contentStyle: '',
-  looksStyle: '',
   viewDate: '',
   domainTagFilter: {},
-  looksType: '',
   contentFilter: '全部',
   contentSearch: '',
   focus: { total: 25 * 60, remaining: 25 * 60, running: false, timer: null, preset: 25 },
@@ -2746,7 +2741,6 @@ const PAGE_ROUTES = {
   '成就殿堂': renderAchievements,
   '系统面板': renderSystemPanel,
   '内容素材库': renderContentLibrary,
-  'looks-content': renderLooksContent,
   '碎碎念': renderMemos,
   '自我介绍': renderSelfIntro,
   '设置': renderSettingsPage,
@@ -5483,7 +5477,6 @@ function openMainTaskPicker() {
     '健身训练 20 分钟',
     '冥想 10 分钟',
     '写作 500 字',
-    '护肤 routine',
     '学习一个新技能'
   ];
   const overlay = document.createElement('div');
@@ -6042,7 +6035,6 @@ function renderDomainPage(name) {
     btn.innerHTML = `<span class="tb-icon">${icon(tool.icon, 18)}</span><span><b>${escapeHTML(tool.name)}</b><span class="tb-sub">${escapeHTML(tool.sub)}</span></span>`;
     btn.addEventListener('click', () => {
       if (tool.action === 'focus') { openFocusModal(); return; }
-      if (tool.action === 'looks-content') { state.looksType = tool.payload; selectItem('looks-content'); return; }
       selectItem(tool.target);
     });
     tools.appendChild(btn);
@@ -6898,94 +6890,6 @@ function generateContentItems(count, tab, filter, style) {
 function openContentUrl(url) {
   if (!url) return;
   window.open(url, '_blank', 'noopener');
-}
-
-function generateLooksItems(count, type, styleKw) {
-  const topicMap = {
-    '护肤': ['早 C 晚 A 怎么用', '敏感肌修护步骤', '平价护肤流程', '防晒到底怎么选', '去黑头不伤肤', '换季不烂脸'],
-    '仪态': ['改善富贵包', '走路体态练习', '含胸驼背矫正', '气质肩颈拉伸', '坐姿矫正', '显高站姿'],
-    '穿搭': ['小个子显高', '通勤穿搭', '梨形身材穿搭', '极简衣橱', '复古风搭配', '学生党穿搭'],
-    '妆容': ['伪素颜妆', '新手化妆步骤', '通勤淡妆', '放大双眼眼妆', '持妆不脱妆', '约会妆容']
-  };
-  const hookMap = {
-    '护肤': ['先建立耐受，从低浓度开始', '精简步骤比堆砌更有效', '防晒是抗老第一步'],
-    '仪态': ['每天 5 分钟，坚持就有效', '靠墙站是性价比最高的练习', '收下巴比抬头更重要'],
-    '穿搭': ['高腰线拉长比例', '同色系显高级', '少买多搭更省钱'],
-    '妆容': ['底妆服帖的关键在保湿', '眼线顺着眼形画更自然', '定妆喷雾锁住妆容']
-  };
-  const topics = topicMap[type] || topicMap['护肤'];
-  const hooks = hookMap[type] || hookMap['护肤'];
-  const out = [];
-  for (let i = 0; i < count; i++) {
-    const topic = topics[i % topics.length];
-    const kw = `${type} ${topic}${styleKw ? ' ' + styleKw : ''}`;
-    out.push({
-      title: `${topic}${styleKw ? '（' + styleKw + '）' : ''}`,
-      category: type,
-      hook: hooks[i % hooks.length],
-      url: `https://www.douyin.com/search/${encodeURIComponent(kw)}`
-    });
-  }
-  return out;
-}
-
-function renderLooksContent(type) {
-  const t = type || state.looksType || '护肤';
-  state.looksType = t;
-  content.innerHTML = '';
-  const card = document.createElement('div');
-  card.className = 'content-card';
-  const types = ['护肤', '仪态', '穿搭', '妆容'];
-  card.innerHTML = `
-    <div class="page-header">
-      <div>
-        <h3 class="page-title-main">${t}推荐</h3>
-        <p class="page-subtitle">来自抖音的灵感参考</p>
-      </div>
-    </div>
-    <div class="soft-card">
-      <div class="style-bar">
-        <span>${icon('sparkles', 16)}</span>
-        <input type="text" id="looks-style" placeholder="自定义风格，如：油皮/通勤/学生党" value="${escapeHTML(state.looksStyle || '')}">
-      </div>
-      <div class="tab-bar">
-        ${types.map(x => `<button class="tab-btn${t === x ? ' active' : ''}" data-type="${x}">${x}</button>`).join('')}
-      </div>
-      <div class="soft-card-title">
-        <span class="stitle-lead">${icon('video', 16)} 推荐<span class="stitle-meta" id="looks-count"></span></span>
-        <button class="refresh-btn" id="looks-refresh" aria-label="刷新">${icon('refresh', 16)}</button>
-      </div>
-      <div class="looks-grid" id="looks-grid"></div>
-    </div>
-  `;
-  content.appendChild(card);
-
-  const grid = card.querySelector('#looks-grid');
-  function renderList() {
-    const styleKw = (state.looksStyle || '').trim();
-    const items = generateLooksItems(6, t, styleKw);
-    card.querySelector('#looks-count').textContent = items.length + ' 条';
-    grid.innerHTML = '';
-    items.forEach(it => {
-      const el = document.createElement('div');
-      el.className = 'looks-card';
-      el.innerHTML = `
-        <div class="looks-top"><span class="looks-badge">抖音</span><span class="looks-cat">${escapeHTML(it.category)}</span></div>
-        <h4 class="looks-title">${escapeHTML(it.title)}</h4>
-        <p class="looks-hook">${escapeHTML(it.hook)}</p>
-      `;
-      el.addEventListener('click', () => { window.open(it.url, '_blank', 'noopener'); });
-      grid.appendChild(el);
-    });
-  }
-  renderList();
-
-  const styleInput = card.querySelector('#looks-style');
-  if (styleInput) styleInput.addEventListener('input', () => { state.looksStyle = styleInput.value; });
-  card.querySelectorAll('[data-type]').forEach(btn => {
-    btn.addEventListener('click', () => { state.looksType = btn.dataset.type; renderContent(); });
-  });
-  card.querySelector('#looks-refresh').addEventListener('click', () => { renderList(); toast('已刷新'); });
 }
 
 function renderContentLibrary() {
