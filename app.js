@@ -2113,6 +2113,133 @@ modalInput.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') modalCancel.click();
 });
 
+// ---- 统一风格弹窗（替代原生 alert / confirm） ----
+let confirmResolve = null;
+let alertResolve = null;
+let pickerResolve = null;
+let pickerCurrentValue = null;
+
+function appConfirm(msg, opts = {}) {
+  const modal = document.getElementById('app-confirm-modal');
+  const titleEl = document.getElementById('app-confirm-title');
+  const msgEl = document.getElementById('app-confirm-msg');
+  const iconEl = document.getElementById('app-confirm-icon');
+  const okBtn = document.getElementById('app-confirm-ok');
+  const cancelBtn = document.getElementById('app-confirm-cancel');
+  titleEl.textContent = opts.title || '确认';
+  msgEl.textContent = msg;
+  iconEl.textContent = opts.icon || '🐰';
+  okBtn.textContent = opts.okText || '确定';
+  cancelBtn.textContent = opts.cancelText || '取消';
+  okBtn.className = 'xn-btn ' + (opts.danger ? 'xn-btn-danger' : 'xn-btn-primary');
+  modal.classList.add('active');
+  return new Promise((resolve) => {
+    confirmResolve = resolve;
+    const onOk = () => finish(true);
+    const onCancel = () => finish(false);
+    const onKey = (e) => {
+      if (e.key === 'Enter') onOk();
+      if (e.key === 'Escape') onCancel();
+    };
+    function finish(v) {
+      modal.classList.remove('active');
+      document.removeEventListener('keydown', onKey);
+      okBtn.onclick = null;
+      cancelBtn.onclick = null;
+      modal.onclick = null;
+      confirmResolve = null;
+      resolve(v);
+    }
+    okBtn.onclick = onOk;
+    cancelBtn.onclick = onCancel;
+    modal.onclick = (e) => { if (e.target === modal) onCancel(); };
+    document.addEventListener('keydown', onKey);
+  });
+}
+
+function appAlert(msg, opts = {}) {
+  const modal = document.getElementById('app-alert-modal');
+  const titleEl = document.getElementById('app-alert-title');
+  const msgEl = document.getElementById('app-alert-msg');
+  const iconEl = document.getElementById('app-alert-icon');
+  const okBtn = document.getElementById('app-alert-ok');
+  titleEl.textContent = opts.title || '提示';
+  msgEl.textContent = msg;
+  iconEl.textContent = opts.icon || '🐰';
+  okBtn.textContent = opts.okText || '知道啦';
+  modal.classList.add('active');
+  return new Promise((resolve) => {
+    alertResolve = resolve;
+    const onOk = () => finish();
+    const onKey = (e) => { if (e.key === 'Enter' || e.key === 'Escape') onOk(); };
+    function finish() {
+      modal.classList.remove('active');
+      document.removeEventListener('keydown', onKey);
+      okBtn.onclick = null;
+      modal.onclick = null;
+      alertResolve = null;
+      resolve();
+    }
+    okBtn.onclick = onOk;
+    modal.onclick = (e) => { if (e.target === modal) onOk(); };
+    document.addEventListener('keydown', onKey);
+  });
+}
+
+function pickCategory(opts = {}) {
+  const modal = document.getElementById('category-picker-modal');
+  const titleEl = document.getElementById('category-picker-title');
+  const body = document.getElementById('category-picker-body');
+  const okBtn = document.getElementById('category-picker-ok');
+  const cancelBtn = document.getElementById('category-picker-cancel');
+  const closeBtn = document.getElementById('category-picker-close');
+  const items = opts.items || [];
+  const initial = opts.value || (items[0] && items[0].value) || '';
+  pickerCurrentValue = initial;
+  titleEl.textContent = opts.title || '选择分类';
+  okBtn.textContent = opts.okText || '确定';
+  cancelBtn.textContent = opts.cancelText || '取消';
+  body.innerHTML = items.map(it => `
+    <label class="xn-picker-item" data-value="${escapeHtml(it.value)}">
+      <span class="cat-icon">${it.icon || icon('box', 16)}</span>
+      <span class="cat-name">${escapeHtml(it.label || it.value)}</span>
+      <input type="radio" name="xn-cat" value="${escapeHtml(it.value)}" ${it.value === initial ? 'checked' : ''}>
+    </label>
+  `).join('');
+  body.querySelectorAll('input[name="xn-cat"]').forEach(radio => {
+    radio.addEventListener('change', () => { pickerCurrentValue = radio.value; });
+  });
+  modal.classList.add('active');
+  return new Promise((resolve) => {
+    pickerResolve = resolve;
+    const onOk = () => finish(pickerCurrentValue);
+    const onCancel = () => finish(null);
+    const onKey = (e) => {
+      if (e.key === 'Enter') onOk();
+      if (e.key === 'Escape') onCancel();
+    };
+    function finish(v) {
+      modal.classList.remove('active');
+      document.removeEventListener('keydown', onKey);
+      okBtn.onclick = null;
+      cancelBtn.onclick = null;
+      closeBtn.onclick = null;
+      modal.onclick = null;
+      pickerResolve = null;
+      resolve(v);
+    }
+    okBtn.onclick = onOk;
+    cancelBtn.onclick = onCancel;
+    closeBtn.onclick = onCancel;
+    modal.onclick = (e) => { if (e.target === modal) onCancel(); };
+    document.addEventListener('keydown', onKey);
+  });
+}
+
+function escapeHtml(str) {
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
 // Sidebar open/close
 function openSidebar() {
   state.sidebarOpen = true;
@@ -2581,7 +2708,7 @@ menu.addEventListener('click', async (e) => {
   }
 
   if (action === 'delete-group') {
-    if (confirm(`确定删除分组「${group.name}」吗？`)) {
+    if (await appConfirm(`确定删除分组「${group.name}」吗？`)) {
       state.groups = state.groups.filter(g => g.id !== groupId);
       saveGroups();
       renderMenu();
@@ -2606,7 +2733,7 @@ menu.addEventListener('click', async (e) => {
   if (action === 'delete-item') {
     const itemEl = btn.closest('.menu-item');
     const item = findItem(itemEl.dataset.id);
-    if (confirm(`确定删除「${item.name}」吗？`)) {
+    if (await appConfirm(`确定删除「${item.name}」吗？`)) {
       group.items = group.items.filter(i => i.id !== item.id);
       if (state.activeItem === item.name) state.activeItem = '工作台首页';
       saveGroups();
@@ -3802,7 +3929,8 @@ function renderMoneyDetail(card, dateKey) {
       </div>
       <div class="tx-form">
         <input type="number" class="small-input" id="tx-amount" placeholder="金额（元）">
-        <select class="small-input" id="tx-category"></select>
+        <button class="small-input tx-category-btn" id="tx-category-btn" type="button">选择分类</button>
+        <input type="hidden" id="tx-category-value">
       </div>
       <input type="text" class="small-input" id="tx-note" placeholder="备注（可选）" style="margin-top:8px">
       <button class="plan-add-btn" id="tx-add-btn" style="width:100%;margin-top:10px;justify-content:center">添加记录</button>
@@ -3827,29 +3955,46 @@ function renderMoneyDetail(card, dateKey) {
   });
 
   let curType = 'expense';
-  const catSelect = card.querySelector('#tx-category');
-  function fillCategories() {
-    const list = curType === 'income' ? state.incomeCategories : state.expenseCategories;
-    catSelect.innerHTML = list.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
+  const catBtn = card.querySelector('#tx-category-btn');
+  const catValue = card.querySelector('#tx-category-value');
+  function getCategoryList() {
+    return curType === 'income' ? state.incomeCategories : state.expenseCategories;
   }
-  fillCategories();
+  function currentCategory() {
+    return catValue.value || getCategoryList()[0]?.name || '其他';
+  }
+  function updateCategoryBtn() {
+    catBtn.textContent = currentCategory();
+    catValue.value = currentCategory();
+  }
+  updateCategoryBtn();
 
   card.querySelectorAll('.txt-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       card.querySelectorAll('.txt-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       curType = btn.dataset.type;
-      fillCategories();
+      catValue.value = '';
+      updateCategoryBtn();
     });
   });
 
-  card.querySelector('#tx-add-btn').addEventListener('click', () => {
+  catBtn.addEventListener('click', async () => {
+    const items = getCategoryList().map(c => ({ value: c.name, label: c.name, icon: renderItemIcon(c.icon || 'box', 16) }));
+    const picked = await pickCategory({ title: `选择${curType === 'income' ? '收入' : '支出'}分类`, items, value: currentCategory() });
+    if (picked) {
+      catValue.value = picked;
+      catBtn.textContent = picked;
+    }
+  });
+
+  card.querySelector('#tx-add-btn').addEventListener('click', async () => {
     const amount = parseFloat(card.querySelector('#tx-amount').value);
     if (isNaN(amount) || amount <= 0) {
-      alert('请输入有效金额');
+      await appAlert('请输入有效金额');
       return;
     }
-    const category = catSelect.value;
+    const category = currentCategory();
     const note = card.querySelector('#tx-note').value.trim();
     state.transactions.push({
       id: uid('tx'),
@@ -4398,12 +4543,12 @@ function renderFitness() {
   const videoTitleInput = card.querySelector('#video-title');
   const videoUrlInput = card.querySelector('#video-url');
   const videoAddBtn = card.querySelector('#video-add-btn');
-  videoAddBtn.addEventListener('click', () => {
+  videoAddBtn.addEventListener('click', async () => {
     let title = videoTitleInput.value.trim();
     let url = videoUrlInput.value.trim();
     if (!url) return;
     if (!isVideoUrlValid(url)) {
-      alert('请输入有效的 http/https 链接');
+      await appAlert('请输入有效的 http/https 链接');
       return;
     }
     if (!title) {
@@ -4426,7 +4571,7 @@ function renderFitness() {
     renderVideoList();
   });
 
-  card.querySelector('#save-measure-btn').addEventListener('click', () => {
+  card.querySelector('#save-measure-btn').addEventListener('click', async () => {
     const get = id => parseFloat(card.querySelector(id)?.value) || 0;
     const todayKey = getTodayKey();
     const m = {
@@ -4439,7 +4584,7 @@ function renderFitness() {
       calf: get('#m-calf')
     };
     if (m.weight <= 0) {
-      alert('请至少填写体重');
+      await appAlert('请至少填写体重');
       return;
     }
     const existing = state.measurements.find(x => x.date === todayKey);
@@ -4457,8 +4602,8 @@ function renderFitness() {
 
   const clearBtn = card.querySelector('#measure-clear');
   if (clearBtn) {
-    clearBtn.addEventListener('click', () => {
-      if (confirm('确定清空所有测量记录？此操作不可撤销。')) {
+    clearBtn.addEventListener('click', async () => {
+      if (await appConfirm('确定清空所有测量记录？此操作不可撤销。', { danger: true })) {
         state.measurements = [];
         saveMeasurements();
         renderMeasurements();
@@ -5235,7 +5380,7 @@ function finishFocus() {
   renderProfileCard();
   renderTopbar();
   renderContent();
-  setTimeout(() => alert(`专注完成，本次 ${minutes} 分钟，已记入今日专注时长`), 60);
+  setTimeout(() => appAlert(`专注完成，本次 ${minutes} 分钟，已记入今日专注时长`, { title: '专注完成', icon: '🍅' }), 60);
 }
 
 function updateFocusUI() {
@@ -6678,14 +6823,14 @@ function renderRewards() {
   }
 }
 
-function redeemReward(id) {
+async function redeemReward(id) {
   const item = state.rewards.items.find(r => r.id === id);
   if (!item) return;
   if (getAvailablePoints() < item.cost) {
-    alert('积分不足，再攒攒吧');
+    await appAlert('积分不足，再攒攒吧');
     return;
   }
-  if (!confirm(`确认用 ${item.cost} 积分兑换「${item.name}」？`)) return;
+  if (!await appConfirm(`确认用 ${item.cost} 积分兑换「${item.name}」？`)) return;
   const now = new Date();
   state.rewards.redeemed.push({
     id: uid('rd'),
@@ -8167,7 +8312,7 @@ function renderSettings() {
   `;
   content.appendChild(page);
 
-  page.querySelector('#st-save').addEventListener('click', () => {
+  page.querySelector('#st-save').addEventListener('click', async () => {
     s.userName = page.querySelector('#st-name').value.trim() || 'Xenos';
     const av = page.querySelector('#st-avatar').value.trim();
     if (av) s.userAvatar = av;
@@ -8179,7 +8324,7 @@ function renderSettings() {
     saveProfile();
     renderProfileCard();
     renderTopbar();
-    alert('设置已保存');
+    await appAlert('设置已保存', { icon: '✨' });
   });
 
   page.querySelectorAll('.focus-preset').forEach(btn => {
@@ -8192,8 +8337,8 @@ function renderSettings() {
   page.querySelector('#st-export').addEventListener('click', exportData);
   page.querySelector('#st-import').addEventListener('click', () => importFile.click());
 
-  page.querySelector('#st-reset-menu').addEventListener('click', () => {
-    if (!confirm('确认恢复默认菜单结构？自定义分组会丢失。')) return;
+  page.querySelector('#st-reset-menu').addEventListener('click', async () => {
+    if (!await appConfirm('确认恢复默认菜单结构？自定义分组会丢失。')) return;
     localStorage.removeItem('xenos-groups');
     state.groups = loadGroups();
     saveGroups();
@@ -8203,9 +8348,9 @@ function renderSettings() {
     renderMobileTabs();
   });
 
-  page.querySelector('#st-reset-all').addEventListener('click', () => {
-    if (!confirm('确认清空全部数据？此操作不可恢复！')) return;
-    if (!confirm('再次确认：所有记录都会被删除。')) return;
+  page.querySelector('#st-reset-all').addEventListener('click', async () => {
+    if (!await appConfirm('确认清空全部数据？此操作不可恢复！', { danger: true })) return;
+    if (!await appConfirm('再次确认：所有记录都会被删除。', { danger: true })) return;
     Object.keys(localStorage)
       .filter(k => k.startsWith('xenos-'))
       .forEach(k => localStorage.removeItem(k));
@@ -8243,7 +8388,7 @@ importFile.addEventListener('change', (e) => {
   const file = e.target.files[0];
   if (!file) return;
   const reader = new FileReader();
-  reader.onload = () => {
+  reader.onload = async () => {
     try {
       const data = JSON.parse(reader.result);
       // Write every xenos-* key back to localStorage
@@ -8295,9 +8440,9 @@ importFile.addEventListener('change', (e) => {
       renderContent();
       renderMobileTabs();
       renderStreak();
-      alert('导入成功，数据已同步');
+      await appAlert('导入成功，数据已同步', { icon: '✅' });
     } catch (err) {
-      alert('导入失败，请检查 JSON 格式');
+      await appAlert('导入失败，请检查 JSON 格式', { icon: '⚠️' });
     }
   };
   reader.readAsText(file);
@@ -9916,15 +10061,15 @@ function renderSettingsPage() {
   });
   page.querySelector('#me-export').addEventListener('click', exportData);
   page.querySelector('#me-import').addEventListener('click', () => importFile.click());
-  page.querySelector('#me-reset-menu').addEventListener('click', () => {
-    if (!confirm('确认恢复默认菜单结构？自定义分组会丢失。')) return;
+  page.querySelector('#me-reset-menu').addEventListener('click', async () => {
+    if (!await appConfirm('确认恢复默认菜单结构？自定义分组会丢失。')) return;
     localStorage.removeItem('xenos-groups');
     state.groups = loadGroups(); saveGroups();
     state.activeItem = '设置'; renderMenu(); renderContent(); renderMobileTabs();
   });
-  page.querySelector('#me-reset-all').addEventListener('click', () => {
-    if (!confirm('确认清空全部数据？此操作不可恢复！')) return;
-    if (!confirm('再次确认：所有记录都会被删除。')) return;
+  page.querySelector('#me-reset-all').addEventListener('click', async () => {
+    if (!await appConfirm('确认清空全部数据？此操作不可恢复！', { danger: true })) return;
+    if (!await appConfirm('再次确认：所有记录都会被删除。', { danger: true })) return;
     Object.keys(localStorage).filter(k => k.startsWith('xenos-')).forEach(k => localStorage.removeItem(k));
     location.reload();
   });
@@ -10287,7 +10432,7 @@ function bindQuickRecordEvents() {
   if (save) save.onclick = saveQuickRecord;
 }
 
-function saveQuickRecord() {
+async function saveQuickRecord() {
   const modal = document.getElementById('quick-record-modal');
   if (!modal) return;
   const tab = qrCurrentTab;
@@ -10320,7 +10465,7 @@ function saveQuickRecord() {
     const amount = parseFloat((modal.querySelector('#qr-amount') || {}).value);
     const typeChip = modal.querySelector('#qr-type-chips .qr-chip.active');
     const type = typeChip ? typeChip.dataset.type : 'expense';
-    if (isNaN(amount) || amount <= 0) { alert('请输入有效金额'); return; }
+    if (isNaN(amount) || amount <= 0) { await appAlert('请输入有效金额'); return; }
     const category = type === 'income'
       ? ((state.incomeCategories[0] && state.incomeCategories[0].name) || '其他')
       : ((state.expenseCategories[0] && state.expenseCategories[0].name) || '其他');
@@ -10328,7 +10473,7 @@ function saveQuickRecord() {
     saveTransactions();
   } else {
     const idea = (modal.querySelector('#qr-idea') || {}).value || '';
-    if (!idea.trim()) { alert('写点什么吧～'); return; }
+    if (!idea.trim()) { await appAlert('写点什么吧～'); return; }
     if (!Array.isArray(state.memos)) state.memos = [];
     state.memos.push({ id: uid('memo'), date: getTodayKey(), text: idea });
     saveMemos();

@@ -10,7 +10,7 @@
     // 内联版本探针：独立于 app.js，确保即使脚本被缓存也能发现新版本
     (function () {
       try {
-        var BUILT = 9155;
+        var BUILT = 9156;
         fetch('./version.json?v=' + Date.now(), { cache: 'no-store' })
           .then(function (r) { return r.ok ? r.json() : null; })
           .then(function (d) {
@@ -27,11 +27,11 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <link rel="manifest" href="manifest.webmanifest?v=155">
-  <link rel="apple-touch-icon" href="icon-192.png?v=155">
-  <link rel="stylesheet" href="styles.css?v=155">
+  <link rel="manifest" href="manifest.webmanifest?v=156">
+  <link rel="apple-touch-icon" href="icon-192.png?v=156">
+  <link rel="stylesheet" href="styles.css?v=156">
   <!-- 预加载关键资源，缩短首屏等待 -->
-  <link rel="preload" href="app.js?v=155" as="script">
+  <link rel="preload" href="app.js?v=156" as="script">
   <link rel="preload" href="fonts/zcool-kuaile.ttf" as="font" type="font/ttf" crossorigin>
   <link rel="preload" href="fonts/strawberry.ttf?v=124" as="font" type="font/ttf" crossorigin>
   <title>xenos - 人生系统工作台</title>
@@ -228,6 +228,46 @@
     </div>
   </div>
 
+  <!-- 通用确认弹窗（替代原生 confirm） -->
+  <div class="modal xn-modal" id="app-confirm-modal">
+    <div class="modal-card xn-confirm-card">
+      <div class="xn-modal-icon" id="app-confirm-icon">🐰</div>
+      <h3 class="xn-modal-title" id="app-confirm-title">确认</h3>
+      <p class="xn-modal-msg" id="app-confirm-msg"></p>
+      <div class="xn-modal-actions">
+        <button class="xn-btn xn-btn-ghost" id="app-confirm-cancel">取消</button>
+        <button class="xn-btn xn-btn-primary" id="app-confirm-ok">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 通用提示弹窗（替代原生 alert） -->
+  <div class="modal xn-modal" id="app-alert-modal">
+    <div class="modal-card xn-alert-card">
+      <div class="xn-modal-icon" id="app-alert-icon">🐰</div>
+      <h3 class="xn-modal-title" id="app-alert-title">提示</h3>
+      <p class="xn-modal-msg" id="app-alert-msg"></p>
+      <div class="xn-modal-actions">
+        <button class="xn-btn xn-btn-primary" id="app-alert-ok">知道啦</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 分类选择器弹窗（替代原生 select） -->
+  <div class="modal xn-modal" id="category-picker-modal">
+    <div class="modal-card xn-picker-card">
+      <div class="xn-picker-head">
+        <h3 class="xn-picker-title" id="category-picker-title">选择分类</h3>
+        <button class="xn-picker-close" id="category-picker-close" aria-label="关闭">✕</button>
+      </div>
+      <div class="xn-picker-body" id="category-picker-body"></div>
+      <div class="xn-modal-actions">
+        <button class="xn-btn xn-btn-ghost" id="category-picker-cancel">取消</button>
+        <button class="xn-btn xn-btn-primary" id="category-picker-ok">确定</button>
+      </div>
+    </div>
+  </div>
+
   <!-- 快速记录底部滑出 sheet -->
   <div class="modal bottom-sheet" id="quick-record-modal">
     <div class="bottom-sheet-card qr-card">
@@ -252,6 +292,6 @@
     </div>
   </div>
 
-  <script src="app.js?v=155"></script>
+  <script src="app.js?v=156"></script>
 </body>
 </html>
