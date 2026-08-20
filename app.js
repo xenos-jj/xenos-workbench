@@ -3460,6 +3460,15 @@ function getDayIncome(date) {
     .reduce((s, t) => s + (t.amount || 0), 0);
 }
 
+// 每日超出预算扣分：20 元以内 -3，20-50 元 -5，50-100 元 -10，100 元以上 -20
+function overrunPoints(overAmount) {
+  if (overAmount <= 0) return 0;
+  if (overAmount <= 20) return 3;
+  if (overAmount <= 50) return 5;
+  if (overAmount <= 100) return 10;
+  return 20;
+}
+
 function getMonthTransactions(year, month) {
   const prefix = `${year}-${String(month + 1).padStart(2, '0')}`;
   return state.transactions.filter(t => t.date && t.date.startsWith(prefix));
@@ -3610,7 +3619,7 @@ function renderMoney(opts) {
         <div class="budget-bar-fill ${todayOver ? 'over' : ''}" style="width:${budgetPct}%"></div>
       </div>
       <div class="budget-hint ${todayOver ? 'over' : ''}">
-        ${todayOver ? '今日已超预算，积分 -1' : (state.budget > 0 ? '今日未超预算，可获得 +1 积分' : '未设置预算，仅记录支出')}
+        ${todayOver ? `今日已超预算 ¥${formatMoney(todayExpense - state.budget)}，积分 -${overrunPoints(todayExpense - state.budget)}` : (state.budget > 0 ? '今日未超预算，可获得 +1 积分' : '未设置预算，仅记录支出')}
       </div>
     </div>
 
@@ -3944,7 +3953,7 @@ function renderMoneyDetail(card, dateKey) {
         <div class="mt-col"><span class="mt-col-label">收入</span><span class="mt-col-val income">+¥${formatMoney(income)}</span></div>
       </div>
       <div class="budget-hint ${over ? 'over' : ''}" style="margin-top:10px">
-        ${over ? `超出预算 ¥${formatMoney(expense - state.budget)} · 积分 -${Math.max(1, Math.round(expense - state.budget))}` : `未超预算 · 积分 +5`}
+        ${over ? `超出预算 ¥${formatMoney(expense - state.budget)} · 积分 -${overrunPoints(expense - state.budget)}` : `未超预算 · 积分 +5`}
       </div>
     </div>
 
