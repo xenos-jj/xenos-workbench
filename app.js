@@ -10371,8 +10371,9 @@ function fmtMetric(v, unit) {
 function deltaBadge(cur, last, unit) {
   const diff = (Number(cur) || 0) - (Number(last) || 0);
   const abs = Math.round(Math.abs(diff));
-  if (diff > 0) return '<span class="insp-delta up">▲' + abs + '</span>';
-  if (diff < 0) return '<span class="insp-delta down">▼' + abs + '</span>';
+  const u = unit || '';
+  if (diff > 0) return '<span class="insp-delta up">▲' + abs + u + '</span>';
+  if (diff < 0) return '<span class="insp-delta down">▼' + abs + u + '</span>';
   return '<span class="insp-delta flat">—</span>';
 }
 function barPct(v, arr) {
@@ -10455,7 +10456,7 @@ function openInsightDetail(s) {
   const weekdayLabels = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
   const dailyRows = weekdayLabels.map((d, i) => '<div class="insp-dt-row"><span class="insp-dt-day">' + d + '</span><span class="insp-dt-bar"><i style="width:' + barPct(s.daily[i], s.daily) + '%;background:' + s.color + '"></i></span><span class="insp-dt-val">' + fmtMetric(s.daily[i], s.metricUnit) + '</span><span class="insp-dt-items">' + s.dailyItems[i] + ' 项</span></div>').join('');
   const body = '<div class="insp-dt-head"><span class="insp-dt-ic" style="background:' + s.bg + ';color:' + s.color + '">' + icon(s.icon, 18) + '</span><div><div class="insp-dt-name">' + s.name + ' · 本周详情</div><div class="insp-dt-sub">' + shiftDate(s.weekStart, 0).slice(5) + ' ~ ' + shiftDate(s.weekStart, 6).slice(5) + '</div></div></div>'
-    + '<div class="insp-dt-nums"><div><b>' + s.items + '</b><span>完成总项</span></div><div><b>' + Math.round(s.metric) + '</b><span>' + s.metricName + '</span></div><div><b>' + s.avg + '</b><span>' + s.avgName + '</span></div></div>'
+    + '<div class="insp-dt-nums"><div><b>' + s.items + ' 项</b><span>完成总项</span></div><div><b>' + Math.round(s.metric) + ' ' + s.metricUnit + '</b><span>' + s.metricName + '</span></div><div><b>' + s.avg + ' ' + s.avgUnit + '</b><span>' + s.avgName + '</span></div></div>'
     + '<div class="insp-dt-cmp">较上周：完成 ' + deltaBadge(s.items, s.itemsLast, '项') + ' · ' + s.metricName + ' ' + deltaBadge(s.metric, s.metricLast, s.metricUnit) + '</div>'
     + '<div class="insp-dt-chart">' + weeklyLineChart(s.daily, s.color, s.metricUnit) + '</div>'
     + '<div class="insp-dt-list">' + dailyRows + '</div>'
@@ -10485,6 +10486,7 @@ function renderWeeklyIngredientStatsHTML(weekStart) {
 }
 
 function renderInsightPage() {
+  content.innerHTML = '';
   const page = document.createElement('div');
   page.className = 'page';
   if (greetLine) greetLine.textContent = '本周洞察';
