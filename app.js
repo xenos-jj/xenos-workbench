@@ -10602,13 +10602,41 @@ function weeksLeft(deadline) {
 
 // ============ 快速记录模态框 ============
 let qrCurrentTab = 'sport';
+let qrMoneySubType = 'expense';
 
-function openQuickRecordModal(tab) {
+function qrAccountName(id) {
+  return (state.assetAccounts || []).find(a => a.id === id)?.name || '余额';
+}
+
+function quickRecordBunnySVG() {
+  return `<svg class="qr-bunny" viewBox="0 0 80 80" aria-hidden="true">
+    <ellipse cx="25" cy="18" rx="7" ry="12" fill="#FFF5F0"/>
+    <ellipse cx="27" cy="20" rx="3.5" ry="7" fill="#FFD6D6"/>
+    <ellipse cx="55" cy="18" rx="7" ry="12" fill="#FFF5F0"/>
+    <ellipse cx="53" cy="20" rx="3.5" ry="7" fill="#FFD6D6"/>
+    <ellipse cx="40" cy="40" rx="24" ry="20" fill="#FFF5F0"/>
+    <circle cx="32" cy="37" r="2.2" fill="#6B5B50"/>
+    <circle cx="48" cy="37" r="2.2" fill="#6B5B50"/>
+    <circle cx="28" cy="42" r="2.8" fill="#FFD6D6" opacity="0.5"/>
+    <circle cx="52" cy="42" r="2.8" fill="#FFD6D6" opacity="0.5"/>
+    <ellipse cx="40" cy="44" rx="2" ry="1.5" fill="#FFB6B6"/>
+    <path d="M38 47 Q40 49 42 47" stroke="#6B5B50" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+    <ellipse cx="58" cy="55" rx="10" ry="7" fill="#FFE8D6" opacity="0.9"/>
+    <rect x="50" y="48" width="16" height="11" rx="2.5" fill="#FFF0E0" stroke="#E8C9A8" stroke-width="0.8"/>
+    <path d="M66 51 Q69 51 69 55 Q69 59 66 59" fill="none" stroke="#E8C9A8" stroke-width="1" stroke-linecap="round"/>
+    <circle cx="62" cy="65" r="1" fill="#F5A962" opacity="0.5"/>
+  </svg>`;
+}
+
+function openQuickRecordModal(tab, subType) {
   qrCurrentTab = tab || 'sport';
+  qrMoneySubType = subType || 'expense';
   const modal = document.getElementById('quick-record-modal');
   if (!modal) return;
+  const bunny = modal.querySelector('#qr-bunny-deco');
+  if (bunny) bunny.innerHTML = quickRecordBunnySVG();
   modal.querySelectorAll('.qr-tab').forEach(t => t.classList.toggle('active', t.dataset.qr === qrCurrentTab));
-  renderQuickRecordBody(qrCurrentTab);
+  renderQuickRecordBody(qrCurrentTab, qrMoneySubType);
   modal.classList.add('active');
 }
 
@@ -10617,42 +10645,85 @@ function closeQuickRecordModal() {
   if (modal) modal.classList.remove('active');
 }
 
-function renderQuickRecordBody(tab) {
+function sportTabHTML() {
+  return `<div class="qr-field"><label>运动时长（分钟）</label><input type="number" id="qr-min" value="20" min="0"></div>
+    <div class="qr-field"><label>运动类型</label><div class="qr-chips" id="qr-sport-chips">
+      <span class="qr-chip active" data-t="跑步"><span class="qr-chip-ico">🏃</span>跑步</span>
+      <span class="qr-chip" data-t="走路"><span class="qr-chip-ico">🚶</span>走路</span>
+      <span class="qr-chip" data-t="骑行"><span class="qr-chip-ico">🚴</span>骑行</span>
+      <span class="qr-chip" data-t="健身"><span class="qr-chip-ico">💪</span>健身</span>
+      <span class="qr-chip" data-t="瑜伽"><span class="qr-chip-ico">🧘</span>瑜伽</span>
+      <span class="qr-chip" data-t="其他"><span class="qr-chip-ico">✨</span>其他</span>
+    </div></div>
+    <div class="qr-field"><label>备注</label><input type="text" id="qr-note" placeholder="今天做了什么运动？"></div>`;
+}
+
+function sleepTabHTML() {
+  return `<div class="qr-time-row">
+      <div class="qr-time-card" id="qr-bed-card">
+        <span class="qr-time-label"><span class="qr-time-ico">🌙</span>睡觉时间</span>
+        <span class="qr-time-val" id="qr-bed-val">22:30</span>
+        <input type="time" id="qr-bed" value="22:30" class="qr-time-input">
+      </div>
+      <div class="qr-time-sep">›</div>
+      <div class="qr-time-card" id="qr-wake-card">
+        <span class="qr-time-label"><span class="qr-time-ico">☀️</span>起床时间</span>
+        <span class="qr-time-val" id="qr-wake-val">06:30</span>
+        <input type="time" id="qr-wake" value="06:30" class="qr-time-input">
+      </div>
+    </div>
+    <div class="qr-field qr-range-field">
+      <div class="qr-range-head"><label>睡眠质量</label><span id="qr-q-val" class="qr-q-val">82分</span></div>
+      <div class="qr-range-track">
+        <div class="qr-range-fill" id="qr-range-fill" style="width:82%"></div>
+        <input type="range" class="qr-range" id="qr-quality" min="0" max="100" value="82">
+      </div>
+      <div class="qr-range-labels"><span>很差</span><span>较差</span><span>一般</span><span>良好</span><span>很好</span></div>
+    </div>
+    <div class="qr-field"><label>睡眠状态</label><div class="qr-chips qr-chips-lg" id="qr-sleep-chips">
+      <span class="qr-chip" data-s="入睡快"><span class="qr-chip-ico">😊</span>入睡快</span>
+      <span class="qr-chip active" data-s="一般"><span class="qr-chip-ico">😐</span>一般</span>
+      <span class="qr-chip" data-s="易醒"><span class="qr-chip-ico">😫</span>易醒</span>
+    </div></div>
+    <div class="qr-field qr-note-field">
+      <label>睡眠备注 <span class="qr-optional">（可选）</span></label>
+      <textarea id="qr-note" placeholder="记录一下昨晚的睡眠感受吧～" maxlength="100"></textarea>
+      <span class="qr-count" id="qr-note-count">0/100</span>
+      <div class="qr-bunny-corner">🐰</div>
+    </div>`;
+}
+
+function moneyTabHTML(subType) {
+  const isIncome = subType === 'income';
+  const cats = isIncome ? state.incomeCategories : state.expenseCategories;
+  const firstCat = cats && cats[0] ? cats[0].name : '其他';
+  const firstAcc = state.assetAccounts && state.assetAccounts[0] ? state.assetAccounts[0].id : 'balance';
+  return `<div class="qr-field"><label>类型</label><div class="qr-chips" id="qr-type-chips">
+      <span class="qr-chip ${isIncome ? '' : 'active'}" data-type="expense">💸 支出</span>
+      <span class="qr-chip ${isIncome ? 'active' : ''}" data-type="income">💵 收入</span>
+    </div></div>
+    <div class="qr-field"><label>金额（元）</label><input type="number" id="qr-amount" value="" min="0" step="0.01" placeholder="0.00"></div>
+    <div class="qr-field"><label>分类</label><div class="qr-select-row" id="qr-category-btn" data-value="${escapeHtml(firstCat)}"><span id="qr-category-text">${escapeHtml(firstCat)}</span><span>›</span></div></div>
+    <div class="qr-field"><label>账户</label><div class="qr-select-row" id="qr-account-btn" data-value="${escapeHtml(firstAcc)}"><span id="qr-account-text">${escapeHtml(qrAccountName(firstAcc))}</span><span>›</span></div></div>
+    <div class="qr-field"><label>备注</label><input type="text" id="qr-note" placeholder="这笔钱用来做什么？"></div>`;
+}
+
+function ideaTabHTML() {
+  return `<div class="qr-field qr-note-field">
+      <label>想法 / 灵感</label>
+      <textarea id="qr-idea" placeholder="记下来，灵感才不会溜走～" maxlength="200"></textarea>
+      <span class="qr-count" id="qr-idea-count">0/200</span>
+      <div class="qr-bunny-corner">🐰</div>
+    </div>`;
+}
+
+function renderQuickRecordBody(tab, subType) {
   const body = document.getElementById('qr-body');
   if (!body) return;
-  if (tab === 'sport') {
-    body.innerHTML = `
-      <div class="qr-field"><label>运动时长（分钟）</label><input type="number" id="qr-min" value="20" min="0"></div>
-      <div class="qr-field"><label>备注</label><input type="text" id="qr-note" placeholder="今天做了什么运动？"></div>`;
-  } else if (tab === 'sleep') {
-    body.innerHTML = `
-      <div class="qr-field"><label>睡觉时间</label><div class="qr-time-card"><input type="time" id="qr-bed" value="22:30"></div></div>
-      <div class="qr-field"><label>起床时间</label><div class="qr-time-card"><input type="time" id="qr-wake" value="06:30"></div></div>
-      <div class="qr-field"><label>睡眠质量 <span id="qr-q-val" class="qr-q-val">82</span></label>
-        <div class="qr-range-wrap">
-          <span class="qr-range-end">很差</span>
-          <input type="range" class="qr-range" id="qr-quality" min="0" max="100" value="82">
-          <span class="qr-range-end">很好</span>
-        </div>
-      </div>
-      <div class="qr-field"><label>睡眠状态</label><div class="qr-chips" id="qr-sleep-chips">
-        <span class="qr-chip" data-s="入睡快">入睡快</span>
-        <span class="qr-chip active" data-s="一般">一般</span>
-        <span class="qr-chip" data-s="易醒">易醒</span>
-      </div></div>
-      <div class="qr-field"><label>备注</label><input type="text" id="qr-note" placeholder="今天睡得怎么样？"></div>`;
-  } else if (tab === 'money') {
-    body.innerHTML = `
-      <div class="qr-field"><label>类型</label><div class="qr-chips" id="qr-type-chips">
-        <span class="qr-chip active" data-type="expense">支出</span>
-        <span class="qr-chip" data-type="income">收入</span>
-      </div></div>
-      <div class="qr-field"><label>金额（元）</label><input type="number" id="qr-amount" value="0" min="0" step="0.01"></div>
-      <div class="qr-field"><label>备注</label><input type="text" id="qr-note" placeholder="这笔钱用来做什么？"></div>`;
-  } else {
-    body.innerHTML = `
-      <div class="qr-field"><label>想法 / 灵感</label><textarea id="qr-idea" placeholder="记下来，灵感才不会溜走～"></textarea></div>`;
-  }
+  if (tab === 'sport') body.innerHTML = sportTabHTML();
+  else if (tab === 'sleep') body.innerHTML = sleepTabHTML();
+  else if (tab === 'money') body.innerHTML = moneyTabHTML(subType);
+  else body.innerHTML = ideaTabHTML();
   bindQuickRecordEvents();
 }
 
@@ -10670,9 +10741,10 @@ function bindQuickRecordEvents() {
   modal.querySelectorAll('.qr-short').forEach(s => {
     s.onclick = () => {
       const tab = s.dataset.qr;
+      const sub = s.dataset.sub;
       qrCurrentTab = tab;
       modal.querySelectorAll('.qr-tab').forEach(x => x.classList.toggle('active', x.dataset.qr === tab));
-      renderQuickRecordBody(tab);
+      renderQuickRecordBody(tab, sub);
     };
   });
   const closeBtn = modal.querySelector('#qr-close');
@@ -10681,12 +10753,83 @@ function bindQuickRecordEvents() {
   modal.querySelectorAll('.qr-chip').forEach(c => {
     c.onclick = () => {
       const group = c.closest('.qr-chips');
-      if (group) group.querySelectorAll('.qr-chip').forEach(x => x.classList.remove('active'));
-      c.classList.add('active');
+      if (!group) return;
+      if (group.id !== 'qr-type-chips') {
+        group.querySelectorAll('.qr-chip').forEach(x => x.classList.remove('active'));
+        c.classList.add('active');
+      } else {
+        group.querySelectorAll('.qr-chip').forEach(x => x.classList.remove('active'));
+        c.classList.add('active');
+        const type = c.dataset.type;
+        qrMoneySubType = type;
+        const cats = type === 'income' ? state.incomeCategories : state.expenseCategories;
+        const firstCat = cats && cats[0] ? cats[0].name : '其他';
+        const catBtn = modal.querySelector('#qr-category-btn');
+        if (catBtn) {
+          catBtn.dataset.value = firstCat;
+          catBtn.querySelector('#qr-category-text').textContent = firstCat;
+        }
+      }
     };
   });
+  const bedCard = modal.querySelector('#qr-bed-card');
+  const bedInput = modal.querySelector('#qr-bed');
+  if (bedCard && bedInput) {
+    bedCard.onclick = () => bedInput.showPicker ? bedInput.showPicker() : bedInput.focus();
+    bedInput.onchange = () => {
+      const valEl = modal.querySelector('#qr-bed-val');
+      if (valEl) valEl.textContent = bedInput.value;
+    };
+  }
+  const wakeCard = modal.querySelector('#qr-wake-card');
+  const wakeInput = modal.querySelector('#qr-wake');
+  if (wakeCard && wakeInput) {
+    wakeCard.onclick = () => wakeInput.showPicker ? wakeInput.showPicker() : wakeInput.focus();
+    wakeInput.onchange = () => {
+      const valEl = modal.querySelector('#qr-wake-val');
+      if (valEl) valEl.textContent = wakeInput.value;
+    };
+  }
   const q = modal.querySelector('#qr-quality');
-  if (q) q.oninput = () => { const v = modal.querySelector('#qr-q-val'); if (v) v.textContent = q.value; };
+  if (q) q.oninput = () => {
+    const v = modal.querySelector('#qr-q-val');
+    if (v) v.textContent = q.value + '分';
+    const fill = modal.querySelector('#qr-range-fill');
+    if (fill) fill.style.width = q.value + '%';
+  };
+  const noteArea = modal.querySelector('#qr-note');
+  if (noteArea) noteArea.oninput = () => {
+    const c = modal.querySelector('#qr-note-count');
+    if (c) c.textContent = noteArea.value.length + '/100';
+  };
+  const ideaArea = modal.querySelector('#qr-idea');
+  if (ideaArea) ideaArea.oninput = () => {
+    const c = modal.querySelector('#qr-idea-count');
+    if (c) c.textContent = ideaArea.value.length + '/200';
+  };
+  const catBtn = modal.querySelector('#qr-category-btn');
+  if (catBtn) catBtn.onclick = async () => {
+    const typeChip = modal.querySelector('#qr-type-chips .qr-chip.active');
+    const type = typeChip ? typeChip.dataset.type : 'expense';
+    const cats = type === 'income' ? state.incomeCategories : state.expenseCategories;
+    const items = (cats || []).map(c => ({ value: c.name, label: c.name, icon: renderItemIcon(c.icon || 'box', 16) }));
+    if (!items.length) items.push({ value: '其他', label: '其他', icon: icon('box', 16) });
+    const picked = await pickCategory({ title: `选择${type === 'income' ? '收入' : '支出'}分类`, items, value: catBtn.dataset.value || items[0].value });
+    if (picked) {
+      catBtn.dataset.value = picked;
+      catBtn.querySelector('#qr-category-text').textContent = picked;
+    }
+  };
+  const accBtn = modal.querySelector('#qr-account-btn');
+  if (accBtn) accBtn.onclick = async () => {
+    const items = (state.assetAccounts || []).map(a => ({ value: a.id, label: a.name, icon: renderItemIcon(a.debt ? 'creditCard' : 'wallet', 16) }));
+    if (!items.length) items.push({ value: 'balance', label: '余额', icon: icon('wallet', 16) });
+    const picked = await pickCategory({ title: '选择账户', items, value: accBtn.dataset.value || items[0].value });
+    if (picked) {
+      accBtn.dataset.value = picked;
+      accBtn.querySelector('#qr-account-text').textContent = qrAccountName(picked);
+    }
+  };
   const save = modal.querySelector('#qr-save');
   if (save) save.onclick = saveQuickRecord;
 }
@@ -10699,9 +10842,11 @@ async function saveQuickRecord() {
   const note = noteEl ? noteEl.value : '';
   if (tab === 'sport') {
     const minutes = parseInt((modal.querySelector('#qr-min') || {}).value) || 0;
+    const typeChip = modal.querySelector('#qr-sport-chips .qr-chip.active');
+    const sportType = typeChip ? typeChip.dataset.t : '运动';
     const todayKey = getTodayKey();
     if (!state.exerciseLogs[todayKey]) state.exerciseLogs[todayKey] = [];
-    state.exerciseLogs[todayKey].push({ id: uid('ex'), name: note || '快速运动', duration: minutes, calories: estimateExerciseCalories(note || '运动', minutes), done: true });
+    state.exerciseLogs[todayKey].push({ id: uid('ex'), name: note || sportType, duration: minutes, calories: estimateExerciseCalories(sportType, minutes), done: true });
     saveExerciseLogs();
   } else if (tab === 'sleep') {
     const bed = (modal.querySelector('#qr-bed') || {}).value || '';
@@ -10725,10 +10870,11 @@ async function saveQuickRecord() {
     const typeChip = modal.querySelector('#qr-type-chips .qr-chip.active');
     const type = typeChip ? typeChip.dataset.type : 'expense';
     if (isNaN(amount) || amount <= 0) { await appAlert('请输入有效金额'); return; }
-    const category = type === 'income'
-      ? ((state.incomeCategories[0] && state.incomeCategories[0].name) || '其他')
-      : ((state.expenseCategories[0] && state.expenseCategories[0].name) || '其他');
-    state.transactions.push({ id: uid('tx'), date: getTodayKey(), type, amount: Math.round(amount * 100) / 100, category, note, accountId: state.assetAccounts[0]?.id || 'balance' });
+    const catBtn = modal.querySelector('#qr-category-btn');
+    const category = catBtn ? (catBtn.dataset.value || '其他') : '其他';
+    const accBtn = modal.querySelector('#qr-account-btn');
+    const accountId = accBtn ? (accBtn.dataset.value || state.assetAccounts[0]?.id || 'balance') : (state.assetAccounts[0]?.id || 'balance');
+    state.transactions.push({ id: uid('tx'), date: getTodayKey(), type, amount: Math.round(amount * 100) / 100, category, note, accountId });
     saveTransactions();
     syncAssetAmounts();
     state.money.total = calcAssetTotal();

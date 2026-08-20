@@ -10,7 +10,7 @@
     // 内联版本探针：独立于 app.js，确保即使脚本被缓存也能发现新版本
     (function () {
       try {
-        var BUILT = 9162;
+        var BUILT = 9163;
         fetch('./version.json?v=' + Date.now(), { cache: 'no-store' })
           .then(function (r) { return r.ok ? r.json() : null; })
           .then(function (d) {
@@ -27,11 +27,11 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <link rel="manifest" href="manifest.webmanifest?v=162">
-  <link rel="apple-touch-icon" href="icon-192.png?v=162">
-  <link rel="stylesheet" href="styles.css?v=162">
+  <link rel="manifest" href="manifest.webmanifest?v=163">
+  <link rel="apple-touch-icon" href="icon-192.png?v=163">
+  <link rel="stylesheet" href="styles.css?v=163">
   <!-- 预加载关键资源，缩短首屏等待 -->
-  <link rel="preload" href="app.js?v=162" as="script">
+  <link rel="preload" href="app.js?v=163" as="script">
   <link rel="preload" href="fonts/zcool-kuaile.ttf" as="font" type="font/ttf" crossorigin>
   <link rel="preload" href="fonts/strawberry.ttf?v=124" as="font" type="font/ttf" crossorigin>
   <title>xenos - 人生系统工作台</title>
@@ -271,27 +271,46 @@
   <!-- 快速记录底部滑出 sheet -->
   <div class="modal bottom-sheet" id="quick-record-modal">
     <div class="bottom-sheet-card qr-card">
+      <div class="qr-sheet-bar"></div>
+      <button class="qr-close" id="qr-close" aria-label="关闭">✕</button>
       <div class="qr-header">
-        <div class="qr-head-left">
-          <span class="qr-bunny">🐰</span>
-          <div>
-            <h3>快速记录 ✨</h3>
-            <p class="qr-subtitle">随手记下当下，为更好的自己打卡✨</p>
-          </div>
+        <div class="qr-bunny-wrap" id="qr-bunny-deco"></div>
+        <div class="qr-title-wrap">
+          <h3>快速记录 ✨</h3>
+          <p class="qr-subtitle">随手记下当下，为更好的自己打卡✨</p>
         </div>
-        <button class="qr-close" id="qr-close" aria-label="关闭">✕</button>
       </div>
       <div class="qr-tabs">
-        <button class="qr-tab active" data-qr="sport">运动</button>
-        <button class="qr-tab" data-qr="sleep">睡眠</button>
-        <button class="qr-tab" data-qr="money">收支</button>
-        <button class="qr-tab" data-qr="idea">想法</button>
+        <button class="qr-tab active" data-qr="sport"><span class="qr-tab-ico">👟</span><span>运动</span></button>
+        <button class="qr-tab" data-qr="sleep"><span class="qr-tab-ico">🌙</span><span>睡眠</span></button>
+        <button class="qr-tab" data-qr="money"><span class="qr-tab-ico">💰</span><span>收支</span></button>
+        <button class="qr-tab" data-qr="idea"><span class="qr-tab-ico">💡</span><span>想法</span></button>
       </div>
       <div class="qr-body" id="qr-body"><!-- JS fills --></div>
-      <button class="btn btn-primary qr-save" id="qr-save">✨ 保存记录</button>
+      <div class="qr-shortcuts">
+        <div class="qr-short-title">✨ 常用快捷记录</div>
+        <div class="qr-short-grid">
+          <button class="qr-short" data-qr="sport">
+            <span class="qr-short-ico qr-short-green">👟</span>
+            <span class="qr-short-text"><b>记运动</b><small>打卡运动时长</small></span>
+            <span class="qr-short-arrow">›</span>
+          </button>
+          <button class="qr-short" data-qr="money" data-sub="income">
+            <span class="qr-short-ico qr-short-gold">¥</span>
+            <span class="qr-short-text"><b>记收入</b><small>记录一笔收入</small></span>
+            <span class="qr-short-arrow">›</span>
+          </button>
+          <button class="qr-short" data-qr="idea">
+            <span class="qr-short-ico qr-short-pink">💡</span>
+            <span class="qr-short-text"><b>记灵感</b><small>闪现一个想法</small></span>
+            <span class="qr-short-arrow">›</span>
+          </button>
+        </div>
+      </div>
+      <button class="qr-save" id="qr-save">✨ 保存记录</button>
     </div>
   </div>
 
-  <script src="app.js?v=162"></script>
+  <script src="app.js?v=163"></script>
 </body>
 </html>
