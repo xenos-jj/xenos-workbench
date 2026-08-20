@@ -4146,9 +4146,7 @@ function openDatePicker(opts) {
       </div>
       <div class="datepicker-grid" id="dp-grid"></div>
       <div class="datepicker-actions">
-        <button class="ghost-btn" id="dp-clear">清除</button>
-        <button class="ghost-btn" id="dp-cancel">取消</button>
-        <button class="gold-btn" id="dp-set">设置</button>
+        <button class="gold-btn" id="dp-set">确定</button>
       </div>
     </div>`;
   document.body.appendChild(overlay);
@@ -4209,9 +4207,12 @@ function openDatePicker(opts) {
     selectedKey = btn.dataset.dpKey;
     render();
   });
-  overlay.querySelector('#dp-cancel').addEventListener('click', close);
-  overlay.querySelector('#dp-clear').addEventListener('click', () => {
-    if (opts.onClear) opts.onClear();
+  gridEl.addEventListener('dblclick', (e) => {
+    const btn = e.target.closest('[data-dp-key]');
+    if (!btn || btn.classList.contains('disabled')) return;
+    selectedKey = btn.dataset.dpKey;
+    render();
+    if (opts.onSelect) opts.onSelect(selectedKey);
     close();
   });
   overlay.querySelector('#dp-set').addEventListener('click', () => {
