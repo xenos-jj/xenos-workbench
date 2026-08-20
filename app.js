@@ -9123,7 +9123,7 @@ function multiSeriesLineChart(series, labels) {
     const vals = s.values.map(v => Number(v) || 0);
     const max = Math.max(1, ...vals);
     const pts = vals.map((v, i) => x(i).toFixed(1) + ',' + y((v / max) * 100).toFixed(1)).join(' ');
-    const dots = vals.map((v, i) => '<circle cx="' + x(i).toFixed(1) + '" cy="' + y((v / max) * 100).toFixed(1) + '" r="1.2" fill="' + s.color + '" stroke="#fff" stroke-width="0.5"></circle>').join('');
+    const dots = vals.map((v, i) => '<circle cx="' + x(i).toFixed(1) + '" cy="' + y((v / max) * 100).toFixed(1) + '" r="1.6" fill="#fff" stroke="' + s.color + '" stroke-width="1.2"></circle>').join('');
     seriesSVG += '<polyline points="' + pts + '" fill="none" stroke="' + s.color + '" stroke-width="0.8" stroke-linecap="round" stroke-linejoin="round"></polyline>' + dots;
   });
   return '<svg class="insp-trend-chart" viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="xMidYMid meet">' + grid + yLabels + seriesSVG + xLabels + '</svg>';
@@ -10448,7 +10448,7 @@ function renderInsightPage() {
   const legendHTML = stats.map(s => {
     const hidden = insightLineHidden.has(s.id);
     const total = Math.round(s.metric);
-    return '<button class="insp-line-legend-item' + (hidden ? '' : ' active') + '" data-id="' + s.id + '" title="' + (hidden ? '显示' : '隐藏') + ' ' + s.name + '"><span class="insp-line-dot" style="background:' + (hidden ? 'var(--border)' : s.color) + '"></span><span>' + s.name + '</span><span class="insp-line-legend-unit">' + total + s.metricUnit + '</span></button>';
+    return '<button class="insp-line-legend-item' + (hidden ? '' : ' active') + '" data-id="' + s.id + '" title="' + (hidden ? '显示' : '隐藏') + ' ' + s.name + '" style="border-color:' + s.color + '"><span class="insp-line-dot" style="background:' + (hidden ? 'var(--border)' : s.color) + '"></span><span>' + s.name + '</span><span class="insp-line-legend-unit">' + total + s.metricUnit + '</span></button>';
   }).join('');
   const combinedChartHTML = visibleStats.length ? multiSeriesLineChart(visibleStats.map(s => ({ id: s.id, name: s.name, color: s.color, values: s.daily })), weekdayLabels) : '<div class="insp-empty">请在下方图例选择至少一个趋势</div>';
 
