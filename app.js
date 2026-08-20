@@ -204,6 +204,7 @@ const INSIGHT_MODULES = [
 ];
 
 let insightWeekOffset = 0;
+let insightLineHidden = new Set();
 
 function getWeekStart(offsetWeeks = 0) {
   const dow = (new Date().getDay() + 6) % 7;
@@ -285,6 +286,7 @@ const ICONS = {
   calendar: '<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/>',
   chart: '<path d="M3 3v18h18"/><path d="M7 14v4M12 10v8M17 6v12"/>',
   wallet: '<path d="M3 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2"/><rect x="3" y="7" width="18" height="12" rx="2"/><path d="M16 12h4v4h-4a2 2 0 0 1 0-4z"/>',
+  creditCard: '<rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 10h18"/><path d="M7 14h4"/>',
   search: '<circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/>',
   plus: '<path d="M12 5v14M5 12h14"/>',
   delete: '<path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/>',
@@ -1860,8 +1862,27 @@ function saveAssetAccounts() {
   localStorage.setItem('xenos-asset-accounts', JSON.stringify(state.assetAccounts));
 }
 
+function accountDelta(t, acc) {
+  const sign = acc.debt ? -1 : 1;
+  const amt = Number(t.amount) || 0;
+  return sign * (t.type === 'income' ? amt : -amt);
+}
+function accountEffectiveAmount(acc) {
+  if (!acc) return 0;
+  const baseDate = acc.balanceDate || '1970-01-01';
+  const base = Number(acc.balance) || Number(acc.amount) || 0;
+  const delta = (state.transactions || []).reduce((s, t) => {
+    if (t.accountId !== acc.id) return s;
+    if ((t.date || '') < baseDate) return s;
+    return s + accountDelta(t, acc);
+  }, 0);
+  return base + delta;
+}
 function calcAssetTotal() {
-  return (state.assetAccounts || []).reduce((s, a) => s + (a.debt ? -1 : 1) * (Number(a.amount) || 0), 0);
+  return (state.assetAccounts || []).reduce((s, a) => s + accountEffectiveAmount(a), 0);
+}
+function syncAssetAmounts() {
+  (state.assetAccounts || []).forEach(acc => { acc.amount = accountEffectiveAmount(acc); });
 }
 
 function formatMoney(n) {
@@ -3661,9 +3682,13 @@ function renderMoney(opts) {
             type: 'expense',
             amount: amt,
             category,
-            note
+            note,
+            accountId: state.assetAccounts[0]?.id || 'balance'
           });
           saveTransactions();
+          syncAssetAmounts();
+          state.money.total = calcAssetTotal();
+          saveMoney();
           refreshMoneyView();
         }
       } else if (act === 'remain') {
@@ -3775,7 +3800,7 @@ function renderAssetAccounts() {
       </div>
       <div class="asset-input-wrap">
         <span class="asset-sign">${acc.debt ? '-' : ''}¥</span>
-        <input type="number" class="asset-input" data-idx="${idx}" value="${formatMoney(Math.abs(Number(acc.amount) || 0))}" placeholder="0">
+        <input type="number" class="asset-input" data-idx="${idx}" value="${formatMoney(Math.abs(accountEffectiveAmount(acc)))}" placeholder="0">
       </div>
     `;
     list.appendChild(row);
@@ -3791,12 +3816,15 @@ function renderAssetAccounts() {
   });
 
   overlay.querySelector('#asset-save').addEventListener('click', () => {
+    const today = getTodayKey();
     overlay.querySelectorAll('.asset-input').forEach(input => {
       const idx = parseInt(input.dataset.idx);
       const val = parseFloat(input.value) || 0;
       const acc = state.assetAccounts[idx];
-      acc.amount = acc.debt ? -Math.abs(val) : Math.abs(val);
+      acc.balance = acc.debt ? -Math.abs(val) : Math.abs(val);
+      acc.balanceDate = today;
     });
+    syncAssetAmounts();
     saveAssetAccounts();
     // 同步到旧的 money.total 以保持兼容
     state.money.total = calcAssetTotal();
@@ -3840,11 +3868,11 @@ function renderSavePlan(mount) {
   mount.querySelector('#save-progress').innerHTML = `
     <div class="save-row">
       <span>52周攒钱</span>
-      <span class="save-amt">¥${formatMoney(Math.abs(weekAcc?.amount || 0))}</span>
+      <span class="save-amt">¥${formatMoney(Math.abs(accountEffectiveAmount(weekAcc)))}</span>
     </div>
     <div class="save-row">
       <span>悄悄攒</span>
-      <span class="save-amt">¥${formatMoney(Math.abs(secretAcc?.amount || 0))}</span>
+      <span class="save-amt">¥${formatMoney(Math.abs(accountEffectiveAmount(secretAcc)))}</span>
     </div>
     <div class="save-row muted">
       <span>本周（第 ${weekNow} 周）建议存入</span>
@@ -3858,7 +3886,9 @@ function renderSavePlan(mount) {
     if (isNaN(amount) || amount <= 0) return;
     const acc = state.assetAccounts.find(a => a.id === type);
     if (acc) {
-      acc.amount = (Number(acc.amount) || 0) + amount;
+      acc.balance = (Number(acc.balance) || Number(acc.amount) || 0) + amount;
+      acc.balanceDate = getTodayKey();
+      syncAssetAmounts();
       saveAssetAccounts();
       state.money.total = calcAssetTotal();
       saveMoney();
@@ -3953,6 +3983,10 @@ function renderMoneyDetail(card, dateKey) {
         <button class="small-input tx-category-btn" id="tx-category-btn" type="button">选择分类</button>
         <input type="hidden" id="tx-category-value">
       </div>
+      <div class="tx-form" style="margin-top:8px">
+        <button class="small-input tx-account-btn" id="tx-account-btn" type="button">选择账户</button>
+        <input type="hidden" id="tx-account-value">
+      </div>
       <input type="text" class="small-input" id="tx-note" placeholder="备注（可选）" style="margin-top:8px">
       <button class="plan-add-btn" id="tx-add-btn" style="width:100%;margin-top:10px;justify-content:center">添加记录</button>
     </div>
@@ -3972,12 +4006,17 @@ function renderMoneyDetail(card, dateKey) {
     const id = btn.closest('.tx-row').dataset.id;
     state.transactions = state.transactions.filter(t => t.id !== id);
     saveTransactions();
+    syncAssetAmounts();
+    state.money.total = calcAssetTotal();
+    saveMoney();
     refreshMoneyView();
   });
 
   let curType = 'expense';
   const catBtn = card.querySelector('#tx-category-btn');
   const catValue = card.querySelector('#tx-category-value');
+  const accBtn = card.querySelector('#tx-account-btn');
+  const accValue = card.querySelector('#tx-account-value');
   function getCategoryList() {
     return curType === 'income' ? state.incomeCategories : state.expenseCategories;
   }
@@ -3988,7 +4027,19 @@ function renderMoneyDetail(card, dateKey) {
     catBtn.textContent = currentCategory();
     catValue.value = currentCategory();
   }
+  function currentAccount() {
+    return accValue.value || state.assetAccounts[0]?.id || '';
+  }
+  function accountName(id) {
+    return state.assetAccounts.find(a => a.id === id)?.name || '余额';
+  }
+  function updateAccountBtn() {
+    const id = currentAccount();
+    accBtn.textContent = accountName(id);
+    accValue.value = id;
+  }
   updateCategoryBtn();
+  updateAccountBtn();
 
   card.querySelectorAll('.txt-btn').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -4009,6 +4060,15 @@ function renderMoneyDetail(card, dateKey) {
     }
   });
 
+  accBtn.addEventListener('click', async () => {
+    const items = state.assetAccounts.map(a => ({ value: a.id, label: a.name, icon: renderItemIcon(a.debt ? 'creditCard' : 'wallet', 16) }));
+    const picked = await pickCategory({ title: '选择支出/收入账户', items, value: currentAccount() });
+    if (picked) {
+      accValue.value = picked;
+      accBtn.textContent = accountName(picked);
+    }
+  });
+
   card.querySelector('#tx-add-btn').addEventListener('click', async () => {
     const amount = parseFloat(card.querySelector('#tx-amount').value);
     if (isNaN(amount) || amount <= 0) {
@@ -4023,9 +4083,13 @@ function renderMoneyDetail(card, dateKey) {
       type: curType,
       amount: Math.round(amount * 100) / 100,
       category,
-      note
+      note,
+      accountId: currentAccount()
     });
     saveTransactions();
+    syncAssetAmounts();
+    state.money.total = calcAssetTotal();
+    saveMoney();
     refreshMoneyView();
   });
 }
@@ -7060,11 +7124,13 @@ function renderAchievements() {
         ${DEFAULT_ACHIEVEMENTS.map(ac => {
           const on = !!state.achievements[ac.id];
           const progress = Math.min(ac.need, getAchievementProgress(ac));
+          const pct = Math.round((progress / ac.need) * 100);
           return `
             <div class="achieve-card${on ? ' unlocked' : ''}">
-              <div class="ac-icon">${renderItemIcon(ac.icon, 28)}</div>
+              <div class="ac-icon-wrap">${renderItemIcon(ac.icon, 20)}</div>
               <div class="ac-name">${ac.name}</div>
               <div class="ac-desc">${on ? ac.desc : `${progress}/${ac.need}`}</div>
+              ${on ? '' : `<div class="ac-progress"><div class="ac-progress-fill" style="width:${pct}%"></div></div>`}
             </div>
           `;
         }).join('')}
@@ -8796,12 +8862,28 @@ window.addEventListener('beforeunload', (e) => {
 
 // 初始化资产账户：如果旧版 money.total 有值而资产账户为空，迁移到余额账户
 (function syncAssetAccounts() {
+  const today = getTodayKey();
+  // 一次性迁移：给旧账户补齐 balance / balanceDate（以今天为对账基准）
+  if (localStorage.getItem('xenos-asset-reconcile-v9160') === null) {
+    state.assetAccounts.forEach(acc => {
+      if (typeof acc.balance !== 'number') {
+        acc.balance = acc.debt ? -Math.abs(Number(acc.amount) || 0) : Math.abs(Number(acc.amount) || 0);
+      }
+      if (!acc.balanceDate) acc.balanceDate = today;
+    });
+    localStorage.setItem('xenos-asset-reconcile-v9160', '1');
+    saveAssetAccounts();
+  }
   const assetTotal = calcAssetTotal();
   if (assetTotal === 0 && state.money.total > 0) {
     const balance = state.assetAccounts.find(a => a.id === 'balance');
-    if (balance) balance.amount = state.money.total;
+    if (balance) {
+      balance.balance = state.money.total;
+      balance.balanceDate = today;
+    }
     saveAssetAccounts();
   }
+  syncAssetAmounts();
   state.money.total = calcAssetTotal();
   saveMoney();
 })();
@@ -9020,6 +9102,31 @@ function weeklyLineChart(values, color, unit, labels) {
   const valLabels = nums.map((v, i) => '<text x="' + x(i).toFixed(1) + '" y="' + (y(v) - 6).toFixed(1) + '" fill="' + color + '" font-size="7.5" text-anchor="middle" font-weight="600">' + Math.round(v) + '</text>').join('');
   const xLabels = days.map((d, i) => '<text x="' + x(i).toFixed(1) + '" y="' + (h - 7).toFixed(1) + '" fill="#A99A8A" font-size="8" text-anchor="middle">' + d + '</text>').join('');
   return '<svg class="insp-trend-chart" viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="xMidYMid meet">' + grid + yLabels + '<polyline points="' + pts + '" fill="none" stroke="' + color + '" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"></polyline>' + dots + valLabels + xLabels + '</svg>';
+}
+
+function multiSeriesLineChart(series, labels) {
+  const w = 320, h = 140;
+  const pad = { t: 18, r: 12, b: 22, l: 30 };
+  const cw = w - pad.l - pad.r, ch = h - pad.t - pad.b;
+  const days = labels || ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+  const x = i => pad.l + (i / (days.length - 1)) * cw;
+  const y = v => pad.t + ch - (v / 100) * ch;
+  let grid = '';
+  for (let i = 0; i <= 4; i++) {
+    const gy = pad.t + (i / 4) * ch;
+    grid += '<line x1="' + pad.l + '" y1="' + gy.toFixed(1) + '" x2="' + (pad.l + cw) + '" y2="' + gy.toFixed(1) + '" stroke="#F5EDE5" stroke-width="0.8"></line>';
+  }
+  const yLabels = [0, 50, 100].map(v => '<text x="' + (pad.l - 5) + '" y="' + (pad.t + ch - (v / 100) * ch).toFixed(1) + '" fill="#B8A99A" font-size="8" text-anchor="end" dominant-baseline="middle">' + v + '%</text>').join('');
+  const xLabels = days.map((d, i) => '<text x="' + x(i).toFixed(1) + '" y="' + (h - 7).toFixed(1) + '" fill="#A99A8A" font-size="8" text-anchor="middle">' + d + '</text>').join('');
+  let seriesSVG = '';
+  series.forEach(s => {
+    const vals = s.values.map(v => Number(v) || 0);
+    const max = Math.max(1, ...vals);
+    const pts = vals.map((v, i) => x(i).toFixed(1) + ',' + y((v / max) * 100).toFixed(1)).join(' ');
+    const dots = vals.map((v, i) => '<circle cx="' + x(i).toFixed(1) + '" cy="' + y((v / max) * 100).toFixed(1) + '" r="2" fill="' + s.color + '" stroke="#fff" stroke-width="1"></circle>').join('');
+    seriesSVG += '<polyline points="' + pts + '" fill="none" stroke="' + s.color + '" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></polyline>' + dots;
+  });
+  return '<svg class="insp-trend-chart" viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="xMidYMid meet">' + grid + yLabels + seriesSVG + xLabels + '</svg>';
 }
 
 function branchProgress(keywords) {
@@ -10337,6 +10444,13 @@ function renderInsightPage() {
   const modules = INSIGHT_MODULES.filter(m => selected.includes(m.id));
   const stats = modules.map(m => computeInsightStats(m, weekStart));
   const rangeText = weekStart.slice(5) + '（周一）~ ' + sunday.slice(5) + '（周日）';
+  const visibleStats = stats.filter(s => !insightLineHidden.has(s.id));
+  const legendHTML = stats.map(s => {
+    const hidden = insightLineHidden.has(s.id);
+    const total = Math.round(s.metric);
+    return '<button class="insp-line-legend-item' + (hidden ? '' : ' active') + '" data-id="' + s.id + '" title="' + (hidden ? '显示' : '隐藏') + ' ' + s.name + '"><span class="insp-line-dot" style="background:' + (hidden ? 'var(--border)' : s.color) + '"></span><span>' + s.name + '</span><span class="insp-line-legend-unit">' + total + s.metricUnit + '</span></button>';
+  }).join('');
+  const combinedChartHTML = visibleStats.length ? multiSeriesLineChart(visibleStats.map(s => ({ id: s.id, name: s.name, color: s.color, values: s.daily })), weekdayLabels) : '<div class="insp-empty">请在下方图例选择至少一个趋势</div>';
 
   page.innerHTML = '<div class="insp-page">'
     + '<div class="insp-top">'
@@ -10348,8 +10462,8 @@ function renderInsightPage() {
 
     + '<div class="insp-cards-grid">' + (stats.length ? stats.map(catCardHTML).join('') : '<div class="insp-empty">还没有选择模块，点右上角「自定义」勾选要查看的板块～</div>') + '</div>'
 
-    + '<div class="insp-section"><div class="insp-section-head"><span class="insp-section-title"><span class="insp-sec-spark">✨</span> 每周数据变化</span><span class="insp-section-more">按天 · 7 日</span></div>'
-    + '<div class="insp-line-grid">' + (stats.length ? stats.map(s => '<div class="insp-line-card" style="--c:' + s.color + '"><div class="insp-line-head"><span class="insp-line-dot" style="background:' + s.color + '"></span>' + s.name + ' · ' + s.metricName + '</div><div class="insp-line-wrap">' + weeklyLineChart(s.daily, s.color, s.metricUnit) + '</div></div>').join('') : '<div class="insp-empty">勾选模块后这里展示每日变化折线</div>') + '</div></div>'
+    + '<div class="insp-section"><div class="insp-section-head"><span class="insp-section-title"><span class="insp-sec-spark">✨</span> 每周数据变化</span><span class="insp-section-more">相对趋势 · 7 日</span></div>'
+    + '<div class="insp-line-card combined-line-card"><div class="insp-line-wrap">' + combinedChartHTML + '</div><div class="insp-line-legend">' + legendHTML + '</div></div></div>'
 
     + '<div class="insp-section"><div class="insp-section-head"><span class="insp-section-title"><span class="insp-sec-heart">❤️</span> 习惯完成热力图</span><span class="insp-heat-legend"><i class="ht-low"></i><i class="ht-mid"></i><i class="ht-high"></i>完成度 低 → 高</span></div>'
     + '<div class="insp-heatmap-wrap"><div class="insp-heatmap-grid insp-heat-grid2"><span></span><span></span>'
@@ -10368,6 +10482,15 @@ function renderInsightPage() {
     el.addEventListener('click', () => {
       const st = stats.find(x => x.id === el.dataset.cat);
       if (st) openInsightDetail(st);
+    });
+  });
+
+  page.querySelectorAll('.insp-line-legend-item').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.dataset.id;
+      if (insightLineHidden.has(id)) insightLineHidden.delete(id);
+      else insightLineHidden.add(id);
+      renderInsightPage();
     });
   });
 }
@@ -10605,8 +10728,11 @@ async function saveQuickRecord() {
     const category = type === 'income'
       ? ((state.incomeCategories[0] && state.incomeCategories[0].name) || '其他')
       : ((state.expenseCategories[0] && state.expenseCategories[0].name) || '其他');
-    state.transactions.push({ id: uid('tx'), date: getTodayKey(), type, amount: Math.round(amount * 100) / 100, category, note });
+    state.transactions.push({ id: uid('tx'), date: getTodayKey(), type, amount: Math.round(amount * 100) / 100, category, note, accountId: state.assetAccounts[0]?.id || 'balance' });
     saveTransactions();
+    syncAssetAmounts();
+    state.money.total = calcAssetTotal();
+    saveMoney();
   } else {
     const idea = (modal.querySelector('#qr-idea') || {}).value || '';
     if (!idea.trim()) { await appAlert('写点什么吧～'); return; }
