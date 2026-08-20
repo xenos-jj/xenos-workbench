@@ -10469,15 +10469,15 @@ function renderInsightPage() {
     + icon('list', 13) + ' 自定义</button><div class="insp-mascot-slot" title="吉祥物位置（预留）"></div></div>'
     + '</div>'
 
+    + '<div class="insp-cards-grid">' + (visibleStats.length ? visibleStats.map(catCardHTML).join('') : '<div class="insp-empty">当前没有显示任何模块卡片，点击图例可重新展开～</div>') + '</div>'
+
     + '<div class="insp-section"><div class="insp-section-head"><span class="insp-section-title"><span class="insp-sec-spark">✨</span> 每周数据变化</span><span class="insp-section-more">相对趋势 · 可同时勾选多个</span></div>'
     + '<div class="insp-line-card combined-line-card"><div class="insp-line-wrap">' + combinedChartHTML + '</div><div class="insp-line-legend">' + legendHTML + '</div></div></div>'
-
-    + '<div class="insp-cards-grid">' + (visibleStats.length ? visibleStats.map(catCardHTML).join('') : '<div class="insp-empty">当前没有显示任何模块卡片，点击上方图例可重新展开～</div>') + '</div>'
 
     + '<div class="insp-section"><div class="insp-section-head"><span class="insp-section-title"><span class="insp-sec-heart">❤️</span> 习惯完成热力图</span><span class="insp-heat-legend"><i class="ht-low"></i><i class="ht-mid"></i><i class="ht-high"></i>完成度 低 → 高</span></div>'
     + '<div class="insp-heatmap-wrap"><div class="insp-heatmap-grid insp-heat-grid2"><span></span><span></span>'
     + weekdayLabels.map(l => '<span class="ih-day">' + l + '</span>').join('')
-    + (visibleStats.length ? visibleStats.map(s => '<span class="ih-icon" style="color:' + s.color + '">' + icon(s.icon, 12) + '</span><span class="ih-name">' + s.name + '</span>' + s.levels.map(lv => '<span class="ih-dot lvl' + lv + '"></span>').join('')).join('') : '<span class="ih-name" style="grid-column:1/-1;color:var(--text-muted);font-size:10px;padding:6px 0">勾选上方图例后展示对应完成度</span>')
+    + (visibleStats.length ? visibleStats.map(s => '<span class="ih-icon" style="color:' + s.color + '">' + icon(s.icon, 12) + '</span><span class="ih-name">' + s.name + '</span>' + s.levels.map(lv => '<span class="ih-dot lvl' + lv + '"></span>').join('')).join('') : '<span class="ih-name" style="grid-column:1/-1;color:var(--text-muted);font-size:10px;padding:6px 0">勾选图例后展示对应完成度</span>')
     + '</div></div></div>'
 
     + '<div class="insp-section insp-suggest-section"><div class="insp-section-head"><span class="insp-section-title"><span class="insp-sec-star">🌟</span> 每周优化建议</span></div>'
