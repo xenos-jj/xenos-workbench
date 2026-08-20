@@ -9098,10 +9098,10 @@ function weeklyLineChart(values, color, unit, labels) {
   }
   const yLabels = [0, niceMax / 2, niceMax].map(v => '<text x="' + (pad.l - 4) + '" y="' + (pad.t + ch - (v / niceMax) * ch).toFixed(1) + '" fill="#B8A99A" font-size="8" text-anchor="end" dominant-baseline="middle">' + Math.round(v) + '</text>').join('');
   const pts = nums.map((v, i) => x(i).toFixed(1) + ',' + y(v).toFixed(1)).join(' ');
-  const dots = nums.map((v, i) => '<circle cx="' + x(i).toFixed(1) + '" cy="' + y(v).toFixed(1) + '" r="2.2" fill="' + color + '" stroke="#fff" stroke-width="1"></circle>').join('');
+  const dots = nums.map((v, i) => '<circle cx="' + x(i).toFixed(1) + '" cy="' + y(v).toFixed(1) + '" r="1.2" fill="' + color + '" stroke="#fff" stroke-width="0.5"></circle>').join('');
   const valLabels = nums.map((v, i) => '<text x="' + x(i).toFixed(1) + '" y="' + (y(v) - 6).toFixed(1) + '" fill="' + color + '" font-size="7.5" text-anchor="middle" font-weight="600">' + Math.round(v) + '</text>').join('');
   const xLabels = days.map((d, i) => '<text x="' + x(i).toFixed(1) + '" y="' + (h - 7).toFixed(1) + '" fill="#A99A8A" font-size="8" text-anchor="middle">' + d + '</text>').join('');
-  return '<svg class="insp-trend-chart" viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="xMidYMid meet">' + grid + yLabels + '<polyline points="' + pts + '" fill="none" stroke="' + color + '" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"></polyline>' + dots + valLabels + xLabels + '</svg>';
+  return '<svg class="insp-trend-chart" viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="xMidYMid meet">' + grid + yLabels + '<polyline points="' + pts + '" fill="none" stroke="' + color + '" stroke-width="0.8" stroke-linecap="round" stroke-linejoin="round"></polyline>' + dots + valLabels + xLabels + '</svg>';
 }
 
 function multiSeriesLineChart(series, labels) {
@@ -9123,8 +9123,8 @@ function multiSeriesLineChart(series, labels) {
     const vals = s.values.map(v => Number(v) || 0);
     const max = Math.max(1, ...vals);
     const pts = vals.map((v, i) => x(i).toFixed(1) + ',' + y((v / max) * 100).toFixed(1)).join(' ');
-    const dots = vals.map((v, i) => '<circle cx="' + x(i).toFixed(1) + '" cy="' + y((v / max) * 100).toFixed(1) + '" r="2" fill="' + s.color + '" stroke="#fff" stroke-width="1"></circle>').join('');
-    seriesSVG += '<polyline points="' + pts + '" fill="none" stroke="' + s.color + '" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></polyline>' + dots;
+    const dots = vals.map((v, i) => '<circle cx="' + x(i).toFixed(1) + '" cy="' + y((v / max) * 100).toFixed(1) + '" r="1.2" fill="' + s.color + '" stroke="#fff" stroke-width="0.5"></circle>').join('');
+    seriesSVG += '<polyline points="' + pts + '" fill="none" stroke="' + s.color + '" stroke-width="0.8" stroke-linecap="round" stroke-linejoin="round"></polyline>' + dots;
   });
   return '<svg class="insp-trend-chart" viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="xMidYMid meet">' + grid + yLabels + seriesSVG + xLabels + '</svg>';
 }
@@ -10462,7 +10462,7 @@ function renderInsightPage() {
 
     + '<div class="insp-cards-grid">' + (stats.length ? stats.map(catCardHTML).join('') : '<div class="insp-empty">还没有选择模块，点右上角「自定义」勾选要查看的板块～</div>') + '</div>'
 
-    + '<div class="insp-section"><div class="insp-section-head"><span class="insp-section-title"><span class="insp-sec-spark">✨</span> 每周数据变化</span><span class="insp-section-more">相对趋势 · 7 日</span></div>'
+    + '<div class="insp-section"><div class="insp-section-head"><span class="insp-section-title"><span class="insp-sec-spark">✨</span> 每周数据变化</span><span class="insp-section-more">相对趋势 · 可同时勾选多个</span></div>'
     + '<div class="insp-line-card combined-line-card"><div class="insp-line-wrap">' + combinedChartHTML + '</div><div class="insp-line-legend">' + legendHTML + '</div></div></div>'
 
     + '<div class="insp-section"><div class="insp-section-head"><span class="insp-section-title"><span class="insp-sec-heart">❤️</span> 习惯完成热力图</span><span class="insp-heat-legend"><i class="ht-low"></i><i class="ht-mid"></i><i class="ht-high"></i>完成度 低 → 高</span></div>'
