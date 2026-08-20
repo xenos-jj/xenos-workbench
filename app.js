@@ -149,7 +149,7 @@ const INSIGHT_MODULES = [
   },
   {
     id: 'learning',
-    name: '学习成长',
+    name: '学习',
     icon: 'bookOpen',
     color: '#A99BD6',
     bg: '#F3F0FA',
@@ -178,7 +178,7 @@ const INSIGHT_MODULES = [
   },
   {
     id: 'review',
-    name: '每日计划',
+    name: '计划',
     icon: 'review',
     color: '#7FB0A0',
     bg: '#EAF4F1',
@@ -10456,8 +10456,8 @@ function renderInsightPage() {
   const visibleStats = stats.filter(s => !insightLineHidden.has(s.id));
   const legendHTML = stats.map(s => {
     const hidden = insightLineHidden.has(s.id);
-    const total = Math.round(s.metric);
-    return '<button class="insp-line-legend-item' + (hidden ? '' : ' active') + '" data-id="' + s.id + '" title="' + (hidden ? '显示' : '隐藏') + ' ' + s.name + '" style="border-color:' + s.color + '"><span class="insp-line-dot" style="background:' + (hidden ? 'var(--border)' : s.color) + '"></span><span>' + s.name + '</span><span class="insp-line-legend-unit">' + total + s.metricUnit + '</span></button>';
+    const btnStyle = 'border-color:' + s.color + (hidden ? '' : ';background:' + s.bg) + ';--dot-color:' + (hidden ? 'var(--border)' : s.color);
+    return '<button class="insp-line-legend-item' + (hidden ? '' : ' active') + '" data-id="' + s.id + '" title="' + (hidden ? '显示' : '隐藏') + ' ' + s.name + '" style="' + btnStyle + '"><span class="insp-line-dot"></span><span>' + s.name + '</span></button>';
   }).join('');
   const combinedChartHTML = visibleStats.length ? multiSeriesLineChart(visibleStats.map(s => ({ id: s.id, name: s.name, color: s.color, values: s.daily })), weekdayLabels) : '<div class="insp-empty">请在下方图例选择至少一个趋势</div>';
 
