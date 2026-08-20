@@ -341,7 +341,20 @@ const ICONS = {
   palette: '<path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z"/><circle cx="15" cy="8" r="1.5" fill="currentColor"/><circle cx="8.5" cy="10" r="1.5" fill="currentColor"/><circle cx="12" cy="16" r="2" fill="currentColor"/>',
   bell: '<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>',
   lock: '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
-  save: '<path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8"/><path d="M7 3v5"/>'
+  save: '<path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8"/><path d="M7 3v5"/>',
+  running: '<path d="M13 5a2 2 0 1 0-4 0 2 2 0 0 0 4 0z"/><path d="M8 10l2-1 3 2 4-2"/><path d="M10 21l-2-6 3-3 2 5 4-3"/>',
+  walk: '<circle cx="12" cy="5" r="2"/><path d="M10 10l2 4-2 7"/><path d="M14 10l-2 4 2 7"/>',
+  bike: '<circle cx="6" cy="16" r="3"/><circle cx="18" cy="16" r="3"/><path d="M6 16l6-7 4 4"/><path d="M16 9l-3-3h6"/>',
+  moon: '<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>',
+  moneyBag: '<path d="M12 2a5 5 0 0 0-5 5v2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-1V7a5 5 0 0 0-5-5z"/><path d="M9 9h6"/><path d="M12 13v4"/>',
+  sprout: '<path d="M12 22v-6"/><path d="M12 16c-3 0-5-2-5-5 0-3 3-5 5-5s5 2 5 5c0 3-2 5-5 5z"/><path d="M12 16c-2 2-5 2-7 0"/><path d="M12 16c2 2 5 2 7 0"/>',
+  zap: '<path d="M13 2L4 14h7l-2 8 9-12h-7l2-8z"/>',
+  trendDown: '<path d="M3 17h18"/><path d="M17 17l-5-5-3 3-6-6"/>',
+  plane: '<path d="M2 12h20"/><path d="M14 2l6 10-6 10V2z"/>',
+  message: '<path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7A8.38 8.38 0 0 1 4 11.5a8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>',
+  camera: '<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M7 7V5a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v2"/><circle cx="12" cy="13.5" r="3"/>',
+  scroll: '<path d="M6 3h12a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M6 8h12M6 13h12M6 18h12"/>',
+  music: '<path d="M9 18V5l12-3v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="15" r="3"/>'
 };
 
 function icon(name, size = 16) {
@@ -665,23 +678,23 @@ const DEFAULT_SETTINGS = {
   monthlyFocus: ['英语', '健康', '记账'],
   focusOptions: ['英语', '健康', '记账', '睡眠', '自媒体', '阅读', '锻炼', '生活', '护肤'],
   keepBranches: [
-    { name: '攒钱', emoji: '💰', freq: '每周 2 天', color: '#f4b75b' },
-    { name: '生活秩序', emoji: '📋', freq: '每周 2 天', color: '#a0bb7a' },
-    { name: '内在成长', emoji: '🌱', freq: '每周 1 天', color: '#f4b75b' },
+    { name: '攒钱', emoji: '💰', icon: 'moneyBag', freq: '每周 2 天', color: '#f4b75b' },
+    { name: '生活秩序', emoji: '📋', icon: 'list', freq: '每周 2 天', color: '#a0bb7a' },
+    { name: '内在成长', emoji: '🌱', icon: 'sprout', freq: '每周 1 天', color: '#f4b75b' },
   ],
   slowBranches: [
-    { name: '旅行体验', emoji: '✈️' },
-    { name: '社交拓展', emoji: '💬' }
+    { name: '旅行体验', emoji: '✈️', icon: 'plane' },
+    { name: '社交拓展', emoji: '💬', icon: 'message' }
   ],
   slowPool: [
-    { name: '旅行体验', emoji: '✈️', desc: '探索世界，记录美好风景' },
-    { name: '社交拓展', emoji: '💬', desc: '维护关系，认识新朋友' },
-    { name: '摄影审美', emoji: '📷', desc: '练习构图与后期，积累作品集' },
-    { name: '技能考证', emoji: '📜', desc: '考取职业或兴趣相关证书' },
-    { name: '家居整理', emoji: '🏠', desc: '打造舒适整洁的生活空间' },
-    { name: '烹饪美食', emoji: '🍳', desc: '学习新菜式，照顾好自己的胃' },
-    { name: '音乐练习', emoji: '🎵', desc: '乐器或声乐，享受旋律疗愈' },
-    { name: '志愿公益', emoji: '💝', desc: '参与社区或公益活动' }
+    { name: '旅行体验', emoji: '✈️', icon: 'plane', desc: '探索世界，记录美好风景' },
+    { name: '社交拓展', emoji: '💬', icon: 'message', desc: '维护关系，认识新朋友' },
+    { name: '摄影审美', emoji: '📷', icon: 'camera', desc: '练习构图与后期，积累作品集' },
+    { name: '技能考证', emoji: '📜', icon: 'scroll', desc: '考取职业或兴趣相关证书' },
+    { name: '家居整理', emoji: '🏠', icon: 'home', desc: '打造舒适整洁的生活空间' },
+    { name: '烹饪美食', emoji: '🍳', icon: 'utensils', desc: '学习新菜式，照顾好自己的胃' },
+    { name: '音乐练习', emoji: '🎵', icon: 'music', desc: '乐器或声乐，享受旋律疗愈' },
+    { name: '志愿公益', emoji: '💝', icon: 'heart', desc: '参与社区或公益活动' }
   ]
 };
 
@@ -1735,6 +1748,33 @@ function calcStreak() {
   return streak;
 }
 
+function hasActivityOn(dateKey) {
+  if (state.checkins[dateKey]) return true;
+  const plans = dateKey === getTodayKey() ? state.plans : (state.planHistory[dateKey] || []);
+  if (Array.isArray(plans) && plans.some(p => p.done)) return true;
+  if (state.domains) {
+    for (const key of Object.keys(state.domains)) {
+      const log = (state.domains[key] || {}).log || {};
+      if (Number(log[dateKey]) > 0) return true;
+      const hist = ((state.domainHistory[dateKey] || {})[key] || {}).tasks || [];
+      if (hist.some(t => t.done)) return true;
+    }
+  }
+  const focusLog = (state.focus || {}).log || {};
+  if (Number(focusLog[dateKey]) > 0) return true;
+  return false;
+}
+
+function calcActiveStreak() {
+  let streak = 0;
+  const d = new Date();
+  while (hasActivityOn(dateStr(d))) {
+    streak++;
+    d.setDate(d.getDate() - 1);
+  }
+  return streak;
+}
+
 function renderStreak() {
   const el = document.getElementById('user-meta');
   if (!el) return;
@@ -1947,6 +1987,12 @@ function loadPlanGroups() {
 
 function savePlanGroups() {
   localStorage.setItem('xenos-plan-groups', JSON.stringify(state.planGroups));
+}
+
+function ensurePlanGroup(group) {
+  if (!group || state.planGroups.includes(group)) return;
+  state.planGroups.push(group);
+  savePlanGroups();
 }
 
 function loadBudgetSettled() {
@@ -3034,6 +3080,7 @@ function getPlanTag(text) {
   if (t.includes('喝水') || t.includes('护肤') || t.includes('健康') || t.includes('饮食')) return '健康';
   if (t.includes('做饭') || t.includes('穿搭') || t.includes('生活') || t.includes('仪态')) return '生活';
   if (t.includes('阅读') || t.includes('书') || t.includes('微信')) return '阅读';
+  if (t.includes('3d') || t.includes('建模') || t.includes('blender') || t.includes('c4d')) return '3D';
   return '日常';
 }
 
@@ -3045,6 +3092,7 @@ function getPlanBadgeColor(tag) {
     '生活': { color: '#B07A9E', bg: '#F8EEF4', border: '#EAD0E2' },
     '健康': { color: '#6E8A69', bg: '#F1F6E9', border: '#CFE5D4' },
     '阅读': { color: '#7A8F85', bg: '#F0F4F2', border: '#D1DDD7' },
+    '3D': { color: '#7A8F85', bg: '#F0F4F2', border: '#D1DDD7' },
     '日常': { color: '#A99A8A', bg: '#F8F4EF', border: '#E8DDD1' }
   };
   return map[tag] || map['日常'];
@@ -3084,10 +3132,6 @@ function renderDailyPlan(host, embedded = false) {
   const total = state.plans.length;
   const percent = total ? Math.round((doneCount / total) * 100) : 0;
   const earnedPoints = state.plans.filter(p => p.done).reduce((s, p) => s + (p.points || 0), 0);
-  const today = new Date();
-  const weekdays = ['周日','周一','周二','周三','周四','周五','周六'];
-  const dateString = `${today.getFullYear()}年${today.getMonth()+1}月${today.getDate()}日 ${weekdays[today.getDay()]}`;
-
   const progressCircle = `
     <div class="plan-progress-circle">
       <svg viewBox="0 0 80 80">
@@ -3103,13 +3147,11 @@ function renderDailyPlan(host, embedded = false) {
       ${progressCircle}
       <div class="plan-overview-info">
         <h3 class="plan-title">当日计划</h3>
-        <p class="plan-desc">坚持比天赋更重要。今日任务完成得越多，离目标就越近。</p>
         <div class="plan-overview-stats">
           <div class="pos-stat"><span class="pos-num">${doneCount}/${total}</span><span class="pos-label">已完成</span></div>
           <div class="pos-stat"><span class="pos-num pos-points">+${earnedPoints}</span><span class="pos-label">今日积分</span></div>
         </div>
       </div>
-      <div class="plan-date">${dateString}</div>
     </div>
 
     ${embedded ? '' : `
@@ -3215,17 +3257,22 @@ function renderDailyPlan(host, embedded = false) {
 
   function renderGroups() {
     groupsWrap.innerHTML = '';
-    state.planGroups.forEach(groupName => {
-      const items = state.plans.filter(p => p.group === groupName);
-      if (items.length === 0) return;
+    const tagOrder = ['运动', '英语', '睡眠', '健康', '生活', '阅读', '3D', '日常'];
+    const byTag = {};
+    state.plans.forEach(plan => {
+      const tag = getPlanTag(plan.text);
+      byTag[tag] = byTag[tag] || [];
+      byTag[tag].push(plan);
+    });
+    function renderSection(tag, items) {
       const section = document.createElement('div');
       section.className = 'plan-group-section';
       section.innerHTML = `
         <div class="plan-group-title">
-          <span class="plan-group-name">${groupName}</span>
+          <span class="plan-group-name">${tag}</span>
           <span class="plan-group-count">${items.filter(i => i.done).length}/${items.length}</span>
         </div>
-        <ul class="plan-list" data-group="${groupName}"></ul>
+        <ul class="plan-list" data-group="${tag}"></ul>
       `;
       const ul = section.querySelector('.plan-list');
       items.forEach(plan => {
@@ -3234,32 +3281,19 @@ function renderDailyPlan(host, embedded = false) {
         ul.appendChild(li);
       });
       groupsWrap.appendChild(section);
-    });
-
-    // 没有分组的计划（兼容数据）
-    const orphans = state.plans.filter(p => !state.planGroups.includes(p.group));
-    if (orphans.length) {
-      const section = document.createElement('div');
-      section.className = 'plan-group-section';
-      section.innerHTML = `
-        <div class="plan-group-title"><span class="plan-group-name">其他</span></div>
-        <ul class="plan-list" data-group="__orphan"></ul>
-      `;
-      const ul = section.querySelector('.plan-list');
-      orphans.forEach(plan => {
-        const li = document.createElement('li');
-        renderPlanItemContent(li, plan);
-        ul.appendChild(li);
-      });
-      groupsWrap.appendChild(section);
     }
+    tagOrder.forEach(tag => {
+      if (byTag[tag]) { renderSection(tag, byTag[tag]); delete byTag[tag]; }
+    });
+    Object.keys(byTag).forEach(tag => renderSection(tag, byTag[tag]));
   }
 
   function appendPlanItemDirect(plan) {
-    let ul = groupsWrap.querySelector(`.plan-list[data-group="${plan.group}"]`);
+    const tag = getPlanTag(plan.text);
+    let ul = groupsWrap.querySelector(`.plan-list[data-group="${tag}"]`);
     if (!ul) {
       renderGroups();
-      ul = groupsWrap.querySelector(`.plan-list[data-group="${plan.group}"]`);
+      ul = groupsWrap.querySelector(`.plan-list[data-group="${tag}"]`);
     }
     if (!ul) return;
     const li = document.createElement('li');
@@ -3270,7 +3304,9 @@ function renderDailyPlan(host, embedded = false) {
   function addPlan() {
     const text = input.value.trim();
     if (!text) return;
-    const plan = { id: uid('p'), text, done: false, group: '日常', points: 2 };
+    const tag = getPlanTag(text);
+    const plan = { id: uid('p'), text, done: false, group: tag, points: 2 };
+    ensurePlanGroup(tag);
     state.plans.push(plan);
     savePlans();
     snapshotTodayPlans();
@@ -3320,12 +3356,15 @@ function renderDailyPlan(host, embedded = false) {
       const text = inputEl.value.trim();
       if (text) {
         plan.text = text;
+        plan.group = getPlanTag(text);
+        ensurePlanGroup(plan.group);
         const np = parseInt(pointsEl.value);
         plan.points = isNaN(np) ? 0 : np;
         savePlans();
         snapshotTodayPlans();
       }
       state.editingPlanId = null;
+      renderGroups();
       renderPlanItemContent(li, plan);
       refreshOverview();
     }
@@ -3395,13 +3434,11 @@ function renderHistoricalPlan(host, dateKey) {
       </div>
       <div class="plan-overview-info">
         <h3 class="plan-title">${dateKey === getTodayKey() ? '当日计划' : '历史计划'}</h3>
-        <p class="plan-desc">${dateString} 的完成情况</p>
         <div class="plan-overview-stats">
           <div class="pos-stat"><span class="pos-num">${doneCount}/${total}</span><span class="pos-label">已完成</span></div>
           <div class="pos-stat"><span class="pos-num pos-points">+${earnedPoints}</span><span class="pos-label">当日积分</span></div>
         </div>
       </div>
-      <div class="plan-date">${dateString}</div>
     </div>
     <div id="plan-history-groups"></div>
   `;
@@ -3413,12 +3450,14 @@ function renderHistoricalPlan(host, dateKey) {
     return;
   }
   const groups = {};
+  const tagOrder = ['运动', '英语', '睡眠', '健康', '生活', '阅读', '3D', '日常'];
   plans.forEach(p => {
-    const g = p.group || '其他';
+    const g = getPlanTag(p.text);
     if (!groups[g]) groups[g] = [];
     groups[g].push(p);
   });
-  Object.keys(groups).forEach(g => {
+  const renderTag = (g) => {
+    if (!groups[g]) return;
     const section = document.createElement('div');
     section.className = 'plan-group-section';
     section.innerHTML = `
@@ -3428,7 +3467,7 @@ function renderHistoricalPlan(host, dateKey) {
     const ul = section.querySelector('.plan-list');
     groups[g].forEach(plan => {
       const tag = getPlanTag(plan.text);
-      const tagColor = getPlanBadgeColor(tag);
+      const tagStyle = getPlanBadgeColor(tag);
       const li = document.createElement('li');
       li.className = 'plan-item' + (plan.done ? ' done' : '');
       li.innerHTML = `
@@ -3440,7 +3479,10 @@ function renderHistoricalPlan(host, dateKey) {
       ul.appendChild(li);
     });
     groupsWrap.appendChild(section);
-  });
+    delete groups[g];
+  };
+  tagOrder.forEach(renderTag);
+  Object.keys(groups).forEach(renderTag);
 }
 
 // ---------- Money / 记账存钱 ----------
@@ -6232,7 +6274,7 @@ function renderOverview() {
     <div class="hp-header">
       <div class="hp-greet-wrap">
         <h2 class="hp-greet">${greeting}呀！☀️</h2>
-        <p class="hp-sub">愿你稳步向理想的自己靠近✨</p>
+        <p class="hp-sub">愿你稳步向理想的自己靠近${icon('sparkle', 12)}</p>
         <div class="hp-weather" id="hp-weather">
           <span class="hp-weather-icon">${weatherBunnyIconSVG()}</span>
           <span id="hp-weather-text">${weather}</span>
@@ -6301,12 +6343,12 @@ function renderOverview() {
 
 
     <div class="hp-quick">
-      <div class="hp-section-title">⚡ 快速记录</div>
+      <div class="hp-section-title">${icon('zap', 14)} 快速记录</div>
       <div class="hp-quick-grid">
-        <button class="hp-quick-btn hp-qb-sport" data-qr="sport"><span class="hq-icon hq-sport">🏃</span><span class="hq-label">记运动</span></button>
-        <button class="hp-quick-btn hp-qb-sleep" data-qr="sleep"><span class="hq-icon hq-sleep">🌙</span><span class="hq-label">记睡眠</span></button>
-        <button class="hp-quick-btn hp-qb-money" data-qr="money"><span class="hq-icon hq-money">💰</span><span class="hq-label">记收支</span></button>
-        <button class="hp-quick-btn hp-qb-idea" data-qr="idea"><span class="hq-icon hq-idea">💡</span><span class="hq-label">记想法</span></button>
+        <button class="hp-quick-btn hp-qb-sport" data-qr="sport"><span class="hq-icon hq-sport">${icon('running', 15)}</span><span class="hq-label">记运动</span></button>
+        <button class="hp-quick-btn hp-qb-sleep" data-qr="sleep"><span class="hq-icon hq-sleep">${icon('moon', 15)}</span><span class="hq-label">记睡眠</span></button>
+        <button class="hp-quick-btn hp-qb-money" data-qr="money"><span class="hq-icon hq-money">${icon('moneyBag', 15)}</span><span class="hq-label">记收支</span></button>
+        <button class="hp-quick-btn hp-qb-idea" data-qr="idea"><span class="hq-icon hq-idea">${icon('bulb', 15)}</span><span class="hq-label">记想法</span></button>
       </div>
     </div>
   `;
@@ -8555,7 +8597,7 @@ function renderSettings() {
     saveProfile();
     renderProfileCard();
     renderTopbar();
-    await appAlert('设置已保存', { icon: '✨' });
+    await appAlert('设置已保存', { icon: 'sparkle' });
   });
 
   page.querySelectorAll('.focus-preset').forEach(btn => {
@@ -9644,8 +9686,8 @@ function renderBranchesPage() {
   page.innerHTML = `
     <div class="br-page">
       <div class="br-page-head">
-        <div class="br-page-title">我的支线 <span class="br-title-spark">✨</span></div>
-        <div class="br-streak-clean"><span class="br-fire">🔥</span><span>持续推进 <b>${streak}</b> 天</span></div>
+        <div class="br-page-title">我的支线 <span class="br-title-spark">${icon('sparkle', 15)}</span></div>
+        <div class="br-streak-clean"><span class="br-fire">${icon('fire', 15)}</span><span>持续推进 <b>${calcActiveStreak()}</b> 天</span></div>
       </div>
 
       <div class="br-header-clean">
@@ -9679,7 +9721,7 @@ function renderBranchesPage() {
             <div class="br-branch-icon ${b.cls}" style="background:${branchIconBg(b.cls)}">${b.icon}</div>
             <div class="br-branch-info">
               <div class="br-branch-title">${b.name}</div>
-              <div class="br-branch-sub">${b.sub}</div>
+              <div class="br-branch-sub">${b.sub.replace(/✨/g, () => icon('sparkle', 12))}</div>
               <div class="br-branch-meta">
                 <span class="br-lv-tag" style="background:${branchLvBg(b.cls)};color:${branchColor(b.cls)}">Lv.${b.level} ${b.levelText}</span>
                 <span class="br-freq-tag">每周 ${b.activeDays} 天</span>
@@ -9716,7 +9758,7 @@ function renderBranchesPage() {
           const pct = 0;
           const route = k.name === '攒钱' ? '记账' : k.name;
           return `<div class="br-keep-card-clean" data-route="${escapeHTML(route)}">
-            <div class="bkc-emoji"><span class="bkc-icon-wrap">${k.emoji}</span></div>
+            <div class="bkc-emoji"><span class="bkc-icon-wrap">${renderItemIcon(k.icon || k.emoji, 16)}</span></div>
             <div class="bkc-name">${k.name}</div>
             <div class="bkc-freq">${k.freq}</div>
             <div class="bkc-bar-row"><div class="bkc-bar"><i style="width:${pct}%;background:${k.color}"></i></div><span class="bkc-pct">${pct}%</span></div>
@@ -9731,7 +9773,7 @@ function renderBranchesPage() {
       <div class="br-slow-list-clean">
         ${slowList.map(s => `
           <div class="br-slow-card" data-route="${escapeHTML(s.name)}">
-            <div class="br-slow-left"><span class="bsi-emoji"><span class="bsi-icon-wrap">${s.emoji}</span></span><span class="bsi-name">${s.name}</span></div>
+            <div class="br-slow-left"><span class="bsi-emoji"><span class="bsi-icon-wrap">${renderItemIcon(s.icon || s.emoji, 15)}</span></span><span class="bsi-name">${s.name}</span></div>
             <span class="bsi-tag">待回归</span>
           </div>
         `).join('')}
@@ -9895,7 +9937,7 @@ function renderStudyPage() {
       <button class="sub-back-btn" data-go="我的支线" aria-label="返回">
         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
       </button>
-      <h3 class="sub-title">英语 <span class="sub-spark">✨</span></h3>
+      <h3 class="sub-title">英语 <span class="sub-spark">${icon('sparkle', 14)}</span></h3>
     </div>
 
     <div class="study-goal section-card" style="background:var(--card);border:1px solid var(--border);">
@@ -10050,7 +10092,7 @@ function renderLifeOrderPage() {
   page.innerHTML = `
     <div class="sub-page-head">
       <button class="sub-back-btn" data-go="我的支线">‹</button>
-      <h3 class="sub-title">生活秩序 <span class="sub-spark">✨</span></h3>
+      <h3 class="sub-title">生活秩序 <span class="sub-spark">${icon('sparkle', 14)}</span></h3>
       <span class="sub-bunny">🐰📋</span>
     </div>
     <div class="study-goal section-card" style="background:linear-gradient(135deg,#E8F0E2 0%,#FFF5E9 100%);">
@@ -10090,7 +10132,7 @@ function renderInnerGrowthPage() {
   page.innerHTML = `
     <div class="sub-page-head">
       <button class="sub-back-btn" data-go="我的支线">‹</button>
-      <h3 class="sub-title">内在成长 <span class="sub-spark">✨</span></h3>
+      <h3 class="sub-title">内在成长 <span class="sub-spark">${icon('sparkle', 14)}</span></h3>
       <span class="sub-bunny">🐰🌱</span>
     </div>
     <div class="study-goal section-card" style="background:linear-gradient(135deg,#EDEAF9 0%,#E8F0E2 100%);">
@@ -10129,7 +10171,7 @@ function renderTravelPage() {
   page.innerHTML = `
     <div class="sub-page-head">
       <button class="sub-back-btn" data-go="我的支线">‹</button>
-      <h3 class="sub-title">旅行体验 <span class="sub-spark">✨</span></h3>
+      <h3 class="sub-title">旅行体验 <span class="sub-spark">${icon('sparkle', 14)}</span></h3>
       <span class="sub-bunny">🐰✈️</span>
     </div>
     <div class="study-goal section-card" style="background:linear-gradient(135deg,#E8F4FF 0%,#FFF5E9 100%);">
@@ -10162,7 +10204,7 @@ function renderSocialPage() {
   page.innerHTML = `
     <div class="sub-page-head">
       <button class="sub-back-btn" data-go="我的支线">‹</button>
-      <h3 class="sub-title">社交拓展 <span class="sub-spark">✨</span></h3>
+      <h3 class="sub-title">社交拓展 <span class="sub-spark">${icon('sparkle', 14)}</span></h3>
       <span class="sub-bunny">🐰💬</span>
     </div>
     <div class="study-goal section-card" style="background:linear-gradient(135deg,#FFF0F5 0%,#FFF5E9 100%);">
@@ -10205,7 +10247,7 @@ function renderSettingsPage() {
       </div>
       <div class="me-name">${escapeHTML(s.userName || '小兔软糖')} <span class="me-edit" id="me-edit">✎ 修改</span></div>
       <div class="me-level-row"><span class="me-level">${lv.level >= 18 ? 'Lv.18' : 'Lv.' + lv.level}</span><span class="me-stage-chip">当前阶段：备考成长季</span></div>
-      <p class="me-foot-text">愿你在每一个计划里，遇见更好的自己✨</p>
+      <p class="me-foot-text">愿你在每一个计划里，遇见更好的自己${icon('sparkle', 12)}</p>
     </div>
 
     <div class="me-grid">
@@ -10351,26 +10393,26 @@ function catCardHTML(s) {
 
 function buildInsightSuggestions(stats) {
   const out = [];
-  if (!stats.length) return [{ icon: '⚙️', text: '还没有选择任何模块，点右上角「自定义」勾选要追踪的板块，洞察会更有针对性～' }];
+  if (!stats.length) return [{ icon: icon('settings', 14), text: '还没有选择任何模块，点右上角「自定义」勾选要追踪的板块，洞察会更有针对性～' }];
   const focus = stats.find(s => s.id === 'focus');
   if (focus) {
-    if (focus.metric < 120) out.push({ icon: '⏳', text: '本周专注总时长约 ' + Math.round(focus.metric) + ' 分钟，略短。试着每天留 25 分钟给最重要的那件事，一周就能凑出 175 分钟心流。' });
-    else out.push({ icon: '🔥', text: '本周专注 ' + Math.round(focus.metric) + ' 分钟，状态在线！保持这个节奏，重要的事会一件件被啃下来。' });
+    if (focus.metric < 120) out.push({ icon: icon('time', 14), text: '本周专注总时长约 ' + Math.round(focus.metric) + ' 分钟，略短。试着每天留 25 分钟给最重要的那件事，一周就能凑出 175 分钟心流。' });
+    else out.push({ icon: icon('fire', 14), text: '本周专注 ' + Math.round(focus.metric) + ' 分钟，状态在线！保持这个节奏，重要的事会一件件被啃下来。' });
   }
   stats.forEach(s => {
     if (s.items === 0) {
-      out.push({ icon: '🌱', text: '本周「' + s.name + '」还没有任何记录，去对应页面点个完成、打次卡，洞察数据就活起来了。' });
+      out.push({ icon: icon('leaf', 14), text: '本周「' + s.name + '」还没有任何记录，去对应页面点个完成、打次卡，洞察数据就活起来了。' });
     } else if (s.metricLast > 0 && s.metric < s.metricLast * 0.7) {
-      out.push({ icon: '📉', text: '「' + s.name + '」本周比上周回落了一些（' + Math.round(s.metric) + s.metricUnit + ' vs 上周 ' + Math.round(s.metricLast) + s.metricUnit + '），下周稍微加把劲就能追回来。' });
+      out.push({ icon: icon('trendDown', 14), text: '「' + s.name + '」本周比上周回落了一些（' + Math.round(s.metric) + s.metricUnit + ' vs 上周 ' + Math.round(s.metricLast) + s.metricUnit + '），下周稍微加把劲就能追回来。' });
     } else if (s.metricLast > 0 && s.metric > s.metricLast * 1.15) {
-      out.push({ icon: '📈', text: '「' + s.name + '」本周比上周更投入（' + Math.round(s.metric) + s.metricUnit + ' ↑），这个势头值得保持！' });
+      out.push({ icon: icon('chartLine', 14), text: '「' + s.name + '」本周比上周更投入（' + Math.round(s.metric) + s.metricUnit + ' ↑），这个势头值得保持！' });
     }
   });
   let activeDays = 0;
   for (let i = 0; i < 7; i++) { if (stats.some(s => (s.dailyItems[i] > 0) || (s.daily[i] > 0))) activeDays++; }
-  if (activeDays <= 3) out.push({ icon: '🗓️', text: '本周只有 ' + activeDays + ' 天有记录，节奏偏散。把打卡拆成每天 1–2 件小事，连续性比强度更重要。' });
-  else if (activeDays === 7) out.push({ icon: '✨', text: '七天全勤！这种持续感是长期复利的关键，给自己点个赞 🐰。' });
-  if (!out.length) out.push({ icon: '🌟', text: '各项数据都比较平稳，继续保持就好。想再进一步，可以挑一个板块做小幅度增量。' });
+  if (activeDays <= 3) out.push({ icon: icon('calendar', 14), text: '本周只有 ' + activeDays + ' 天有记录，节奏偏散。把打卡拆成每天 1–2 件小事，连续性比强度更重要。' });
+  else if (activeDays === 7) out.push({ icon: icon('sparkle', 14), text: '七天全勤！这种持续感是长期复利的关键，给自己点个赞 🐰。' });
+  if (!out.length) out.push({ icon: icon('star', 14), text: '各项数据都比较平稳，继续保持就好。想再进一步，可以挑一个板块做小幅度增量。' });
   return out.slice(0, 6);
 }
 
@@ -10433,7 +10475,7 @@ function renderWeeklyIngredientStatsHTML(weekStart) {
     ? stats.expiredWaste.map(w => `<div class="wi-stat-row wi-waste"><span class="wi-name">${escapeHtml(w.name)}</span><span class="wi-sub">期 ${escapeHtml(w.expiryDate || '—')} · 剩 ${Number(w.remaining) || 0}${escapeHtml(w.unit || '')}</span></div>`).join('')
     : '<p class="memo-empty">本周无过期浪费 🎉</p>';
   const suggestHTML = stats.suggestions.map(s => `<div class="insp-suggest-card"><span class="insp-suggest-ic">${icon('leaf', 14)}</span><p>${escapeHtml(s)}</p></div>`).join('');
-  return '<div class="insp-section wi-section"><div class="insp-section-head"><span class="insp-section-title"><span class="insp-sec-leaf">🌿</span> 每周食材统计</span><span class="insp-section-more">饮食 · 库存</span></div>'
+  return '<div class="insp-section wi-section"><div class="insp-section-head"><span class="insp-section-title"><span class="insp-sec-leaf">' + icon('leaf', 14) + '</span> 每周食材统计</span><span class="insp-section-more">饮食 · 库存</span></div>'
     + '<div class="wi-grid">'
     + '<div class="wi-block"><div class="wi-block-head">本周消耗</div><div class="wi-block-body">' + consumedHTML + '</div></div>'
     + '<div class="wi-block"><div class="wi-block-head">本周新增购入</div><div class="wi-block-body">' + purchasedHTML + '</div></div>'
@@ -10464,7 +10506,7 @@ function renderInsightPage() {
 
   page.innerHTML = '<div class="insp-page">'
     + '<div class="insp-top">'
-    + '<div class="insp-top-left"><h2 class="insp-main-title">本周洞察 <span class="insp-title-spark">✨</span></h2>'
+    + '<div class="insp-top-left"><h2 class="insp-main-title">本周洞察 <span class="insp-title-spark">' + icon('sparkle', 14) + '</span></h2>'
     + '<button class="insp-week-btn" id="insp-week-btn">' + rangeText + '<span class="insp-date-arrow">▼</span></button></div>'
     + '<div class="insp-top-right"><button class="insp-diy-btn" id="insp-diy-btn">'
     + icon('list', 13) + ' 自定义</button><div class="insp-mascot-slot" title="吉祥物位置（预留）"></div></div>'
@@ -10472,16 +10514,16 @@ function renderInsightPage() {
 
     + '<div class="insp-cards-grid">' + (visibleStats.length ? visibleStats.map(catCardHTML).join('') : '<div class="insp-empty">当前没有显示任何模块卡片，点击图例可重新展开～</div>') + '</div>'
 
-    + '<div class="insp-section"><div class="insp-section-head"><span class="insp-section-title"><span class="insp-sec-spark">✨</span> 每周数据变化</span><span class="insp-section-more">相对趋势 · 可同时勾选多个</span></div>'
+    + '<div class="insp-section"><div class="insp-section-head"><span class="insp-section-title"><span class="insp-sec-spark">' + icon('sparkle', 14) + '</span> 每周数据变化</span><span class="insp-section-more">相对趋势 · 可同时勾选多个</span></div>'
     + '<div class="insp-line-card combined-line-card"><div class="insp-line-wrap">' + combinedChartHTML + '</div><div class="insp-line-legend">' + legendHTML + '</div></div></div>'
 
-    + '<div class="insp-section"><div class="insp-section-head"><span class="insp-section-title"><span class="insp-sec-heart">❤️</span> 习惯完成热力图</span><span class="insp-heat-legend"><i class="ht-low"></i><i class="ht-mid"></i><i class="ht-high"></i>完成度 低 → 高</span></div>'
+    + '<div class="insp-section"><div class="insp-section-head"><span class="insp-section-title"><span class="insp-sec-heart">' + icon('heart', 14) + '</span> 习惯完成热力图</span><span class="insp-heat-legend"><i class="ht-low"></i><i class="ht-mid"></i><i class="ht-high"></i>完成度 低 → 高</span></div>'
     + '<div class="insp-heatmap-wrap"><div class="insp-heatmap-grid insp-heat-grid2"><span></span><span></span>'
     + weekdayLabels.map(l => '<span class="ih-day">' + l + '</span>').join('')
     + (visibleStats.length ? visibleStats.map(s => '<span class="ih-icon" style="color:' + s.color + '">' + icon(s.icon, 12) + '</span><span class="ih-name">' + s.name + '</span>' + s.levels.map(lv => '<span class="ih-dot lvl' + lv + '"></span>').join('')).join('') : '<span class="ih-name" style="grid-column:1/-1;color:var(--text-muted);font-size:10px;padding:6px 0">勾选图例后展示对应完成度</span>')
     + '</div></div></div>'
 
-    + '<div class="insp-section insp-suggest-section"><div class="insp-section-head"><span class="insp-section-title"><span class="insp-sec-star">🌟</span> 每周优化建议</span></div>'
+    + '<div class="insp-section insp-suggest-section"><div class="insp-section-head"><span class="insp-section-title"><span class="insp-sec-star">' + icon('star', 14) + '</span> 每周优化建议</span></div>'
     + '<div class="insp-suggest-list">' + buildInsightSuggestions(visibleStats).map(t => '<div class="insp-suggest-card"><span class="insp-suggest-ic">' + t.icon + '</span><p>' + t.text + '</p></div>').join('') + '</div></div>'
     + '</div>';
   content.appendChild(page);
@@ -10536,7 +10578,7 @@ function renderProjectPage() {
   page.innerHTML = `
     <div class="sub-page-head">
       <button class="sub-back-btn" data-go="我的支线">‹</button>
-      <h3 class="sub-title">项目计划 <span class="sub-spark">✨</span></h3>
+      <h3 class="sub-title">项目计划 <span class="sub-spark">${icon('sparkle', 14)}</span></h3>
       <span class="sub-more" title="更多" hidden>⋯</span>
     </div>
 
@@ -10586,7 +10628,7 @@ function renderProjectPage() {
       <span class="kr-bunny">🐰</span>
       <div class="soft-card-title">⭐ 本周关键结果</div>
       ${PROJECT.kr.map(k => `<div class="study-plan-item"><div class="spi-check"></div><div class="spi-body"><div class="spi-name">${k}</div></div></div>`).join('')}
-      <p class="kr-foot">继续保持，稳步向前！✨</p>
+      <p class="kr-foot">继续保持，稳步向前！${icon('sparkle', 12)}</p>
     </div>
 
     <button class="btn btn-primary pill-btn proj-focus-btn" id="proj-focus">▶ 开始专注</button>
@@ -10658,12 +10700,12 @@ function closeQuickRecordModal() {
 function sportTabHTML() {
   return `<div class="qr-field"><label>运动时长（分钟）</label><input type="number" id="qr-min" value="20" min="0"></div>
     <div class="qr-field"><label>运动类型</label><div class="qr-chips" id="qr-sport-chips">
-      <span class="qr-chip active" data-t="跑步"><span class="qr-chip-ico">🏃</span>跑步</span>
-      <span class="qr-chip" data-t="走路"><span class="qr-chip-ico">🚶</span>走路</span>
-      <span class="qr-chip" data-t="骑行"><span class="qr-chip-ico">🚴</span>骑行</span>
-      <span class="qr-chip" data-t="健身"><span class="qr-chip-ico">💪</span>健身</span>
-      <span class="qr-chip" data-t="瑜伽"><span class="qr-chip-ico">🧘</span>瑜伽</span>
-      <span class="qr-chip" data-t="其他"><span class="qr-chip-ico">✨</span>其他</span>
+      <span class="qr-chip active" data-t="跑步"><span class="qr-chip-ico">${icon('running', 14)}</span>跑步</span>
+      <span class="qr-chip" data-t="走路"><span class="qr-chip-ico">${icon('walk', 14)}</span>走路</span>
+      <span class="qr-chip" data-t="骑行"><span class="qr-chip-ico">${icon('bike', 14)}</span>骑行</span>
+      <span class="qr-chip" data-t="健身"><span class="qr-chip-ico">${icon('dumbbell', 14)}</span>健身</span>
+      <span class="qr-chip" data-t="瑜伽"><span class="qr-chip-ico">${icon('meditate', 14)}</span>瑜伽</span>
+      <span class="qr-chip" data-t="其他"><span class="qr-chip-ico">${icon('sparkle', 14)}</span>其他</span>
     </div></div>
     <div class="qr-field"><label>备注</label><input type="text" id="qr-note" placeholder="今天做了什么运动？"></div>`;
 }
@@ -10671,13 +10713,13 @@ function sportTabHTML() {
 function sleepTabHTML() {
   return `<div class="qr-time-row">
       <div class="qr-time-card" id="qr-bed-card">
-        <span class="qr-time-label"><span class="qr-time-ico">🌙</span>睡觉时间</span>
+        <span class="qr-time-label"><span class="qr-time-ico">${icon('moon', 14)}</span>睡觉时间</span>
         <span class="qr-time-val" id="qr-bed-val">22:30</span>
         <input type="time" id="qr-bed" value="22:30" class="qr-time-input">
       </div>
       <div class="qr-time-sep">›</div>
       <div class="qr-time-card" id="qr-wake-card">
-        <span class="qr-time-label"><span class="qr-time-ico">☀️</span>起床时间</span>
+        <span class="qr-time-label"><span class="qr-time-ico">${icon('sunrise', 14)}</span>起床时间</span>
         <span class="qr-time-val" id="qr-wake-val">06:30</span>
         <input type="time" id="qr-wake" value="06:30" class="qr-time-input">
       </div>

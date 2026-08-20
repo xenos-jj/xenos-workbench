@@ -5207,15 +5207,14 @@ select.pf-input {
 .plan-progress-circle .pc-bg {
   fill: none;
   stroke: var(--primary-hover);
-  stroke-width: 8;
-  opacity: 0.7;
+  stroke-width: 4;
+  opacity: 0.5;
 }
 .plan-progress-circle .pc-fg {
   fill: none;
-  stroke: url(#ringGrad);
-  stroke-width: 8.5;
+  stroke: var(--primary);
+  stroke-width: 4;
   stroke-linecap: round;
-  filter: drop-shadow(0 1px 3px rgba(168,135,79,0.45));
   transition: stroke-dashoffset .45s cubic-bezier(.4,0,.2,1);
 }
 .plan-progress-circle .pc-text { font-size: 15px; font-weight: 700; color: var(--text); }
