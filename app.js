@@ -200,6 +200,59 @@ const INSIGHT_MODULES = [
       }
       return { daily, dailyItems, levels, items, metric };
     }
+  },
+  {
+    id: 'travel',
+    name: '旅行',
+    icon: 'plane',
+    color: '#E0A85C',
+    bg: '#FBEFDD',
+    metricName: '本周获得积分',
+    metricUnit: '分',
+    avgName: '日均积分',
+    avgUnit: '分',
+    compute(weekStart) {
+      const daily = [], dailyItems = [], levels = [];
+      let items = 0, metric = 0;
+      const t = state.travel || {};
+      const cats = (t.checkin && t.checkin.categories) || [];
+      const all = cats.reduce((a, c) => a.concat(c.places || []), []);
+      for (let i = 0; i < 7; i++) {
+        const d = shiftDate(weekStart, i);
+        const dayPts = Number((t.log && t.log[d]) || 0);
+        const doneToday = all.filter(p => p.checked && p.date === d).length;
+        daily.push(dayPts); metric += dayPts;
+        dailyItems.push(doneToday); items += doneToday;
+        levels.push(doneToday === 0 ? 0 : doneToday === 1 ? 1 : doneToday === 2 ? 2 : 3);
+      }
+      return { daily, dailyItems, levels, items, metric };
+    }
+  },
+  {
+    id: 'social',
+    name: '社交',
+    icon: 'message',
+    color: '#E8A77C',
+    bg: '#FBEDE3',
+    metricName: '本周获得积分',
+    metricUnit: '分',
+    avgName: '日均积分',
+    avgUnit: '分',
+    compute(weekStart) {
+      const daily = [], dailyItems = [], levels = [];
+      let items = 0, metric = 0;
+      const s = state.social || {};
+      const acts = s.actions || [];
+      for (let i = 0; i < 7; i++) {
+        const d = shiftDate(weekStart, i);
+        const dayPts = Number((s.log && s.log[d]) || 0);
+        const doneToday = acts.filter(a => a.done && a.date === d).length;
+        daily.push(dayPts); metric += dayPts;
+        dailyItems.push(doneToday); items += doneToday;
+        levels.push(doneToday === 0 ? 0 : doneToday === 1 ? 1 : doneToday === 2 ? 2 : 3);
+      }
+      return { daily, dailyItems, levels, items, metric };
+    }
   }
 ];
 
@@ -215,6 +268,13 @@ function getInsightModules() {
 }
 function saveInsightModules(ids) {
   saveJSON('xenos-insight-modules', ids);
+}
+
+// 全局规则 4 & 5：新增模块只需调用一次 registerInsightModule(def) 即可自动进入
+// 「本周洞察」的自定义列表、统计卡片、折线趋势图与习惯热力图，无需单独配置。
+function registerInsightModule(def) {
+  if (!def || !def.id) return;
+  if (!INSIGHT_MODULES.some(m => m.id === def.id)) INSIGHT_MODULES.push(def);
 }
 
 function computeInsightStats(module, weekStart) {
@@ -2209,6 +2269,16 @@ function toast(msg) {
   toastTimer = setTimeout(() => el.classList.remove('show'), 1600);
 }
 
+// 全局规则 2：同一类提醒每周最多提示 1 次，避免重复刷屏。
+// key 相同且仍在同一个自然周内时，后续调用会被忽略。
+const _weeklyNotified = {};
+function notifyOncePerWeek(key, msg) {
+  const wk = getWeekStart(0);
+  if (_weeklyNotified[key] === wk) return;
+  _weeklyNotified[key] = wk;
+  toast(msg);
+}
+
 function findItemByName(name) {
   for (const g of state.groups) {
     for (const i of g.items) {
@@ -3573,8 +3643,8 @@ function getWeeklyPlanInsight() {
   const insights = [];
   Object.keys(stats).forEach(g => {
     const rate = totals[g] ? Math.round((stats[g] / totals[g]) * 100) : 0;
-    if (rate < 40) insights.push(`${g}完成率仅 ${rate}%，建议减少任务数量或固定一个时间段集中完成。`);
-    else if (rate < 70) insights.push(`${g}完成率 ${rate}%，还有提升空间，建议把最困难的任务放在精力最好的时段。`);
+    if (rate < 40) insights.push(`${g}本周记录了 ${rate}%，按自己的节奏来就好；事情多就先挑一两件最轻松的完成，剩下的随缘。`);
+    else if (rate < 70) insights.push(`${g}本周完成 ${rate}%，进度稳稳的；把最顺手的那件放在精力最好的时候做就行。`);
     else insights.push(`${g}完成率 ${rate}%，保持得很好，下周可以继续这个节奏。`);
   });
   if (!insights.length) insights.push('本周数据不足，坚持记录几天后会出现个性化建议。');
@@ -5936,7 +6006,7 @@ function getWeeklyInsight(key, name) {
   let text = '';
   if (rate >= 80) text = `本周${name}完成度很高，保持节奏即可，可以尝试增加难度或新习惯。`;
   else if (rate >= 50) text = `本周${name}完成度过半，建议把固定事项放到固定时段，减少决策消耗。`;
-  else text = `本周${name}完成度偏低，建议先只保留 1-2 个核心动作，把任务做得足够小再启动。`;
+  else text = `本周${name}做得不多也没关系，先留 1-2 个最轻松的核心动作，做得足够小就好启动，不急。`;
   return { total, activeDays, rate, text };
 }
 
@@ -10229,7 +10299,7 @@ function renderStudyPage() {
   if (restCheck) {
     restCheck.addEventListener('change', () => {
       if (restCheck.checked && restDaysLeft <= 0 && !day.restDay) {
-        toast('本周休息日已用完');
+        notifyOncePerWeek('english-restday', '本周休息日已用完');
         restCheck.checked = false;
         return;
       }
@@ -11122,21 +11192,26 @@ function buildInsightSuggestions(stats) {
   if (!stats.length) return [{ icon: icon('settings', 14), text: '还没有选择任何模块，点右上角「自定义」勾选要追踪的板块，洞察会更有针对性～' }];
   const focus = stats.find(s => s.id === 'focus');
   if (focus) {
-    if (focus.metric < 120) out.push({ icon: icon('time', 14), text: '本周专注总时长约 ' + Math.round(focus.metric) + ' 分钟，略短。试着每天留 25 分钟给最重要的那件事，一周就能凑出 175 分钟心流。' });
-    else out.push({ icon: icon('fire', 14), text: '本周专注 ' + Math.round(focus.metric) + ' 分钟，状态在线！保持这个节奏，重要的事会一件件被啃下来。' });
+    if (focus.metric < 120) out.push({ icon: icon('time', 14), text: '这一周专注时长不多，没关系～每天先留 15 分钟给最重要的一件事就很好。' });
+    else out.push({ icon: icon('fire', 14), text: '本周专注 ' + Math.round(focus.metric) + ' 分钟，状态在线！顺着这个节奏就好，重要的事会一件件被啃下来。' });
+  }
+  // 全局规则 2：相同类型的空状态提示合并为一条，避免刷屏（每周每模块最多 1 条轻量提示）
+  const emptyModules = stats.filter(s => s.items === 0).map(s => s.name);
+  if (emptyModules.length) {
+    const names = emptyModules.slice(0, 3).join('、') + (emptyModules.length > 3 ? ' 等' : '');
+    out.push({ icon: icon('leaf', 14), text: '本周「' + names + '」还没记录，慢慢来～去对应页面点个完成、打次卡，数据就自然活起来了，不急。' });
   }
   stats.forEach(s => {
-    if (s.items === 0) {
-      out.push({ icon: icon('leaf', 14), text: '本周「' + s.name + '」还没有任何记录，去对应页面点个完成、打次卡，洞察数据就活起来了。' });
-    } else if (s.metricLast > 0 && s.metric < s.metricLast * 0.7) {
-      out.push({ icon: icon('trendDown', 14), text: '「' + s.name + '」本周比上周回落了一些（' + Math.round(s.metric) + s.metricUnit + ' vs 上周 ' + Math.round(s.metricLast) + s.metricUnit + '），下周稍微加把劲就能追回来。' });
+    if (s.items === 0) return; // 已在上方的合并提示中统一处理
+    if (s.metricLast > 0 && s.metric < s.metricLast * 0.7) {
+      out.push({ icon: icon('trendDown', 14), text: '「' + s.name + '」本周比上周回落了一些（' + Math.round(s.metric) + s.metricUnit + ' vs 上周 ' + Math.round(s.metricLast) + s.metricUnit + '），回落也正常，顺着状态慢慢来，下周自然会回来。' });
     } else if (s.metricLast > 0 && s.metric > s.metricLast * 1.15) {
       out.push({ icon: icon('chartLine', 14), text: '「' + s.name + '」本周比上周更投入（' + Math.round(s.metric) + s.metricUnit + ' ↑），这个势头值得保持！' });
     }
   });
   let activeDays = 0;
   for (let i = 0; i < 7; i++) { if (stats.some(s => (s.dailyItems[i] > 0) || (s.daily[i] > 0))) activeDays++; }
-  if (activeDays <= 3) out.push({ icon: icon('calendar', 14), text: '本周只有 ' + activeDays + ' 天有记录，节奏偏散。把打卡拆成每天 1–2 件小事，连续性比强度更重要。' });
+  if (activeDays <= 3) out.push({ icon: icon('calendar', 14), text: '本周有 ' + activeDays + ' 天留下了记录，已经是很好的开始；每天做 1–2 件小事，连续性比强度更重要。' });
   else if (activeDays === 7) out.push({ icon: icon('sparkle', 14), text: '七天全勤！这种持续感是长期复利的关键，给自己点个赞 🐰。' });
   if (!out.length) out.push({ icon: icon('star', 14), text: '各项数据都比较平稳，继续保持就好。想再进一步，可以挑一个板块做小幅度增量。' });
   return out.slice(0, 6);
