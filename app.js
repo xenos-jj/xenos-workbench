@@ -703,21 +703,45 @@ const DEFAULT_SETTINGS = {
 };
 
 // 旅行体验（低精力版）默认数据
+// 旅行体验（低精力版・轻量出门期）—— 分阶段结构
 const DEFAULT_TRAVEL = {
   enabled: true,
-  nextDestination: '待定',
-  places: [
-    { id: 't1', name: '海边小城', note: '先收藏 3 个近郊滨江 / 湖边点位，车程 30 分钟内', status: '待规划' },
-    { id: 't2', name: '山野徒步', note: '先标记 2 个市区内的矮山 / 城市公园，徒步 1 小时以内', status: '待规划' },
-    { id: 't3', name: '城市咖啡馆巡礼', note: '先收藏家附近 1 公里内的 2 家小众小店', status: '待规划' },
-    { id: 't4', name: '小区周边漫步', note: '每周出门 1 次，路线 1 公里内，不拍照、不打卡', status: '待规划' }
-  ],
-  inspirations: [
-    { id: 'ti1', text: '每天花 5 分钟刷 1 条单人散步 / 治愈小店的短内容', points: 2, done: false },
-    { id: 'ti2', text: '收藏 1 个本地小店或想去的点位', points: 3, done: false },
-    { id: 'ti3', text: '完成 1 次微出门（1 公里内，随时可折返）', points: 10, done: false },
-    { id: 'ti4', text: '去收藏的小店坐 15 分钟，点一杯喝的', points: 8, done: false }
-  ],
+  // 阶段总规则（置顶，可在「旅行灵感」区看到，随时可改）
+  rule: '所有出门按当天往返、随时折返、不强制次数；状态不好可跳过本周，没有惩罚。',
+  phase: 'adapt', // 当前阶段：adapt=入门适应周 / expand=小幅拓展周
+  phases: {
+    adapt: {
+      id: 'adapt',
+      name: '入门适应周',
+      meta: '5-15 分钟 / 次，每周完成 3 次即可',
+      nextDestination: '小区周边探索',
+      places: [
+        { id: 'a1', name: '单元楼绕圈漫步', note: '下楼散步', points: 5, status: '待规划' },
+        { id: 'a2', name: '小区环线漫步', note: '沿公园走一圈', points: 10, status: '待规划' }
+      ],
+      actions: [],
+      inspirationGuide: '每次出门后补充 1 句：记录 1 个出门时的小发现，例：楼下石榴树结果了、便利店新上了汽水。',
+      discoveries: []
+    },
+    expand: {
+      id: 'expand',
+      name: '小幅拓展周',
+      meta: '逐步拉近距离，当天往返',
+      nextDestination: '1 公里街巷探索',
+      places: [
+        { id: 'e1', name: '沿街无目的慢走', note: '出小区沿陌生小路走到下一个路口折返，15-20 分钟', points: 0, status: '待规划' },
+        { id: 'e2', name: '街心公园静坐', note: '步行至附近社区公园，长椅静坐 10 分钟后返程，20-30 分钟', points: 0, status: '待规划' },
+        { id: 'e3', name: '小店橱窗浏览', note: '路过感兴趣的小店仅看橱窗，无需进店消费，20 分钟内', points: 0, status: '待规划' }
+      ],
+      actions: [
+        { id: 'ea1', text: '完成沿街慢走', points: 10, done: false, date: '' },
+        { id: 'ea2', text: '完成街心公园静坐', points: 12, done: false, date: '' },
+        { id: 'ea3', text: '完成小店橱窗浏览', points: 10, done: false, date: '' }
+      ],
+      inspirationGuide: '每次出门后补充：记录 1 处街边细节，或收藏 1 家意向小店。',
+      discoveries: []
+    }
+  },
   log: {}
 };
 
@@ -1197,6 +1221,28 @@ function migrateData() {
   // v9176：初始化低精力旅行 / 社交模块（幂等：仅当不存在时补默认值）
   if (!state.travel) { state.travel = JSON.parse(JSON.stringify(DEFAULT_TRAVEL)); saveTravel(); }
   if (!state.social) { state.social = JSON.parse(JSON.stringify(DEFAULT_SOCIAL)); saveSocial(); }
+  // v9177：旅行模块升级为分阶段结构；旧扁平结构（无 phases）迁移，尽量保留已录入内容
+  if (state.travel && !state.travel.phases) {
+    const old = state.travel;
+    const fresh = JSON.parse(JSON.stringify(DEFAULT_TRAVEL));
+    if (Array.isArray(old.places)) {
+      fresh.phases.adapt.places = old.places.map(p => ({
+        id: p.id || uid('tp'),
+        name: p.name || '未命名',
+        note: p.note || '',
+        points: 0,
+        status: p.status || '待规划'
+      }));
+    }
+    if (Array.isArray(old.inspirations)) {
+      fresh.phases.adapt.discoveries = old.inspirations
+        .filter(i => i.done && i.text)
+        .map(i => ({ id: uid('td'), text: i.text }));
+    }
+    fresh.log = old.log || {};
+    state.travel = fresh;
+    saveTravel();
+  }
 }
 
 function resetPlansForNewDay() {
@@ -10260,27 +10306,31 @@ function renderTravelPage() {
   page.className = 'page';
   if (greetLine) greetLine.textContent = '旅行体验';
   const t = state.travel || JSON.parse(JSON.stringify(DEFAULT_TRAVEL));
+  const ph = t.phases[t.phase] || t.phases.adapt;
   const today = getTodayKey();
-  const weekDone = t.inspirations.filter(i => i.done && i.date === today).length;
-  const weekTotal = t.inspirations.length;
   const ws = getWeekStart();
   let weekPts = 0;
   for (const k in (t.log || {})) { if (k >= ws && k <= today) weekPts += (t.log[k] || 0); }
-  const departed = t.places.filter(p => p.status === '已出发').length;
+  const departed = ph.places.filter(p => p.status === '已出发').length;
+  const actionsDone = ph.actions.filter(a => a.done && a.date === today).length;
+  const phaseIds = Object.keys(t.phases);
+
   function travelSuggest() {
-    if (weekPts > 0 && departed > 0) return '这周已经在为出发做准备啦，慢慢来，旅行从想象开始就很美好 🌿';
-    if (weekPts > 0) return '这周已经积累了一些旅行的小念头，顺着自己的节奏就好。';
-    if (t.places.length > 0) return '收藏一个家附近的小角落，就是今天很轻松的一步。';
+    if (weekPts > 0 && departed > 0) return '这周已经迈出轻量出门的第一步啦，顺着节奏慢慢来，旅行从楼下开始就很美好 🌿';
+    if (weekPts > 0) return '这周已经积累了一些出门的小念头，顺着自己的节奏就好。';
+    if (ph.places.length > 0) return '收藏一个家附近的小角落，就是今天很轻松的一步。';
     return '不着急，先从想象一段舒服的散步开始，不用真的出门。';
   }
 
   function renderPlaceItem(p) {
+    const done = p.status === '已出发';
     return `<div class="module-list-item" data-place-id="${p.id}">
       <div class="mli-main">
         <span class="mli-name">${escapeHTML(p.name)}</span>
         <span class="mli-note">${escapeHTML(p.note)}</span>
       </div>
-      <span class="module-status ${p.status === '已出发' ? 'done' : ''}">${p.status}</span>
+      ${p.points > 0 ? `<span class="mli-points">+${p.points}</span>` : ''}
+      <span class="module-status ${done ? 'done' : ''}" data-place-id="${p.id}">${p.status}</span>
     </div>`;
   }
 
@@ -10293,6 +10343,14 @@ function renderTravelPage() {
     </div>`;
   }
 
+  function renderDiscovery(d) {
+    return `<div class="module-discovery">
+      <span class="module-discovery-dot"></span>
+      <span class="module-discovery-text">${escapeHTML(d.text)}</span>
+      <button class="module-discovery-del" data-del-disc="${d.id}" title="删除">×</button>
+    </div>`;
+  }
+
   page.innerHTML = `
     <div class="sub-page-head">
       <button class="sub-back-btn" data-go="我的支线">‹</button>
@@ -10300,16 +10358,25 @@ function renderTravelPage() {
       <span class="sub-bunny">🐰✈️</span>
     </div>
 
+    <div class="module-phase-tabs">
+      ${phaseIds.map(id => `<button class="module-phase-tab ${id === t.phase ? 'active' : ''}" data-phase="${id}">${escapeHTML(t.phases[id].name)}</button>`).join('')}
+    </div>
+
     <div class="module-hero module-hero-travel">
       <div class="mh-body">
-        <h4>待出发清单</h4>
-        <p class="mh-sub">不用急着奔赴远方，先在脑海里完成旅行</p>
+        <h4>待出发清单 · ${escapeHTML(ph.name)}</h4>
+        <p class="mh-sub">${escapeHTML(ph.meta || '')}</p>
         <div class="mh-tag" id="travel-next-tag">
           <span class="mh-tag-dot"></span>
-          <span>下一站：${escapeHTML(t.nextDestination || '待定')}</span>
+          <span>下一站：${escapeHTML(ph.nextDestination || '待定')}</span>
         </div>
       </div>
       <div class="mh-mascot"><img src="images/mascot.png" alt="mascot"></div>
+    </div>
+
+    <div class="module-rule-banner" id="travel-rule" title="点击可修改阶段总规则">
+      <span class="mrb-icon">${icon('info', 12)}</span>
+      <span class="mrb-text">${escapeHTML(t.rule || '')}</span>
     </div>
 
     <div class="section-card module-card">
@@ -10319,19 +10386,31 @@ function renderTravelPage() {
         <button class="module-add-btn" id="travel-add-place" title="新增">${icon('plus', 12)}</button>
       </div>
       <div class="module-list" id="travel-places">
-        ${t.places.length ? t.places.map(renderPlaceItem).join('') : '<div class="module-empty">还没有想去的地方，先收藏一个家附近的小角落吧～</div>'}
+        ${ph.places.length ? ph.places.map(renderPlaceItem).join('') : '<div class="module-empty">还没有想去的地方，先收藏一个家附近的小角落吧～</div>'}
       </div>
     </div>
 
+    ${ph.actions.length ? `
     <div class="section-card module-card">
       <div class="module-card-head">
-        <span class="module-card-icon" style="color:#D6A67A">${icon('camera', 14)}</span>
-        <span class="soft-card-title" style="margin:0;">旅行灵感</span>
-        <span class="module-card-meta">${weekDone}/${weekTotal}</span>
+        <span class="module-card-icon" style="color:#D6A67A">${icon('target', 14)}</span>
+        <span class="soft-card-title" style="margin:0;">本周行动</span>
+        <span class="module-card-meta">${actionsDone}/${ph.actions.length}</span>
       </div>
-      <p class="module-tip">记录 1 家想住的民宿、1 条想走的街道、1 种想吃的小吃，旅行从想象开始。</p>
       <div class="module-list" id="travel-actions">
-        ${t.inspirations.map(renderActionItem).join('')}
+        ${ph.actions.map(renderActionItem).join('')}
+      </div>
+    </div>` : ''}
+
+    <div class="section-card module-card">
+      <div class="module-card-head">
+        <span class="module-card-icon" style="color:#8FB0A0">${icon('camera', 14)}</span>
+        <span class="soft-card-title" style="margin:0;">旅行灵感</span>
+        <button class="module-add-btn" id="travel-add-discovery" title="记录一个小发现">${icon('plus', 12)}</button>
+      </div>
+      <p class="module-tip">${escapeHTML(ph.inspirationGuide || '每次出门后，记录 1 个让你舒服的小发现。')}</p>
+      <div class="module-discovery-list" id="travel-discoveries">
+        ${ph.discoveries.length ? ph.discoveries.map(renderDiscovery).join('') : '<div class="module-empty">出门后回来记一笔吧，哪怕是「今天云很好看」。</div>'}
       </div>
     </div>
 
@@ -10342,8 +10421,9 @@ function renderTravelPage() {
       </div>
       <div class="module-stats-grid">
         <div class="module-stat"><b>${weekPts}</b><span>获得积分</span></div>
-        <div class="module-stat"><b>${t.places.length}</b><span>想去的地方</span></div>
+        <div class="module-stat"><b>${ph.places.length}</b><span>想去的地方</span></div>
         <div class="module-stat"><b>${departed}</b><span>已出发</span></div>
+        ${ph.actions.length ? `<div class="module-stat"><b>${actionsDone}</b><span>本周行动</span></div>` : ''}
       </div>
       <p class="module-suggest">${travelSuggest()}</p>
     </div>
@@ -10357,36 +10437,56 @@ function renderTravelPage() {
 
   page.querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', () => selectItem(b.dataset.go)));
 
-  // 点击状态标签切换：待规划 ↔ 已出发
-  page.querySelectorAll('#travel-places .module-status').forEach(el => {
-    el.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const id = el.closest('.module-list-item').dataset.placeId;
-      const place = t.places.find(p => p.id === id);
-      if (place) {
-        place.status = place.status === '已出发' ? '待规划' : '已出发';
-        saveTravel();
-        renderTravelPage();
-      }
+  // 切换阶段
+  page.querySelectorAll('.module-phase-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      t.phase = tab.dataset.phase;
+      saveTravel();
+      renderTravelPage();
     });
   });
 
-  // 完成灵感行动
+  // 修改阶段总规则
+  page.querySelector('#travel-rule').addEventListener('click', async () => {
+    const v = await openModal('阶段总规则（置顶）', t.rule || '', '所有出门按当天往返、随时折返、不强制次数…');
+    if (v === null) return;
+    t.rule = v.trim() || '所有出门按当天往返、随时折返、不强制次数；状态不好可跳过本周，没有惩罚。';
+    saveTravel();
+    renderTravelPage();
+  });
+
+  // 想去的地方：状态切换 待规划 ↔ 已出发（有积分则计入）
+  page.querySelectorAll('#travel-places .module-status').forEach(el => {
+    el.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const id = el.dataset.placeId;
+      const place = ph.places.find(p => p.id === id);
+      if (!place) return;
+      const was = place.status === '已出发';
+      place.status = was ? '待规划' : '已出发';
+      if (place.points > 0) {
+        const delta = was ? -place.points : place.points;
+        state.points = Math.max(0, (state.points || 0) + delta);
+        t.log[today] = Math.max(0, (t.log[today] || 0) + delta);
+        savePoints();
+      }
+      saveTravel();
+      renderTravelPage();
+    });
+  });
+
+  // 本周行动：完成切换并计积分
   page.querySelectorAll('#travel-actions .module-list-item').forEach(row => {
     row.addEventListener('click', () => {
       const id = row.dataset.actionId;
-      const action = t.inspirations.find(a => a.id === id);
+      const action = ph.actions.find(a => a.id === id);
       if (!action) return;
       const wasDone = action.done && action.date === today;
       action.done = !wasDone;
       action.date = today;
-      if (action.done) {
-        state.points = (state.points || 0) + action.points;
-        t.log[today] = (t.log[today] || 0) + action.points;
-      } else {
-        state.points = Math.max(0, (state.points || 0) - action.points);
-        t.log[today] = Math.max(0, (t.log[today] || 0) - action.points);
-      }
+      const delta = wasDone ? -action.points : action.points;
+      state.points = Math.max(0, (state.points || 0) + delta);
+      t.log[today] = Math.max(0, (t.log[today] || 0) + delta);
       savePoints();
       saveTravel();
       renderTravelPage();
@@ -10398,9 +10498,29 @@ function renderTravelPage() {
     const name = await openModal('新增想去的地方', '', '例如：小区周边漫步');
     if (name === null || !name.trim()) return;
     const note = await openModal('备注（可选）', '', '简单描述一下，降低门槛');
-    t.places.push({ id: uid('tp'), name: name.trim(), note: note === null ? '' : note.trim(), status: '待规划' });
+    ph.places.push({ id: uid('tp'), name: name.trim(), note: note === null ? '' : note.trim(), points: 0, status: '待规划' });
     saveTravel();
     renderTravelPage();
+  });
+
+  // 新增小发现（旅行灵感）
+  page.querySelector('#travel-add-discovery').addEventListener('click', async () => {
+    const v = await openModal('记录一个小发现', '', '楼下石榴树结果了 / 便利店新上了汽水…');
+    if (v === null || !v.trim()) return;
+    ph.discoveries.push({ id: uid('td'), text: v.trim() });
+    saveTravel();
+    renderTravelPage();
+  });
+
+  // 删除小发现
+  page.querySelectorAll('[data-del-disc]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const id = btn.dataset.delDisc;
+      ph.discoveries = ph.discoveries.filter(d => d.id !== id);
+      saveTravel();
+      renderTravelPage();
+    });
   });
 }
 

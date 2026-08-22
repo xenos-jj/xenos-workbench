@@ -8044,3 +8044,41 @@ select.pf-input {
 .xn-toggle.on .xn-knob { transform: translateX(18px); }
 .xn-toggle:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 
+/* 旅行模块：阶段切换标签 */
+.module-phase-tabs { display: flex; gap: 8px; margin-bottom: 12px; }
+.module-phase-tab {
+  flex: 1; border: 1px solid var(--border-soft); background: var(--bg-soft);
+  border-radius: 999px; padding: 8px 6px; font-size: 10.5px; font-family: var(--font-small);
+  color: var(--text-muted); cursor: pointer; transition: all .15s ease;
+}
+.module-phase-tab:hover { border-color: var(--primary-hover); color: var(--text); }
+.module-phase-tab.active {
+  background: linear-gradient(135deg, #F0F7FC, #FDF8F2); border-color: #D9EAF5;
+  color: #7FB0D3; font-weight: 700; box-shadow: var(--shadow);
+}
+
+/* 旅行模块：阶段总规则置顶条 */
+.module-rule-banner {
+  display: flex; align-items: flex-start; gap: 7px;
+  background: linear-gradient(135deg, #FFF8EE 0%, #F0F7FC 100%); border: 1px solid #EADFCB;
+  border-radius: var(--radius); padding: 10px 12px; margin-bottom: 12px; cursor: pointer;
+  transition: border-color .15s ease;
+}
+.module-rule-banner:hover { border-color: #D9C4A0; }
+.module-rule-banner .mrb-icon { color: #E0A85C; flex-shrink: 0; margin-top: 1px; }
+.module-rule-banner .mrb-text { font-size: 10.5px; color: var(--text); line-height: 1.6; }
+
+/* 旅行模块：小发现（旅行灵感）列表 */
+.module-discovery-list { display: flex; flex-direction: column; gap: 6px; }
+.module-discovery {
+  display: flex; align-items: flex-start; gap: 7px;
+  background: #fff; border: 1px solid var(--border-soft); border-radius: 10px; padding: 8px 10px;
+}
+.module-discovery-dot { width: 6px; height: 6px; border-radius: 50%; background: #8FB0A0; flex-shrink: 0; margin-top: 4px; }
+.module-discovery-text { flex: 1; font-size: 11px; color: var(--text); line-height: 1.5; word-break: break-word; }
+.module-discovery-del {
+  border: none; background: transparent; color: var(--text-muted); cursor: pointer;
+  font-size: 14px; line-height: 1; padding: 0 2px; flex-shrink: 0;
+}
+.module-discovery-del:hover { color: #D98A8A; }
+
