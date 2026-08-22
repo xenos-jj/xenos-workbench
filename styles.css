@@ -8082,3 +8082,60 @@ select.pf-input {
 }
 .module-discovery-del:hover { color: #D98A8A; }
 
+/* ===== 地点打卡（旅行体验子页） ===== */
+.module-checkin-entry { cursor: default; }
+.module-go-btn {
+  margin-top: 10px; width: 100%; border: 1px solid #E7D7BE; background: linear-gradient(135deg,#FFF6E9,#FDF8F2);
+  color: #C8902F; font-weight: 700; font-size: 12px; font-family: var(--font); border-radius: 999px; padding: 9px 12px; cursor: pointer; transition: all .15s ease;
+}
+.module-go-btn:hover { border-color: #D9B97E; box-shadow: var(--shadow); }
+
+.ck-group { margin-bottom: 14px; }
+.ck-group-head { display: flex; align-items: center; gap: 7px; padding: 4px 2px 8px; }
+.ck-group-icon { display: flex; align-items: center; justify-content: center; }
+.ck-group-name { flex: 1; font-size: 12.5px; font-weight: 700; color: var(--text); font-family: var(--font-title, var(--font)); }
+.ck-group-meta { font-size: 10px; font-family: var(--font-small); color: var(--text-muted); margin-right: 2px; }
+
+.ck-list { display: flex; flex-direction: column; gap: 8px; }
+
+.ck-place {
+  background: #fff; border: 1px solid var(--border-soft); border-radius: 12px; padding: 10px 12px; transition: all .15s ease;
+}
+.ck-place.done { background: #F7FBF9; border-color: #CFE6DC; }
+
+.ck-place-top { display: flex; align-items: flex-start; gap: 9px; }
+.ck-check {
+  flex-shrink: 0; width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--border);
+  background: #fff; color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; transition: all .15s ease; margin-top: 1px;
+}
+.ck-check.on { background: #7FB0A0; border-color: #7FB0A0; }
+.ck-place-main { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.ck-name { font-size: 12px; font-weight: 600; color: var(--text); }
+.ck-place.done .ck-name { color: #6FA08F; }
+.ck-note { font-size: 9.5px; color: var(--text-muted); line-height: 1.45; }
+.ck-date { margin-top: 6px; font-size: 10px; color: #8FB0A0; font-family: var(--font-small); }
+
+.ck-photos { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.ck-photo-wrap { position: relative; width: 64px; height: 64px; border-radius: 9px; overflow: hidden; border: 1px solid var(--border-soft); }
+.ck-photo { width: 100%; height: 100%; object-fit: cover; display: block; }
+.ck-photo-del {
+  position: absolute; top: 2px; right: 2px; width: 18px; height: 18px; border-radius: 50%; border: none;
+  background: rgba(0,0,0,0.45); color: #fff; font-size: 13px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0;
+}
+.ck-photo-del:hover { background: rgba(200,90,90,0.8); }
+
+.ck-mood {
+  margin: 8px 0 0; font-size: 10.5px; color: var(--text); line-height: 1.6; background: var(--bg-soft);
+  border-radius: 9px; padding: 7px 9px; display: flex; gap: 5px; align-items: flex-start;
+}
+.ck-mood svg { flex-shrink: 0; margin-top: 2px; color: #C8902F; }
+
+.ck-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 9px; }
+.ck-act {
+  border: 1px solid var(--border-soft); background: #fff; color: var(--text-muted); border-radius: 999px;
+  font-size: 10px; font-family: var(--font-small); padding: 5px 10px; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; transition: all .15s ease;
+}
+.ck-act:hover { border-color: var(--primary-hover); color: var(--text); }
+.ck-act.danger { color: #C98A8A; border-color: #EFD9D9; }
+.ck-act.danger:hover { background: #FBEFEF; }
+

@@ -742,6 +742,50 @@ const DEFAULT_TRAVEL = {
       discoveries: []
     }
   },
+  // 地点打卡：分类清单（轻量出门期之外，自由记录想实地到访的地点）
+  checkin: {
+    categories: [
+      { id: 'ck1', name: '青浦近郊（嘉松中路地铁站周边｜距离近优先）', icon: 'mountain', places: [
+        { id: 'ck1-1', name: '蟠龙天地', note: '江南水乡新古镇，小桥河道，商铺丰富，散步很舒服', points: 12, checked: false, date: '', photos: [], mood: '' },
+        { id: 'ck1-2', name: '徐泾老街', note: '老上海老街烟火气息，小众安静，人不多', points: 8, checked: false, date: '', photos: [], mood: '' },
+        { id: 'ck1-3', name: '朱家角古镇', note: '水乡古镇，河边散步，小吃很多，青浦老牌古镇', points: 15, checked: false, date: '', photos: [], mood: '' },
+        { id: 'ck1-4', name: '章堰古镇', note: '人很少的原生态小众古镇，古建筑，适合闲逛', points: 12, checked: false, date: '', photos: [], mood: '' },
+        { id: 'ck1-5', name: '元祖梦世界', note: '手工 DIY 体验馆，可以做蛋糕手工，室内不怕下雨', points: 10, checked: false, date: '', photos: [], mood: '' },
+        { id: 'ck1-6', name: '大千天鹅湖庄园', note: '湖景绿地，可以看天鹅，户外风景舒缓', points: 12, checked: false, date: '', photos: [], mood: '' },
+        { id: 'ck1-7', name: '百联奥特莱斯（青浦）', note: '大型购物商场，店铺多，适合慢慢逛', points: 10, checked: false, date: '', photos: [], mood: '' }
+      ] },
+      { id: 'ck2', name: '上海小众小镇 & 风景地', icon: 'mountains', places: [
+        { id: 'ck2-1', name: '召稼楼古镇', note: '江南古镇，小吃密集，逛吃一体', points: 14, checked: false, date: '', photos: [], mood: '' },
+        { id: 'ck2-2', name: '枫泾古镇', note: '原生态水乡，人比朱家角少，古建筑多', points: 16, checked: false, date: '', photos: [], mood: '' },
+        { id: 'ck2-3', name: '新场古镇', note: '电影取景地，安静老街，咖啡店很多', points: 14, checked: false, date: '', photos: [], mood: '' },
+        { id: 'ck2-4', name: '广富林郊野公园', note: '大片绿地郊野，散步放空，风景开阔', points: 13, checked: false, date: '', photos: [], mood: '' },
+        { id: 'ck2-5', name: '淀山湖环湖大道', note: '环湖风景，湖边吹风，看日落', points: 13, checked: false, date: '', photos: [], mood: '' },
+        { id: 'ck2-6', name: '金泽古镇', note: '桥乡古镇，极度安静小众，游客少', points: 15, checked: false, date: '', photos: [], mood: '' }
+      ] },
+      { id: 'ck3', name: '特色商场 / 文化街区', icon: 'gem', places: [
+        { id: 'ck3-1', name: '愚园路街区', note: '老马路，老洋房，超多小店咖啡店，慢慢溜达', points: 14, checked: false, date: '', photos: [], mood: '' },
+        { id: 'ck3-2', name: '安福路', note: '文艺街区，买手店、小店聚集，氛围感强', points: 13, checked: false, date: '', photos: [], mood: '' },
+        { id: 'ck3-3', name: '衡山路‑武康路街区', note: '洋房街道，散步拍照，各色小店', points: 14, checked: false, date: '', photos: [], mood: '' },
+        { id: 'ck3-4', name: '今潮 8 弄', note: '老石库门改造街区，特色小店，展览，文创', points: 12, checked: false, date: '', photos: [], mood: '' },
+        { id: 'ck3-5', name: '上生新所', note: '复古园区，咖啡馆、买手店，园区环境好看', points: 13, checked: false, date: '', photos: [], mood: '' },
+        { id: 'ck3-6', name: '苏河湾万象天地', note: '新旧结合商场，户外街区，店铺丰富', points: 12, checked: false, date: '', photos: [], mood: '' }
+      ] },
+      { id: 'ck4', name: '小众手工 & 趣味店铺', icon: 'scissors', places: [
+        { id: 'ck4-1', name: '各类陶艺手作店', note: '陶艺捏泥 DIY，可以做杯子摆件，沉浸式动手', points: 14, checked: false, date: '', photos: [], mood: '' },
+        { id: 'ck4-2', name: '香薰蜡烛 DIY 工作室', note: '调香做蜡烛，室内安静手工体验', points: 12, checked: false, date: '', photos: [], mood: '' },
+        { id: 'ck4-3', name: '油画流体暴力熊手工店', note: '流体熊彩绘，解压手工', points: 11, checked: false, date: '', photos: [], mood: '' },
+        { id: 'ck4-4', name: '古籍文创手作店', note: '印章盖章、文创小物，逛 + 小手工', points: 10, checked: false, date: '', photos: [], mood: '' },
+        { id: 'ck4-5', name: '羊毛毡手作体验店', note: '做羊毛毡小玩偶，慢节奏手工', points: 13, checked: false, date: '', photos: [], mood: '' }
+      ] },
+      { id: 'ck5', name: '值得尝试特色餐馆', icon: 'utensils', places: [
+        { id: 'ck5-1', name: '朱家角本地本帮菜馆', note: '水乡本帮菜，河鲜、家常菜', points: 9, checked: false, date: '', photos: [], mood: '' },
+        { id: 'ck5-2', name: '蟠龙天地特色小馆集合', note: '多种菜系，环境舒适，逛古镇顺便吃饭', points: 8, checked: false, date: '', photos: [], mood: '' },
+        { id: 'ck5-3', name: '召稼楼本地小吃', note: '各类上海传统小吃，糕点', points: 8, checked: false, date: '', photos: [], mood: '' },
+        { id: 'ck5-4', name: '愚园路特色咖啡馆简餐', note: '环境舒服，轻食简餐，适合歇脚', points: 9, checked: false, date: '', photos: [], mood: '' },
+        { id: 'ck5-5', name: '本帮家常菜小馆', note: '地道上海家常菜，烟火气', points: 8, checked: false, date: '', photos: [], mood: '' }
+      ] }
+    ]
+  },
   log: {}
 };
 
@@ -1242,6 +1286,23 @@ function migrateData() {
     fresh.log = old.log || {};
     state.travel = fresh;
     saveTravel();
+  }
+  // v9178：旅行体验新增「地点打卡」分类清单（幂等：缺失则补默认，并补齐缺失的默认分类）
+  if (state.travel) {
+    if (!state.travel.checkin || !Array.isArray(state.travel.checkin.categories)) {
+      state.travel.checkin = JSON.parse(JSON.stringify(DEFAULT_TRAVEL.checkin));
+      saveTravel();
+    } else {
+      const defCats = JSON.parse(JSON.stringify(DEFAULT_TRAVEL.checkin.categories));
+      let added = false;
+      defCats.forEach(dc => {
+        if (!state.travel.checkin.categories.find(c => c.id === dc.id)) {
+          state.travel.checkin.categories.push(dc);
+          added = true;
+        }
+      });
+      if (added) saveTravel();
+    }
   }
 }
 
@@ -3074,6 +3135,7 @@ const PAGE_ROUTES = {
   '生活秩序': renderLifeOrderPage,
   '内在成长': renderInnerGrowthPage,
   '旅行体验': renderTravelPage,
+  '地点打卡': renderTravelCheckinPage,
   '社交拓展': renderSocialPage,
   // 成长提升
   '书籍阅读': renderBookReading,
@@ -3092,7 +3154,8 @@ const SUB_PAGE_PARENT = {
   '每日计划': '工作台首页',
   '饮食': '健康',
   '健身': '健康',
-  '记账存钱': '金钱'
+  '记账存钱': '金钱',
+  '地点打卡': '旅行体验'
 };
 
 function prependBackBar(target) {
@@ -10313,6 +10376,9 @@ function renderTravelPage() {
   for (const k in (t.log || {})) { if (k >= ws && k <= today) weekPts += (t.log[k] || 0); }
   const departed = ph.places.filter(p => p.status === '已出发').length;
   const actionsDone = ph.actions.filter(a => a.done && a.date === today).length;
+  const ckCats = (t.checkin && Array.isArray(t.checkin.categories)) ? t.checkin.categories : [];
+  const checkedCount = ckCats.reduce((n, c) => n + c.places.filter(p => p.checked).length, 0);
+  const totalPlaces = ckCats.reduce((n, c) => n + c.places.length, 0);
   const phaseIds = Object.keys(t.phases);
 
   function travelSuggest() {
@@ -10424,8 +10490,19 @@ function renderTravelPage() {
         <div class="module-stat"><b>${ph.places.length}</b><span>想去的地方</span></div>
         <div class="module-stat"><b>${departed}</b><span>已出发</span></div>
         ${ph.actions.length ? `<div class="module-stat"><b>${actionsDone}</b><span>本周行动</span></div>` : ''}
+        <div class="module-stat"><b>${checkedCount}</b><span>已打卡地点</span></div>
       </div>
       <p class="module-suggest">${travelSuggest()}</p>
+    </div>
+
+    <div class="section-card module-card module-checkin-entry" id="travel-goto-checkin">
+      <div class="module-card-head">
+        <span class="module-card-icon" style="color:#E0A85C">${icon('flag', 14)}</span>
+        <span class="soft-card-title" style="margin:0;">地点打卡</span>
+        <span class="module-card-meta">${checkedCount}/${totalPlaces} 已打卡</span>
+      </div>
+      <p class="module-tip">按分类记录想实地到访的地点，完成打卡拿积分，可上传照片与心情。</p>
+      <button class="module-go-btn" id="travel-open-checkin">进入地点打卡 ›</button>
     </div>
 
     <div class="module-foot-note">
@@ -10520,6 +10597,221 @@ function renderTravelPage() {
       ph.discoveries = ph.discoveries.filter(d => d.id !== id);
       saveTravel();
       renderTravelPage();
+    });
+  });
+
+  // 进入地点打卡清单
+  page.querySelector('#travel-open-checkin').addEventListener('click', () => selectItem('地点打卡'));
+}
+
+// ============ 地点打卡（旅行体验子页） ============
+
+// 将用户选择的图片文件压缩为 base64 data URL（限制尺寸，避免 localStorage 过大）
+function fileToResizedDataURL(file, maxW, quality) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        let w = img.width, h = img.height;
+        if (w > maxW) { h = Math.round(h * maxW / w); w = maxW; }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, w, h);
+        try { resolve(canvas.toDataURL('image/jpeg', quality)); }
+        catch (e) { reject(e); }
+      };
+      img.onerror = reject;
+      img.src = reader.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function renderTravelCheckinPage() {
+  const page = document.createElement('div');
+  page.className = 'page';
+  if (greetLine) greetLine.textContent = '地点打卡';
+  const t = state.travel || JSON.parse(JSON.stringify(DEFAULT_TRAVEL));
+  if (!t.checkin || !Array.isArray(t.checkin.categories)) t.checkin = JSON.parse(JSON.stringify(DEFAULT_TRAVEL.checkin));
+  const cats = t.checkin.categories;
+  const today = getTodayKey();
+
+  function findCat(id) { return cats.find(c => c.id === id); }
+  function findPlace(cat, id) { return cat.places.find(p => p.id === id); }
+
+  function renderPhoto(cat, p) {
+    if (!p.photos || !p.photos.length) return '';
+    return `<div class="ck-photos">${p.photos.map((src, i) => `
+      <div class="ck-photo-wrap">
+        <img class="ck-photo" src="${src}" alt="打卡照片 ${i + 1}">
+        <button class="ck-photo-del" data-del-photo="${i}" data-cat="${cat.id}" data-place="${p.id}" title="删除照片">×</button>
+      </div>`).join('')}</div>`;
+  }
+
+  function renderPlace(cat, p) {
+    const done = p.checked;
+    return `<div class="ck-place ${done ? 'done' : ''}" data-cat="${cat.id}" data-place="${p.id}">
+      <div class="ck-place-top">
+        <button class="ck-check ${done ? 'on' : ''}" data-cat="${cat.id}" data-place="${p.id}" data-act="toggle" aria-label="打卡">${done ? icon('check', 12) : ''}</button>
+        <div class="ck-place-main">
+          <span class="ck-name">${escapeHTML(p.name)}</span>
+          ${p.note ? `<span class="ck-note">${escapeHTML(p.note)}</span>` : ''}
+        </div>
+        ${p.points > 0 ? `<span class="mli-points">+${p.points}</span>` : ''}
+      </div>
+      ${done ? `<div class="ck-date">📅 ${escapeHTML(p.date || today)}</div>` : ''}
+      ${renderPhoto(cat, p)}
+      ${p.mood ? `<p class="ck-mood">${icon('edit', 11)} ${escapeHTML(p.mood)}</p>` : ''}
+      <div class="ck-actions">
+        <button class="ck-act" data-cat="${cat.id}" data-place="${p.id}" data-act="photo">${icon('camera', 12)} 照片</button>
+        <button class="ck-act" data-cat="${cat.id}" data-place="${p.id}" data-act="mood">${icon('edit', 12)} 心得</button>
+        <button class="ck-act" data-cat="${cat.id}" data-place="${p.id}" data-act="edit">编辑</button>
+        <button class="ck-act danger" data-cat="${cat.id}" data-place="${p.id}" data-act="del">删除</button>
+      </div>
+    </div>`;
+  }
+
+  function renderCat(cat) {
+    const checked = cat.places.filter(p => p.checked).length;
+    return `<div class="ck-group">
+      <div class="ck-group-head">
+        <span class="ck-group-icon" style="color:#7FB0D3">${icon(cat.icon || 'mountain', 14)}</span>
+        <span class="ck-group-name">${escapeHTML(cat.name)}</span>
+        <span class="ck-group-meta">${checked}/${cat.places.length}</span>
+        <button class="module-add-btn" data-add-place="${cat.id}" title="新增地点">${icon('plus', 12)}</button>
+      </div>
+      <div class="ck-list">
+        ${cat.places.length ? cat.places.map(p => renderPlace(cat, p)).join('') : '<div class="module-empty">还没有地点，点右上角 + 添加你想实地到访的地方～</div>'}
+      </div>
+    </div>`;
+  }
+
+  page.innerHTML = `
+    <div class="sub-page-head">
+      <button class="sub-back-btn" data-go="旅行体验">‹</button>
+      <h3 class="sub-title">地点打卡 <span class="sub-spark">${icon('flag', 14)}</span></h3>
+      <span class="sub-bunny">📍✨</span>
+    </div>
+
+    <div class="module-rule-banner" id="checkin-rule" title="打卡说明">
+      <span class="mrb-icon">${icon('info', 12)}</span>
+      <span class="mrb-text">实地到访完成打卡拿对应积分；可上传打卡照片、记录心得心情。状态不好可直接跳过，无惩罚。</span>
+    </div>
+
+    ${cats.map(renderCat).join('')}
+
+    <div class="module-foot-note">
+      <span>${icon('info', 12)}</span>
+      <p>这是一份轻松的「想去清单」，不强制、不赶场；哪天顺路就打个卡，攒点小积分也好。</p>
+    </div>
+  `;
+  content.appendChild(page);
+
+  page.querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', () => selectItem(b.dataset.go)));
+
+  // 新增地点
+  page.querySelectorAll('[data-add-place]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const cat = findCat(btn.dataset.addPlace);
+      if (!cat) return;
+      const name = await openModal('新增地点', '', '地点名称');
+      if (name === null || !name.trim()) return;
+      const note = await openModal('备注（可选）', '', '简短备注，如交通 / 看点');
+      const pts = await openModal('打卡积分', '5', '积分数字');
+      let points = parseInt(pts, 10);
+      if (isNaN(points) || points < 0) points = 0;
+      cat.places.push({ id: uid('ckp'), name: name.trim(), note: note === null ? '' : note.trim(), points, checked: false, date: '', photos: [], mood: '' });
+      saveTravel();
+      renderTravelCheckinPage();
+    });
+  });
+
+  // 照片删除
+  page.querySelectorAll('[data-del-photo]').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const cat = findCat(btn.dataset.cat), p = cat && findPlace(cat, btn.dataset.place);
+      if (!p) return;
+      const idx = parseInt(btn.dataset.delPhoto, 10);
+      if (!(await appConfirm('删除这张打卡照片？'))) return;
+      p.photos.splice(idx, 1);
+      saveTravel();
+      renderTravelCheckinPage();
+    });
+  });
+
+  // 地点操作：打卡 / 照片 / 心得 / 编辑 / 删除
+  page.querySelectorAll('.ck-actions .ck-act, .ck-check').forEach(el => {
+    el.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const cat = findCat(el.dataset.cat);
+      if (!cat) return;
+      const p = findPlace(cat, el.dataset.place);
+      if (!p) return;
+      const act = el.dataset.act;
+      if (act === 'toggle') {
+        const was = p.checked;
+        p.checked = !was;
+        const d = p.points > 0 ? p.points : 0;
+        if (d > 0) {
+          const delta = was ? -d : d;
+          state.points = Math.max(0, (state.points || 0) + delta);
+          t.log[today] = Math.max(0, (t.log[today] || 0) + delta);
+          savePoints();
+        }
+        p.date = p.checked ? today : '';
+        saveTravel();
+        renderTravelCheckinPage();
+      } else if (act === 'photo') {
+        const inp = document.createElement('input');
+        inp.type = 'file'; inp.accept = 'image/*'; inp.multiple = true;
+        inp.onchange = async () => {
+          const files = Array.from(inp.files || []);
+          for (const f of files) {
+            if (p.photos.length >= 6) { await appConfirm('每个地点最多保存 6 张照片，多余的已忽略。'); break; }
+            try { const url = await fileToResizedDataURL(f, 720, 0.6); p.photos.push(url); }
+            catch (err) { /* 忽略无法读取的图片 */ }
+          }
+          saveTravel();
+          renderTravelCheckinPage();
+        };
+        inp.click();
+      } else if (act === 'mood') {
+        const v = await openModal('记录心得 / 心情', p.mood || '', '这次到访的感受、吃到什么、看到什么…');
+        if (v === null) return;
+        p.mood = v.trim();
+        saveTravel();
+        renderTravelCheckinPage();
+      } else if (act === 'edit') {
+        const name = await openModal('编辑地点名称', p.name, '地点名称');
+        if (name === null) return;
+        const note = await openModal('编辑备注', p.note, '简短备注');
+        const pts = await openModal('编辑打卡积分', String(p.points), '积分数字');
+        let points = parseInt(pts, 10);
+        if (isNaN(points) || points < 0) points = p.points > 0 ? p.points : 0;
+        const oldPts = p.points > 0 ? p.points : 0;
+        p.name = name.trim() || p.name;
+        p.note = note === null ? p.note : note.trim();
+        p.points = points;
+        if (p.checked) {
+          const diff = (points > 0 ? points : 0) - oldPts;
+          if (diff !== 0) {
+            state.points = Math.max(0, (state.points || 0) + diff);
+            t.log[today] = Math.max(0, (t.log[today] || 0) + diff);
+            savePoints();
+          }
+        }
+        saveTravel();
+        renderTravelCheckinPage();
+      } else if (act === 'del') {
+        if (!(await appConfirm('删除这个地点？打卡记录也会一并移除。'))) return;
+        cat.places = cat.places.filter(x => x.id !== p.id);
+        saveTravel();
+        renderTravelCheckinPage();
+      }
     });
   });
 }
