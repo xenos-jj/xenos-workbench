@@ -9581,23 +9581,23 @@ function renderBranchesPage() {
   const BRANCH_TEMPLATE = {
     learning: {
       icon: () => branchIconBook('#9C8AC9', '#a99add', '#ffffff'), cls: 'c-purple',
-      sub: '每天进步一点点，未来更自由 ✨', lv: 'Lv.4', lvText: '进阶中', freq: '每周 6 天',
+      sub: '每天进步一点点，未来更自由', lv: 'Lv.4', lvText: '进阶中', freq: '每周 6 天',
       keywords: ['单词', '音标', '听力', '阅读', '英语', '学习', '书'],
       btn: 'btn-purple', action: '背词汇 20min', trend: [22, 34, 28, 42, 38, 50, 45],
       route: '学习成长'
     },
     health: {
       icon: () => branchIconLeaf('#bccc8d'), cls: 'c-green',
-      sub: '健康是所有热爱的底气 ✨', lv: 'Lv.3', lvText: '稳定中', freq: '每周 5 天',
+      sub: '健康是所有热爱的底气', lv: 'Lv.3', lvText: '稳定中', freq: '每周 5 天',
       keywords: ['运动', '健身', '锻炼', '喝水', '睡眠', '饮食', '护肤', '体态'],
       btn: 'btn-green', action: '今晚 23:30 前睡', trend: [18, 30, 25, 38, 34, 46, 40],
       route: '健康'
     },
     money: {
       icon: () => branchIconMoney('#fbc877'), cls: 'c-orange',
-      sub: '把热爱变现，创造更多可能 ✨', lv: 'Lv.2', lvText: '起步中', freq: '每周 3 天',
+      sub: '把热爱变现，创造更多可能', lv: 'Lv.2', lvText: '起步中', freq: '每周 3 天',
       keywords: ['自媒体', '副业', '项目', '记账', '存钱', '收入', '理财'],
-      btn: 'btn-orange', action: '发布 1 篇笔记', trend: [15, 28, 22, 35, 30, 42, 36],
+      btn: 'btn-orange', action: '记 1 笔收支', trend: [15, 28, 22, 35, 30, 42, 36],
       route: '记账'
     }
   };
@@ -9720,7 +9720,7 @@ function renderBranchesPage() {
             <div class="br-branch-icon ${b.cls}" style="background:${branchIconBg(b.cls)}">${b.icon}</div>
             <div class="br-branch-info">
               <div class="br-branch-title">${b.name}</div>
-              <div class="br-branch-sub">${b.sub.replace(/✨/g, () => icon('sparkle', 12))}</div>
+              <div class="br-branch-sub">${b.sub}</div>
               <div class="br-branch-meta">
                 <span class="br-lv-tag" style="background:${branchLvBg(b.cls)};color:${branchColor(b.cls)}">Lv.${b.level} ${b.levelText}</span>
                 <span class="br-freq-tag">每周 ${b.activeDays} 天</span>
@@ -9730,13 +9730,13 @@ function renderBranchesPage() {
               ${hasData ? miniRingHTML(b.progress, branchRing(b.cls), b.progress + '%', '本周进度') : '<span class="br-no-data">暂无数据</span>'}
             </div>
           </div>
-          <div class="br-branch-divider" style="background:${branchBorder(b.cls)}"></div>
+          <div class="br-branch-divider" style="border-color:${branchBorder(b.cls)}"></div>
           <div class="br-branch-bottom">
             <div class="br-trend">
               <div class="br-trend-label">本周趋势</div>
               ${b.week.some(v => v > 0) ? inlineSparkline(b.week, branchColor(b.cls), null, branchCardBg(b.cls)) : '<p class="chart-empty">暂无数据</p>'}
             </div>
-            <div class="br-branch-vline" style="background:${branchBorder(b.cls)}"></div>
+            <div class="br-branch-vline" style="border-color:${branchBorder(b.cls)}"></div>
             <div class="br-next-wrap">
               <div class="br-next-label">下一步行动</div>
               <button class="br-next-btn ${b.btn}" data-branch="${escapeHTML(b.name)}" data-branch-type="${b.type}">

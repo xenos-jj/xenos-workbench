@@ -6119,7 +6119,7 @@ select.pf-input {
   margin-bottom: 10px; box-shadow: 0 2px 8px rgba(120, 80, 40, 0.03);
   border: 1px solid #E2DCF5;
   display: flex; flex-direction: column;
-  min-height: 128px; cursor: pointer;
+  min-height: 142px; cursor: pointer;
 }
 .br-branch-card.c-purple { background: #EDE9F7; border: 1px solid #a99adc; box-shadow: 0 3px 12px rgba(137, 120, 195, 0.12), 0 1px 4px rgba(137, 120, 195, 0.06); }
 .br-branch-card.c-green { background: #fcfbf7; border: 1px solid #a0bb7a; box-shadow: 0 3px 12px rgba(160, 187, 122, 0.10), 0 1px 4px rgba(160, 187, 122, 0.05); }
@@ -6168,19 +6168,19 @@ select.pf-input {
 /* 全局：所有阿拉伯数字 0 与百分号 % 的字重与进度环数字（.mr-num）保持一致（600），不改变其颜色 */
 .zpct { font-weight: 600; }
 
-.br-branch-divider { height: 1px; margin: 0; opacity: 0.35; }
+.br-branch-divider { height: 0; margin: 0; opacity: 0.35; border-top: 1px dashed; }
 .br-branch-bottom {
   display: flex; align-items: center; gap: 0;
-  flex: 1 1 auto; min-height: 0; padding: 5px 0;
+  flex: 1 1 auto; min-height: 56px; padding: 5px 0;
 }
-.br-trend { flex: 1; min-width: 0; padding-right: 6px; display: flex; flex-direction: column; justify-content: flex-start; }
+.br-trend { flex: 1; min-width: 0; padding-right: 6px; display: flex; flex-direction: column; justify-content: center; min-height: 44px; }
 .br-trend-label { font-size: 8px; font-family: var(--font-small); color: var(--text-muted); margin-bottom: 2px; }
 .br-trend .spark-chart { width: 100%; height: auto; aspect-ratio: 260 / 40; display: block; }
-.br-trend .chart-empty { padding: 2px 0; font-size: 10px; }
-.br-branch-vline { width: 1px; flex-shrink: 0; opacity: 0.35; align-self: stretch; }
+.br-trend .chart-empty { padding: 0; margin: 0; font-size: 10px; }
+.br-branch-vline { width: 0; flex-shrink: 0; opacity: 0.35; align-self: stretch; border-left: 1px dashed; }
 .br-next-wrap {
-  display: flex; flex-direction: column; justify-content: flex-start;
-  padding-left: 6px; flex-shrink: 0; min-width: 118px;
+  display: flex; flex-direction: column; justify-content: center;
+  padding-left: 6px; flex-shrink: 0; min-width: 118px; min-height: 44px;
 }
 .br-next-wrap .br-next-label { font-size: 8px; font-family: var(--font-small); color: var(--text-muted); margin-bottom: 2px; }
 .br-next-btn {
