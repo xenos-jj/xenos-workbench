@@ -312,6 +312,7 @@ const ICONS = {
   utensils: '<path d="M4 3v6c0 1 .6 1.6 1.5 1.6S7 10 7 9V3M5.5 10.6V21"/><path d="M16 3c-1.5 0-2.5 2-2.5 5s1 3.5 2.5 3.5V21"/>',
   ruler: '<path d="M3 16.5L16.5 3 21 7.5 7.5 21z"/><path d="M7 12l2 2M10 9l2 2M13 6l2 2"/>',
   image: '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9.5" r="1.5"/><path d="M3 16l5-5 4 4 6-6 3 3"/>',
+  info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><path d="M12 8h.01"/>',
   // 奖励池 / 成就 / 记账分类线性图标
   flower: '<path d="M12 7c.8-1.5 2.7-1.5 3.5 0 .8 1.5-.3 3-2 3.5 1.7.5 2.8 2 2 3.5-.8 1.5-2.7 1.5-3.5 0-.8 1.5-2.7 1.5-3.5 0-.8-1.5.3-3 2-3.5-1.7-.5-2.8-2-2-3.5.8-1.5 2.7-1.5 3.5 0z"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/>',
   sparkle: '<path d="M12 2v4M12 18v4M2 12h4M18 12h4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8"/>',
@@ -423,7 +424,9 @@ const DEFAULT_GROUPS = [
     collapsed: false,
     items: [
       { id: 'i-health', name: '健康', icon: 'health' },
-      { id: 'i-look', name: '外貌', icon: 'sparkles' }
+      { id: 'i-look', name: '外貌', icon: 'sparkles' },
+      { id: 'i-travel', name: '旅行体验', icon: 'plane' },
+      { id: 'i-social', name: '社交拓展', icon: 'message' }
     ]
   },
   {
@@ -676,6 +679,8 @@ const DEFAULT_SETTINGS = {
   phaseOptions: ['成长', '生活', '自律', '学习', '英语', '剪辑', 'AI'],
   monthlyFocus: ['英语', '健康', '记账'],
   focusOptions: ['英语', '健康', '记账', '睡眠', '自媒体', '阅读', '锻炼', '生活', '护肤'],
+  moduleTravel: true,
+  moduleSocial: true,
   keepBranches: [
     { name: '攒钱', emoji: '💰', icon: 'moneyBag', freq: '每周 2 天', color: '#f4b75b' },
     { name: '生活秩序', emoji: '📋', icon: 'list', freq: '每周 2 天', color: '#a0bb7a' },
@@ -695,6 +700,40 @@ const DEFAULT_SETTINGS = {
     { name: '音乐练习', emoji: '🎵', icon: 'music', desc: '乐器或声乐，享受旋律疗愈' },
     { name: '志愿公益', emoji: '💝', icon: 'heart', desc: '参与社区或公益活动' }
   ]
+};
+
+// 旅行体验（低精力版）默认数据
+const DEFAULT_TRAVEL = {
+  enabled: true,
+  nextDestination: '待定',
+  places: [
+    { id: 't1', name: '海边小城', note: '先收藏 3 个近郊滨江 / 湖边点位，车程 30 分钟内', status: '待规划' },
+    { id: 't2', name: '山野徒步', note: '先标记 2 个市区内的矮山 / 城市公园，徒步 1 小时以内', status: '待规划' },
+    { id: 't3', name: '城市咖啡馆巡礼', note: '先收藏家附近 1 公里内的 2 家小众小店', status: '待规划' },
+    { id: 't4', name: '小区周边漫步', note: '每周出门 1 次，路线 1 公里内，不拍照、不打卡', status: '待规划' }
+  ],
+  inspirations: [
+    { id: 'ti1', text: '每天花 5 分钟刷 1 条单人散步 / 治愈小店的短内容', points: 2, done: false },
+    { id: 'ti2', text: '收藏 1 个本地小店或想去的点位', points: 3, done: false },
+    { id: 'ti3', text: '完成 1 次微出门（1 公里内，随时可折返）', points: 10, done: false },
+    { id: 'ti4', text: '去收藏的小店坐 15 分钟，点一杯喝的', points: 8, done: false }
+  ],
+  log: {}
+};
+
+// 社交拓展（低精力版）默认数据
+const DEFAULT_SOCIAL = {
+  enabled: true,
+  contactsThisWeek: 0,
+  actions: [
+    { id: 's1', text: '给 1 位熟悉老朋友发一条简短消息', points: 5, done: false },
+    { id: 's2', text: '刷线下活动介绍图文，仅浏览，不用报名', points: 10, done: false },
+    { id: 's3', text: '记录 1 条自己的想法，仅分享给自己', points: 10, done: false },
+    { id: 's4', text: '在感兴趣的小众群 / 帖子里发 1 条评论 / 回复', points: 8, done: false },
+    { id: 's5', text: '参与 1 次线上同好小分享（不用露脸、不用长聊）', points: 10, done: false }
+  ],
+  goal: '维护 1-2 段舒服的旧关系，不强迫拓展新圈子，减少消耗自己的无效社交。',
+  log: {}
 };
 
 const APP_VERSION = '2.0.0';
@@ -913,6 +952,8 @@ const state = {
   englishCheckin: loadEnglishCheckin(),
   videoEdit: loadVideoEdit(),
   modeling: loadModeling(),
+  travel: loadTravel(),
+  social: loadSocial(),
   reviewDate: null,
   contentTab: 'hot',
   contentStyle: '',
@@ -1152,6 +1193,10 @@ function migrateData() {
     DEFAULT_PLAN_GROUPS.forEach(g => { if (!state.planGroups.includes(g)) state.planGroups.push(g); });
   }
   savePlans();
+
+  // v9176：初始化低精力旅行 / 社交模块（幂等：仅当不存在时补默认值）
+  if (!state.travel) { state.travel = JSON.parse(JSON.stringify(DEFAULT_TRAVEL)); saveTravel(); }
+  if (!state.social) { state.social = JSON.parse(JSON.stringify(DEFAULT_SOCIAL)); saveSocial(); }
 }
 
 function resetPlansForNewDay() {
@@ -1479,6 +1524,11 @@ function loadModeling() {
 }
 function saveModeling() { saveJSON('xenos-3d', state.modeling); }
 
+function loadTravel() { return loadJSON('xenos-travel', JSON.parse(JSON.stringify(DEFAULT_TRAVEL))); }
+function saveTravel() { saveJSON('xenos-travel', state.travel); }
+function loadSocial() { return loadJSON('xenos-social', JSON.parse(JSON.stringify(DEFAULT_SOCIAL))); }
+function saveSocial() { saveJSON('xenos-social', state.social); }
+
 function loadGroups() {
   try {
     const raw = localStorage.getItem('xenos-groups');
@@ -1492,6 +1542,18 @@ function loadGroups() {
             g.items = g.items.filter(i => !removed.has(i.name));
           }
         });
+        // v9176：在人生领域分组补齐旅行体验 / 社交拓展入口（若设置开启）
+        const settings = loadSettings();
+        const domainGroup = parsed.data.find(g => g.id === 'g-domains');
+        if (domainGroup && Array.isArray(domainGroup.items)) {
+          const addIfMissing = (id, name, iconName, enabled) => {
+            const idx = domainGroup.items.findIndex(i => i.name === name);
+            if (enabled && idx < 0) domainGroup.items.push({ id, name, icon: iconName });
+            if (!enabled && idx >= 0) domainGroup.items.splice(idx, 1);
+          };
+          addIfMissing('i-travel', '旅行体验', 'plane', settings.moduleTravel !== false);
+          addIfMissing('i-social', '社交拓展', 'message', settings.moduleSocial !== false);
+        }
         return parsed.data;
       }
     }
@@ -8576,6 +8638,18 @@ function renderSettings() {
     </div>
 
     <div class="soft-card">
+      <div class="soft-card-title">${icon('layers', 16)} 模块开关</div>
+      <div class="setting-row">
+        <div class="setting-label">旅行体验<small>低精力版 · 当天往返、不用过夜</small></div>
+        <div class="xn-toggle ${s.moduleTravel !== false ? 'on' : ''}" data-mod="travel" role="switch" tabindex="0" aria-checked="${s.moduleTravel !== false}"><span class="xn-knob"></span></div>
+      </div>
+      <div class="setting-row">
+        <div class="setting-label">社交拓展<small>低精力版 · 只维系舒服的旧关系</small></div>
+        <div class="xn-toggle ${s.moduleSocial !== false ? 'on' : ''}" data-mod="social" role="switch" tabindex="0" aria-checked="${s.moduleSocial !== false}"><span class="xn-knob"></span></div>
+      </div>
+    </div>
+
+    <div class="soft-card">
       <div class="soft-card-title">ℹ️ 关于</div>
       <div class="setting-row"><div class="setting-label">版本号</div><span class="setting-label" style="flex:0;color:var(--text-muted)">v${APP_VERSION}</span></div>
       <div class="setting-row"><div class="setting-label">数据结构版本</div><span class="setting-label" style="flex:0;color:var(--text-muted)">schema v${SCHEMA_VERSION}</span></div>
@@ -8627,6 +8701,23 @@ function renderSettings() {
       .filter(k => k.startsWith('xenos-'))
       .forEach(k => localStorage.removeItem(k));
     location.reload();
+  });
+
+  page.querySelectorAll('.xn-toggle[data-mod]').forEach(tg => {
+    const flip = () => {
+      const mod = tg.dataset.mod;
+      const key = mod === 'travel' ? 'moduleTravel' : 'moduleSocial';
+      s[key] = s[key] === false;
+      tg.classList.toggle('on', s[key] !== false);
+      tg.setAttribute('aria-checked', s[key] !== false ? 'true' : 'false');
+      saveSettings();
+      state.groups = loadGroups();
+      saveGroups();
+      renderMenu();
+      renderMobileTabs();
+    };
+    tg.addEventListener('click', flip);
+    tg.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); flip(); } });
   });
 }
 // Export / Import (full backup of all localStorage data)
@@ -10163,70 +10254,292 @@ function renderInnerGrowthPage() {
 }
 
 
-// ============ 旅行体验 ============
+// ============ 旅行体验（低精力版） ============
 function renderTravelPage() {
   const page = document.createElement('div');
   page.className = 'page';
   if (greetLine) greetLine.textContent = '旅行体验';
+  const t = state.travel || JSON.parse(JSON.stringify(DEFAULT_TRAVEL));
+  const today = getTodayKey();
+  const weekDone = t.inspirations.filter(i => i.done && i.date === today).length;
+  const weekTotal = t.inspirations.length;
+  const ws = getWeekStart();
+  let weekPts = 0;
+  for (const k in (t.log || {})) { if (k >= ws && k <= today) weekPts += (t.log[k] || 0); }
+  const departed = t.places.filter(p => p.status === '已出发').length;
+  function travelSuggest() {
+    if (weekPts > 0 && departed > 0) return '这周已经在为出发做准备啦，慢慢来，旅行从想象开始就很美好 🌿';
+    if (weekPts > 0) return '这周已经积累了一些旅行的小念头，顺着自己的节奏就好。';
+    if (t.places.length > 0) return '收藏一个家附近的小角落，就是今天很轻松的一步。';
+    return '不着急，先从想象一段舒服的散步开始，不用真的出门。';
+  }
+
+  function renderPlaceItem(p) {
+    return `<div class="module-list-item" data-place-id="${p.id}">
+      <div class="mli-main">
+        <span class="mli-name">${escapeHTML(p.name)}</span>
+        <span class="mli-note">${escapeHTML(p.note)}</span>
+      </div>
+      <span class="module-status ${p.status === '已出发' ? 'done' : ''}">${p.status}</span>
+    </div>`;
+  }
+
+  function renderActionItem(a) {
+    const done = a.done && a.date === today;
+    return `<div class="module-list-item ${done ? 'done' : ''}" data-action-id="${a.id}">
+      <button class="mli-check" aria-label="完成">${done ? icon('check', 10) : ''}</button>
+      <span class="mli-text">${escapeHTML(a.text)}</span>
+      <span class="mli-points">+${a.points}</span>
+    </div>`;
+  }
+
   page.innerHTML = `
     <div class="sub-page-head">
       <button class="sub-back-btn" data-go="我的支线">‹</button>
       <h3 class="sub-title">旅行体验 <span class="sub-spark">${icon('sparkle', 14)}</span></h3>
       <span class="sub-bunny">🐰✈️</span>
     </div>
-    <div class="study-goal section-card" style="background:linear-gradient(135deg,#E8F4FF 0%,#FFF5E9 100%);">
-      <div class="sg-info" style="margin-left:0;">
+
+    <div class="module-hero module-hero-travel">
+      <div class="mh-body">
         <h4>待出发清单</h4>
-        <p class="sg-sub">把想去的地方写下来，生活就多了一份期待</p>
-        <span class="sg-streak">✈️ 下一站：待定</span>
+        <p class="mh-sub">不用急着奔赴远方，先在脑海里完成旅行</p>
+        <div class="mh-tag" id="travel-next-tag">
+          <span class="mh-tag-dot"></span>
+          <span>下一站：${escapeHTML(t.nextDestination || '待定')}</span>
+        </div>
+      </div>
+      <div class="mh-mascot"><img src="images/mascot.png" alt="mascot"></div>
+    </div>
+
+    <div class="section-card module-card">
+      <div class="module-card-head">
+        <span class="module-card-icon" style="color:#7FB0D3">${icon('mountain', 14)}</span>
+        <span class="soft-card-title" style="margin:0;">想去的地方</span>
+        <button class="module-add-btn" id="travel-add-place" title="新增">${icon('plus', 12)}</button>
+      </div>
+      <div class="module-list" id="travel-places">
+        ${t.places.length ? t.places.map(renderPlaceItem).join('') : '<div class="module-empty">还没有想去的地方，先收藏一个家附近的小角落吧～</div>'}
       </div>
     </div>
-    <div class="section-card">
-      <div class="soft-card-title">🗺️ 想去的地方</div>
-      <div class="plan-task-row"><span class="task-text">海边小城 weekend trip</span><span class="task-points">待规划</span></div>
-      <div class="plan-task-row"><span class="task-text">山野徒步 2 天 1 夜</span><span class="task-points">待规划</span></div>
-      <div class="plan-task-row"><span class="task-text">城市咖啡馆巡礼</span><span class="task-points">待规划</span></div>
+
+    <div class="section-card module-card">
+      <div class="module-card-head">
+        <span class="module-card-icon" style="color:#D6A67A">${icon('camera', 14)}</span>
+        <span class="soft-card-title" style="margin:0;">旅行灵感</span>
+        <span class="module-card-meta">${weekDone}/${weekTotal}</span>
+      </div>
+      <p class="module-tip">记录 1 家想住的民宿、1 条想走的街道、1 种想吃的小吃，旅行从想象开始。</p>
+      <div class="module-list" id="travel-actions">
+        ${t.inspirations.map(renderActionItem).join('')}
+      </div>
     </div>
-    <div class="section-card">
-      <div class="soft-card-title">📷 旅行灵感</div>
-      <p style="font-size:12px;color:var(--text-muted);margin:0;line-height:1.7;">记录一家想住的民宿、一条想走的街道、一种想吃的小吃，旅行从想象开始。</p>
+
+    <div class="section-card module-card">
+      <div class="module-card-head">
+        <span class="module-card-icon" style="color:#8FB98C">${icon('chart', 14)}</span>
+        <span class="soft-card-title" style="margin:0;">本周小数据</span>
+      </div>
+      <div class="module-stats-grid">
+        <div class="module-stat"><b>${weekPts}</b><span>获得积分</span></div>
+        <div class="module-stat"><b>${t.places.length}</b><span>想去的地方</span></div>
+        <div class="module-stat"><b>${departed}</b><span>已出发</span></div>
+      </div>
+      <p class="module-suggest">${travelSuggest()}</p>
+    </div>
+
+    <div class="module-foot-note">
+      <span>${icon('info', 12)}</span>
+      <p>所有行程都按“当天往返、不用过夜、随时返程”的标准来，完全按自己的节奏来。</p>
     </div>
   `;
   content.appendChild(page);
+
   page.querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', () => selectItem(b.dataset.go)));
+
+  // 点击状态标签切换：待规划 ↔ 已出发
+  page.querySelectorAll('#travel-places .module-status').forEach(el => {
+    el.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const id = el.closest('.module-list-item').dataset.placeId;
+      const place = t.places.find(p => p.id === id);
+      if (place) {
+        place.status = place.status === '已出发' ? '待规划' : '已出发';
+        saveTravel();
+        renderTravelPage();
+      }
+    });
+  });
+
+  // 完成灵感行动
+  page.querySelectorAll('#travel-actions .module-list-item').forEach(row => {
+    row.addEventListener('click', () => {
+      const id = row.dataset.actionId;
+      const action = t.inspirations.find(a => a.id === id);
+      if (!action) return;
+      const wasDone = action.done && action.date === today;
+      action.done = !wasDone;
+      action.date = today;
+      if (action.done) {
+        state.points = (state.points || 0) + action.points;
+        t.log[today] = (t.log[today] || 0) + action.points;
+      } else {
+        state.points = Math.max(0, (state.points || 0) - action.points);
+        t.log[today] = Math.max(0, (t.log[today] || 0) - action.points);
+      }
+      savePoints();
+      saveTravel();
+      renderTravelPage();
+    });
+  });
+
+  // 新增想去的地方
+  page.querySelector('#travel-add-place').addEventListener('click', async () => {
+    const name = await openModal('新增想去的地方', '', '例如：小区周边漫步');
+    if (name === null || !name.trim()) return;
+    const note = await openModal('备注（可选）', '', '简单描述一下，降低门槛');
+    t.places.push({ id: uid('tp'), name: name.trim(), note: note === null ? '' : note.trim(), status: '待规划' });
+    saveTravel();
+    renderTravelPage();
+  });
 }
 
-// ============ 社交拓展 ============
+// ============ 社交拓展（低精力版） ============
 function renderSocialPage() {
   const page = document.createElement('div');
   page.className = 'page';
   if (greetLine) greetLine.textContent = '社交拓展';
+  const s = state.social || JSON.parse(JSON.stringify(DEFAULT_SOCIAL));
+  const today = getTodayKey();
+  const doneToday = s.actions.filter(a => a.done && a.date === today).length;
+  const ws = getWeekStart();
+  let weekPts = 0;
+  for (const k in (s.log || {})) { if (k >= ws && k <= today) weekPts += (s.log[k] || 0); }
+  const doneWeek = s.actions.filter(a => a.done && a.date >= ws && a.date <= today).length;
+  function socialSuggest() {
+    if (weekPts > 0 && s.contactsThisWeek > 0) return '这周已经和舒服的老朋友有了联系，维系关系不费力就很好 💗';
+    if (weekPts > 0) return '这周已经做了一些轻松的维系，不用强迫自己更多。';
+    if (s.actions.length > 0) return '给熟悉的老朋友发一句简短问候，就是今天很温柔的一步。';
+    return '状态不好时可以直接跳过，保护精力比完成任务更重要。';
+  }
+
+  function renderActionItem(a) {
+    const done = a.done && a.date === today;
+    return `<div class="module-list-item ${done ? 'done' : ''}" data-action-id="${a.id}">
+      <button class="mli-check" aria-label="完成">${done ? icon('check', 10) : ''}</button>
+      <span class="mli-text">${escapeHTML(a.text)}</span>
+      <span class="mli-points">+${a.points}</span>
+    </div>`;
+  }
+
   page.innerHTML = `
     <div class="sub-page-head">
       <button class="sub-back-btn" data-go="我的支线">‹</button>
       <h3 class="sub-title">社交拓展 <span class="sub-spark">${icon('sparkle', 14)}</span></h3>
       <span class="sub-bunny">🐰💬</span>
     </div>
-    <div class="study-goal section-card" style="background:linear-gradient(135deg,#FFF0F5 0%,#FFF5E9 100%);">
-      <div class="sg-info" style="margin-left:0;">
+
+    <div class="module-hero module-hero-social">
+      <div class="mh-body">
         <h4>关系需要养护</h4>
-        <p class="sg-sub">主动一点的社交，会带来更多温暖</p>
-        <span class="sg-streak">💬 本周待联系：0 人</span>
+        <p class="mh-sub">社交不必勉强，小幅度维系就足够</p>
+        <div class="mh-tag" id="social-contact-tag">
+          <span class="mh-tag-dot"></span>
+          <span>本周待联系：${s.contactsThisWeek || 0} 人</span>
+        </div>
+      </div>
+      <div class="mh-mascot"><img src="images/mascot.png" alt="mascot"></div>
+    </div>
+
+    <div class="section-card module-card">
+      <div class="module-card-head">
+        <span class="module-card-icon" style="color:#E8A77C">${icon('heart', 14)}</span>
+        <span class="soft-card-title" style="margin:0;">本周行动</span>
+        <span class="module-card-meta">${doneToday}/${s.actions.length}</span>
+        <button class="module-add-btn" id="social-add-action" title="新增">${icon('plus', 12)}</button>
+      </div>
+      <div class="module-list" id="social-actions">
+        ${s.actions.length ? s.actions.map(renderActionItem).join('') : '<div class="module-empty">本周还没有行动，状态不好时可以直接跳过～</div>'}
       </div>
     </div>
-    <div class="section-card">
-      <div class="soft-card-title">🤝 本周行动</div>
-      <div class="plan-task-row"><span class="task-text">给一位老朋友发消息</span><span class="task-points">+5</span></div>
-      <div class="plan-task-row"><span class="task-text">参与一次线下活动</span><span class="task-points">+10</span></div>
-      <div class="plan-task-row"><span class="task-text">认识一个新朋友</span><span class="task-points">+10</span></div>
+
+    <div class="section-card module-card">
+      <div class="module-card-head">
+        <span class="module-card-icon" style="color:#A99BD6">${icon('target', 14)}</span>
+        <span class="soft-card-title" style="margin:0;">关系目标</span>
+      </div>
+      <p class="module-goal-text" id="social-goal-text">${escapeHTML(s.goal || DEFAULT_SOCIAL.goal)}</p>
+      <button class="module-edit-goal" id="social-edit-goal">${icon('edit', 11)} 修改目标</button>
     </div>
-    <div class="section-card">
-      <div class="soft-card-title">🎯 关系目标</div>
-      <p style="font-size:12px;color:var(--text-muted);margin:0;line-height:1.7;">维护 3 段深度关系，拓展 1 个新圈子，减少无意义社交。</p>
+
+    <div class="section-card module-card">
+      <div class="module-card-head">
+        <span class="module-card-icon" style="color:#C98FA8">${icon('chart', 14)}</span>
+        <span class="soft-card-title" style="margin:0;">本周小数据</span>
+      </div>
+      <div class="module-stats-grid">
+        <div class="module-stat"><b>${weekPts}</b><span>获得积分</span></div>
+        <div class="module-stat"><b>${doneWeek}/${s.actions.length}</b><span>本周行动</span></div>
+        <div class="module-stat"><b>${s.contactsThisWeek || 0}</b><span>已联系(人)</span></div>
+      </div>
+      <p class="module-suggest">${socialSuggest()}</p>
+    </div>
+
+    <div class="module-foot-note">
+      <span>${icon('info', 12)}</span>
+      <p>这里没有“认识新朋友”的强制任务，优先保护精力，只维系让你舒服的旧关系。</p>
     </div>
   `;
   content.appendChild(page);
+
   page.querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', () => selectItem(b.dataset.go)));
+
+  // 完成行动
+  page.querySelectorAll('#social-actions .module-list-item').forEach(row => {
+    row.addEventListener('click', () => {
+      const id = row.dataset.actionId;
+      const action = s.actions.find(a => a.id === id);
+      if (!action) return;
+      const wasDone = action.done && action.date === today;
+      action.done = !wasDone;
+      action.date = today;
+      if (action.text.includes('老朋友') && action.done) {
+        s.contactsThisWeek = (s.contactsThisWeek || 0) + 1;
+      } else if (action.text.includes('老朋友') && !action.done) {
+        s.contactsThisWeek = Math.max(0, (s.contactsThisWeek || 0) - 1);
+      }
+      if (action.done) {
+        state.points = (state.points || 0) + action.points;
+        s.log[today] = (s.log[today] || 0) + action.points;
+      } else {
+        state.points = Math.max(0, (state.points || 0) - action.points);
+        s.log[today] = Math.max(0, (s.log[today] || 0) - action.points);
+      }
+      savePoints();
+      saveSocial();
+      renderSocialPage();
+    });
+  });
+
+  // 新增行动
+  page.querySelector('#social-add-action').addEventListener('click', async () => {
+    const text = await openModal('新增本周行动', '', '例如：给老朋友发一句问候');
+    if (text === null || !text.trim()) return;
+    const pts = await openModal('奖励积分', '5', '输入数字');
+    const points = Number(pts);
+    s.actions.push({ id: uid('sa'), text: text.trim(), points: Number.isFinite(points) && points > 0 ? points : 5, done: false });
+    saveSocial();
+    renderSocialPage();
+  });
+
+  // 修改目标
+  page.querySelector('#social-edit-goal').addEventListener('click', async () => {
+    const text = await openModal('修改关系目标', s.goal || DEFAULT_SOCIAL.goal, '请输入新的关系目标');
+    if (text === null) return;
+    s.goal = text.trim() || DEFAULT_SOCIAL.goal;
+    saveSocial();
+    renderSocialPage();
+  });
 }
 
 // ============ 我的 / 设置（Screenshot 4） ============

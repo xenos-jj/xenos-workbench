@@ -7941,3 +7941,106 @@ select.pf-input {
 .rec-line b { color: var(--primary-dark); font-family: var(--font-small); margin-right: 4px; }
 .rec-ops { position: absolute; top: 8px; right: 8px; display: flex; gap: 2px; }
 
+/* =========================================================
+   旅行体验 / 社交拓展（低精力模块 v9176）
+   ========================================================= */
+.module-hero {
+  position: relative; overflow: hidden;
+  border-radius: var(--radius); padding: 18px;
+  margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;
+  box-shadow: var(--shadow); border: 1px solid transparent;
+}
+.module-hero-travel { background: linear-gradient(135deg, #F0F7FC 0%, #FDF8F2 100%); border-color: #D9EAF5; }
+.module-hero-social { background: linear-gradient(135deg, #FCF3F7 0%, #FDF8F2 100%); border-color: #F0DEE6; }
+.module-hero .mh-body { flex: 1; }
+.module-hero h4 { margin: 0 0 5px; font-size: 15px; font-weight: 700; color: var(--text); }
+.module-hero .mh-sub { margin: 0 0 10px; font-size: 11px; color: var(--text-muted); line-height: 1.5; }
+.module-hero .mh-tag {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: rgba(255,255,255,0.72); border: 1px solid var(--border-soft);
+  border-radius: 999px; padding: 4px 10px; font-size: 10.5px; color: var(--purple); font-weight: 600;
+}
+.module-hero-travel .mh-tag { color: #7FB0D3; }
+.module-hero-social .mh-tag { color: #C98FA8; }
+.module-hero .mh-tag-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; opacity: 0.7; }
+.module-hero .mh-mascot { width: 56px; height: 56px; flex-shrink: 0; border-radius: 50%; background: rgba(255,255,255,0.5); display: flex; align-items: center; justify-content: center; }
+.module-hero .mh-mascot img { width: 44px; height: 44px; object-fit: contain; opacity: 0.85; }
+
+.module-card { padding: 14px; }
+.module-card-head { display: flex; align-items: center; gap: 6px; margin-bottom: 10px; }
+.module-card-icon { display: flex; align-items: center; justify-content: center; }
+.module-card-meta { margin-left: auto; font-size: 9.5px; font-family: var(--font-small); color: var(--text-muted); }
+.module-add-btn {
+  width: 22px; height: 22px; border-radius: 50%; border: 1px solid var(--border-soft);
+  background: var(--card); color: var(--text-muted); display: flex; align-items: center; justify-content: center;
+  cursor: pointer; margin-left: 6px; transition: all .12s ease;
+}
+.module-add-btn:hover { border-color: var(--primary); color: var(--primary-dark); background: var(--primary-light); }
+
+.module-list { display: flex; flex-direction: column; gap: 7px; }
+.module-list-item {
+  display: flex; align-items: center; gap: 8px;
+  background: #fff; border: 1px solid var(--border-soft); border-radius: 10px;
+  padding: 9px 10px; cursor: pointer; transition: all .12s ease;
+}
+.module-list-item:hover { border-color: var(--primary-hover); }
+.module-list-item.done { background: var(--bg-soft); border-color: var(--border); }
+.module-list-item.done .mli-text { color: var(--text-muted); text-decoration: line-through; }
+.module-list-item .mli-check {
+  width: 18px; height: 18px; border-radius: 50%; border: 1.2px solid var(--border);
+  background: #fff; color: var(--text-muted); display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; cursor: pointer; padding: 0;
+}
+.module-list-item.done .mli-check { background: var(--primary); border-color: var(--primary); color: #fff; }
+.module-list-item .mli-text { flex: 1; font-size: 11px; color: var(--text); line-height: 1.4; }
+.module-list-item .mli-points { font-size: 10px; color: var(--primary-dark); font-weight: 600; }
+
+.module-list-item .mli-main { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.module-list-item .mli-name { font-size: 11px; color: var(--text); font-weight: 600; }
+.module-list-item .mli-note { font-size: 9.5px; color: var(--text-muted); line-height: 1.4; }
+.module-status {
+  flex-shrink: 0; font-size: 9px; font-family: var(--font-small);
+  color: #E89F5C; background: #FFF6ED; border: 1px solid #F9DCC0;
+  border-radius: 999px; padding: 2px 7px; cursor: pointer; transition: all .12s ease;
+}
+.module-status.done { color: #7FB0A0; background: #EEF6F2; border-color: #BFDCCD; }
+
+.module-tip { font-size: 10.5px; color: var(--text-muted); margin: -2px 0 10px; line-height: 1.55; }
+.module-goal-text { font-size: 11px; color: var(--text); line-height: 1.7; margin: 0 0 10px; }
+.module-edit-goal {
+  display: inline-flex; align-items: center; gap: 4px;
+  border: 1px solid var(--border-soft); background: var(--bg-soft); color: var(--text-muted);
+  border-radius: 999px; padding: 4px 10px; font-size: 9.5px; font-family: var(--font-small);
+  cursor: pointer; transition: all .12s ease;
+}
+.module-edit-goal:hover { border-color: var(--primary); color: var(--primary-dark); background: var(--primary-light); }
+.module-empty { font-size: 10.5px; color: var(--text-muted); text-align: center; padding: 12px 0; }
+.module-foot-note {
+  display: flex; align-items: flex-start; gap: 6px;
+  background: var(--bg-soft); border: 1px solid var(--border-soft); border-radius: var(--radius);
+  padding: 10px 12px; margin-top: 4px; color: var(--text-muted);
+}
+.module-foot-note svg { flex-shrink: 0; margin-top: 1px; }
+.module-foot-note p { margin: 0; font-size: 10px; line-height: 1.5; }
+
+/* 模块统计卡 */
+.module-stats-grid { display: flex; gap: 8px; margin: 4px 0 8px; }
+.module-stat { flex: 1; background: var(--bg-soft); border-radius: 10px; padding: 10px 4px; text-align: center; }
+.module-stat b { display: block; font-size: 17px; font-weight: 700; color: var(--text); line-height: 1.2; }
+.module-stat span { font-size: 10px; color: var(--text-muted); }
+.module-suggest { margin: 2px 0 0; font-size: 11px; color: var(--text-muted); line-height: 1.6; background: var(--bg-soft); border-radius: 9px; padding: 8px 10px; }
+
+/* 模块开关切换 */
+.xn-toggle {
+  position: relative; width: 40px; height: 22px; border-radius: 999px; flex: 0 0 auto;
+  background: var(--bg-soft); border: 1px solid var(--border-soft, #eadfce); cursor: pointer;
+  transition: background .2s, border-color .2s; user-select: none;
+}
+.xn-toggle .xn-knob {
+  position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%;
+  background: #fff; box-shadow: 0 1px 2px rgba(120,90,60,.25); transition: transform .2s;
+}
+.xn-toggle.on { background: var(--primary-grad, linear-gradient(135deg,#F4B67C,#E8A06A)); border-color: transparent; }
+.xn-toggle.on .xn-knob { transform: translateX(18px); }
+.xn-toggle:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+
