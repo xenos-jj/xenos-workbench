@@ -7569,12 +7569,14 @@ select.pf-input {
 .ht-mid { background: #C5E1A5; }
 .ht-high { background: #F5C26B; }
 
+.insight-hidden { display: none !important; }
 .insp-heatmap-wrap { padding: 0 2px; }
 .insp-heatmap-grid {
-  display: grid;
-  grid-template-columns: 20px 40px repeat(7, 1fr);
-  gap: 4px 3px;
-  align-items: center;
+  display: flex; flex-direction: column;
+  gap: 4px;
+}
+.insp-heatmap-grid .ih-row {
+  display: grid; grid-template-columns: 22px 50px repeat(7, 1fr); gap: 4px 3px; align-items: center;
 }
 .ih-day {
   font-size: 8.5px; font-family: var(--font-small); color: var(--text-muted); text-align: center;
@@ -7801,7 +7803,6 @@ select.pf-input {
 .insp-line-legend-item.active { background: inherit; color: var(--text); opacity: 1; box-shadow: 0 2px 6px rgba(0,0,0,0.04); font-weight: 500; }
 .combined-line-card { background: transparent; border: none; padding: 0; }
 
-.insp-heat-grid2 { grid-template-columns: 22px 50px repeat(7, 1fr); }
 .insp-heatmap-grid .ih-dot.lvl0 { background: #F4ECE2; }
 
 .insp-suggest-list { display: grid; grid-template-columns: 1fr; gap: 7px; }

@@ -9155,7 +9155,7 @@ function weeklyLineChart(values, color, unit, labels) {
   return '<svg class="insp-trend-chart" viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="xMidYMid meet">' + grid + yLabels + '<polyline points="' + pts + '" fill="none" stroke="' + color + '" stroke-width="0.8" stroke-linecap="round" stroke-linejoin="round"></polyline>' + dots + valLabels + xLabels + '</svg>';
 }
 
-function multiSeriesLineChart(series, labels) {
+function multiSeriesLineChart(series, labels, hiddenIds) {
   const w = 320, h = 140;
   const pad = { t: 18, r: 12, b: 22, l: 30 };
   const cw = w - pad.l - pad.r, ch = h - pad.t - pad.b;
@@ -9171,11 +9171,12 @@ function multiSeriesLineChart(series, labels) {
   const xLabels = days.map((d, i) => '<text x="' + x(i).toFixed(1) + '" y="' + (h - 7).toFixed(1) + '" fill="#A99A8A" font-size="8" text-anchor="middle">' + d + '</text>').join('');
   let seriesSVG = '';
   series.forEach(s => {
+    const hidden = hiddenIds && hiddenIds.has(s.id);
     const vals = s.values.map(v => Number(v) || 0);
     const max = Math.max(1, ...vals);
     const pts = vals.map((v, i) => x(i).toFixed(1) + ',' + y((v / max) * 100).toFixed(1)).join(' ');
     const dots = vals.map((v, i) => '<circle cx="' + x(i).toFixed(1) + '" cy="' + y((v / max) * 100).toFixed(1) + '" r="1.6" fill="#fff" stroke="' + s.color + '" stroke-width="1.2"></circle>').join('');
-    seriesSVG += '<polyline points="' + pts + '" fill="none" stroke="' + s.color + '" stroke-width="0.8" stroke-linecap="round" stroke-linejoin="round"></polyline>' + dots;
+    seriesSVG += '<g class="chart-series" data-series-id="' + s.id + '" style="display:' + (hidden ? 'none' : 'block') + '"><polyline points="' + pts + '" fill="none" stroke="' + s.color + '" stroke-width="0.8" stroke-linecap="round" stroke-linejoin="round"></polyline>' + dots + '</g>';
   });
   return '<svg class="insp-trend-chart" viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="xMidYMid meet">' + grid + yLabels + seriesSVG + xLabels + '</svg>';
 }
@@ -10380,8 +10381,8 @@ function barPct(v, arr) {
   return Math.round((Number(v) || 0) / mx * 100);
 }
 
-function catCardHTML(s) {
-  return '<div class="insp-cat-card clickable-card" data-cat="' + s.id + '" style="--c:' + s.color + ';--cb:' + s.bg + '">'
+function catCardHTML(s, hidden) {
+  return '<div class="insp-cat-card clickable-card' + (hidden ? ' insight-hidden' : '') + '" data-cat="' + s.id + '" style="--c:' + s.color + ';--cb:' + s.bg + '">'
     + '<div class="insp-cat-head"><span class="insp-cat-ic" style="background:' + s.bg + ';color:' + s.color + '">' + icon(s.icon, 16) + '</span>'
     + '<span class="insp-cat-name">' + s.name + '</span><span class="insp-cat-go">›</span></div>'
     + '<div class="insp-cat-metrics">'
@@ -10496,13 +10497,32 @@ function renderInsightPage() {
   const selected = getInsightModules().filter(id => INSIGHT_MODULES.some(m => m.id === id));
   const allStats = INSIGHT_MODULES.map(m => computeInsightStats(m, weekStart));
   const visibleStats = allStats.filter(s => selected.includes(s.id));
+  const hiddenIds = new Set(allStats.filter(s => !selected.includes(s.id)).map(s => s.id));
   const rangeText = weekStart.slice(5) + '（周一）~ ' + sunday.slice(5) + '（周日）';
-  const legendHTML = allStats.map(s => {
+
+  function legendItemHTML(s) {
     const active = selected.includes(s.id);
     const btnStyle = 'border-color:' + s.color + (active ? ';background:' + s.bg : '') + ';--dot-color:' + (active ? s.color : 'var(--border-soft)');
     return '<button class="insp-line-legend-item' + (active ? ' active' : '') + '" data-id="' + s.id + '" title="' + (active ? '隐藏' : '显示') + ' ' + s.name + '" style="' + btnStyle + '"><span class="insp-line-dot"></span><span>' + s.name + ' ' + Math.round(s.metric) + s.metricUnit + '</span></button>';
-  }).join('');
-  const combinedChartHTML = visibleStats.length ? multiSeriesLineChart(visibleStats.map(s => ({ id: s.id, name: s.name, color: s.color, values: s.daily })), weekdayLabels) : '<div class="insp-empty">请在下方图例选择至少一个趋势</div>';
+  }
+
+  function cardsHTML() {
+    if (!allStats.length) return '<div class="insp-empty">当前没有显示任何模块卡片，点击图例可重新展开～</div>';
+    return allStats.map(s => catCardHTML(s, !selected.includes(s.id))).join('');
+  }
+
+  function heatmapHTML() {
+    const header = '<div class="ih-row ih-header-row"><span></span><span></span>' + weekdayLabels.map(l => '<span class="ih-day">' + l + '</span>').join('') + '</div>';
+    const rows = allStats.map(s => {
+      const hiddenCls = selected.includes(s.id) ? '' : ' insight-hidden';
+      return '<div class="ih-row' + hiddenCls + '" data-row-id="' + s.id + '"><span class="ih-icon" style="color:' + s.color + '">' + icon(s.icon, 12) + '</span><span class="ih-name">' + s.name + '</span>' + s.levels.map(lv => '<span class="ih-dot lvl' + lv + '"></span>').join('') + '</div>';
+    }).join('');
+    return header + rows;
+  }
+
+  function suggestionsHTML(stats) {
+    return buildInsightSuggestions(stats).map(t => '<div class="insp-suggest-card"><span class="insp-suggest-ic">' + t.icon + '</span><p>' + t.text + '</p></div>').join('');
+  }
 
   page.innerHTML = '<div class="insp-page">'
     + '<div class="insp-top">'
@@ -10512,19 +10532,16 @@ function renderInsightPage() {
     + icon('list', 13) + ' 自定义</button><div class="insp-mascot-slot" title="吉祥物位置（预留）"></div></div>'
     + '</div>'
 
-    + '<div class="insp-cards-grid">' + (visibleStats.length ? visibleStats.map(catCardHTML).join('') : '<div class="insp-empty">当前没有显示任何模块卡片，点击图例可重新展开～</div>') + '</div>'
+    + '<div class="insp-cards-grid" id="insp-cards-grid">' + cardsHTML() + '</div>'
 
     + '<div class="insp-section"><div class="insp-section-head"><span class="insp-section-title"><span class="insp-sec-spark">' + icon('sparkle', 14) + '</span> 每周数据变化</span><span class="insp-section-more">相对趋势 · 可同时勾选多个</span></div>'
-    + '<div class="insp-line-card combined-line-card"><div class="insp-line-wrap">' + combinedChartHTML + '</div><div class="insp-line-legend">' + legendHTML + '</div></div></div>'
+    + '<div class="insp-line-card combined-line-card"><div class="insp-line-wrap" id="insp-line-wrap">' + multiSeriesLineChart(allStats.map(s => ({ id: s.id, name: s.name, color: s.color, values: s.daily })), weekdayLabels, hiddenIds) + '</div><div class="insp-line-legend" id="insp-line-legend">' + allStats.map(legendItemHTML).join('') + '</div></div></div>'
 
     + '<div class="insp-section"><div class="insp-section-head"><span class="insp-section-title"><span class="insp-sec-heart">' + icon('heart', 14) + '</span> 习惯完成热力图</span><span class="insp-heat-legend"><i class="ht-low"></i><i class="ht-mid"></i><i class="ht-high"></i>完成度 低 → 高</span></div>'
-    + '<div class="insp-heatmap-wrap"><div class="insp-heatmap-grid insp-heat-grid2"><span></span><span></span>'
-    + weekdayLabels.map(l => '<span class="ih-day">' + l + '</span>').join('')
-    + (visibleStats.length ? visibleStats.map(s => '<span class="ih-icon" style="color:' + s.color + '">' + icon(s.icon, 12) + '</span><span class="ih-name">' + s.name + '</span>' + s.levels.map(lv => '<span class="ih-dot lvl' + lv + '"></span>').join('')).join('') : '<span class="ih-name" style="grid-column:1/-1;color:var(--text-muted);font-size:10px;padding:6px 0">勾选图例后展示对应完成度</span>')
-    + '</div></div></div>'
+    + '<div class="insp-heatmap-wrap"><div class="insp-heatmap-grid insp-heat-grid2" id="insp-heatmap-grid">' + heatmapHTML() + '</div></div></div>'
 
     + '<div class="insp-section insp-suggest-section"><div class="insp-section-head"><span class="insp-section-title"><span class="insp-sec-star">' + icon('star', 14) + '</span> 每周优化建议</span></div>'
-    + '<div class="insp-suggest-list">' + buildInsightSuggestions(visibleStats).map(t => '<div class="insp-suggest-card"><span class="insp-suggest-ic">' + t.icon + '</span><p>' + t.text + '</p></div>').join('') + '</div></div>'
+    + '<div class="insp-suggest-list" id="insp-suggest-list">' + suggestionsHTML(visibleStats) + '</div></div>'
     + '</div>';
   content.appendChild(page);
 
@@ -10541,10 +10558,36 @@ function renderInsightPage() {
     btn.addEventListener('click', () => {
       const id = btn.dataset.id;
       let cur = getInsightModules().filter(x => INSIGHT_MODULES.some(m => m.id === x));
-      if (cur.includes(id)) cur = cur.filter(x => x !== id);
+      const active = cur.includes(id);
+      if (active) cur = cur.filter(x => x !== id);
       else cur.push(id);
       saveInsightModules(cur);
-      renderInsightPage();
+
+      // 1) 切换图表中对应曲线显示/隐藏（画布容器保持不变）
+      const seriesGroup = page.querySelector('.chart-series[data-series-id="' + id + '"]');
+      if (seriesGroup) seriesGroup.style.display = active ? 'none' : 'block';
+
+      // 2) 切换卡片显示/隐藏
+      const card = page.querySelector('.insp-cat-card[data-cat="' + id + '"]');
+      if (card) card.classList.toggle('insight-hidden', active);
+
+      // 3) 切换热力图行显示/隐藏
+      const row = page.querySelector('.ih-row[data-row-id="' + id + '"]');
+      if (row) row.classList.toggle('insight-hidden', active);
+
+      // 4) 更新图例按钮样式
+      btn.classList.toggle('active', !active);
+      const s = allStats.find(x => x.id === id);
+      if (s) {
+        btn.title = (!active ? '隐藏' : '显示') + ' ' + s.name;
+        btn.style.background = active ? '' : s.bg;
+        btn.style.setProperty('--dot-color', active ? 'var(--border-soft)' : s.color);
+      }
+
+      // 5) 更新优化建议（基于当前选中的模块重新生成）
+      const newVisible = allStats.filter(x => cur.includes(x.id));
+      const list = page.querySelector('#insp-suggest-list');
+      if (list) list.innerHTML = suggestionsHTML(newVisible);
     });
   });
 }
