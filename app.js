@@ -204,7 +204,6 @@ const INSIGHT_MODULES = [
 ];
 
 let insightWeekOffset = 0;
-let insightLineHidden = new Set();
 
 function getWeekStart(offsetWeeks = 0) {
   const dow = (new Date().getDay() + 6) % 7;
@@ -212,7 +211,7 @@ function getWeekStart(offsetWeeks = 0) {
 }
 
 function getInsightModules() {
-  return loadJSON('xenos-insight-modules', INSIGHT_MODULES.map(m => m.id));
+  return loadJSON('xenos-insight-modules', []);
 }
 function saveInsightModules(ids) {
   saveJSON('xenos-insight-modules', ids);
@@ -10495,14 +10494,13 @@ function renderInsightPage() {
   const sunday = shiftDate(weekStart, 6);
   const weekdayLabels = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
   const selected = getInsightModules().filter(id => INSIGHT_MODULES.some(m => m.id === id));
-  const modules = INSIGHT_MODULES.filter(m => selected.includes(m.id));
-  const stats = modules.map(m => computeInsightStats(m, weekStart));
+  const allStats = INSIGHT_MODULES.map(m => computeInsightStats(m, weekStart));
+  const visibleStats = allStats.filter(s => selected.includes(s.id));
   const rangeText = weekStart.slice(5) + '（周一）~ ' + sunday.slice(5) + '（周日）';
-  const visibleStats = stats.filter(s => !insightLineHidden.has(s.id));
-  const legendHTML = stats.map(s => {
-    const hidden = insightLineHidden.has(s.id);
-    const btnStyle = 'border-color:' + s.color + (hidden ? '' : ';background:' + s.bg) + ';--dot-color:' + (hidden ? 'var(--border)' : s.color);
-    return '<button class="insp-line-legend-item' + (hidden ? '' : ' active') + '" data-id="' + s.id + '" title="' + (hidden ? '显示' : '隐藏') + ' ' + s.name + '" style="' + btnStyle + '"><span class="insp-line-dot"></span><span>' + s.name + '</span></button>';
+  const legendHTML = allStats.map(s => {
+    const active = selected.includes(s.id);
+    const btnStyle = 'border-color:' + s.color + (active ? ';background:' + s.bg : '') + ';--dot-color:' + (active ? s.color : 'var(--border-soft)');
+    return '<button class="insp-line-legend-item' + (active ? ' active' : '') + '" data-id="' + s.id + '" title="' + (active ? '隐藏' : '显示') + ' ' + s.name + '" style="' + btnStyle + '"><span class="insp-line-dot"></span><span>' + s.name + ' ' + Math.round(s.metric) + s.metricUnit + '</span></button>';
   }).join('');
   const combinedChartHTML = visibleStats.length ? multiSeriesLineChart(visibleStats.map(s => ({ id: s.id, name: s.name, color: s.color, values: s.daily })), weekdayLabels) : '<div class="insp-empty">请在下方图例选择至少一个趋势</div>';
 
@@ -10534,7 +10532,7 @@ function renderInsightPage() {
   page.querySelector('#insp-diy-btn').addEventListener('click', openInsightDIY);
   page.querySelectorAll('.insp-cat-card').forEach(el => {
     el.addEventListener('click', () => {
-      const st = stats.find(x => x.id === el.dataset.cat);
+      const st = allStats.find(x => x.id === el.dataset.cat);
       if (st) openInsightDetail(st);
     });
   });
@@ -10542,8 +10540,10 @@ function renderInsightPage() {
   page.querySelectorAll('.insp-line-legend-item').forEach(btn => {
     btn.addEventListener('click', () => {
       const id = btn.dataset.id;
-      if (insightLineHidden.has(id)) insightLineHidden.delete(id);
-      else insightLineHidden.add(id);
+      let cur = getInsightModules().filter(x => INSIGHT_MODULES.some(m => m.id === x));
+      if (cur.includes(id)) cur = cur.filter(x => x !== id);
+      else cur.push(id);
+      saveInsightModules(cur);
       renderInsightPage();
     });
   });
