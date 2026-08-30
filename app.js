@@ -10791,13 +10791,11 @@ setTimeout(function () {
 // 每分钟刷新一次问候语与顶栏日期
 setInterval(renderTopbar, 60 * 1000);
 
-if ('serviceWorker' in navigator) {
+if ('serviceWorker' in navigator && navigator.serviceWorker) {
+  // v9286：注册 URL 跟随 BUILT 变化（强制 iOS Safari 重新下载 sw.js）
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js?v=3', { updateViaCache: 'none' })
-      .then((reg) => {
-        // 立即检查是否有新版本，有则触发更新
-        reg.update();
-      })
+    navigator.serviceWorker.register('./sw.js?v=' + (typeof BUILT !== 'undefined' ? BUILT : 'r'), { updateViaCache: 'none' })
+      .then((reg) => { reg.update(); })
       .catch(() => {});
   });
   // 新版本 service worker 接管后自动刷新一次，确保用户立即看到最新内容
