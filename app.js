@@ -1757,6 +1757,18 @@ function migrateData() {
       state.settings.monthlyFocus = state.settings.monthlyFocus.filter(o => !REMOVED_FOCUS_LABELS.includes(o));
       if (state.settings.monthlyFocus.length !== before) settingsTouched = true;
     }
+    // v9285：清理 v9283 已删除的 烹饪美食/志愿公益 残留（用户老数据中的 long-term 慢模块已不可点开）
+    const REMOVED_SLOW_NAMES = ['烹饪美食', '志愿公益'];
+    if (Array.isArray(state.settings.slowBranches)) {
+      const before = state.settings.slowBranches.length;
+      state.settings.slowBranches = state.settings.slowBranches.filter(s => !REMOVED_SLOW_NAMES.includes(s.name));
+      if (state.settings.slowBranches.length !== before) settingsTouched = true;
+    }
+    if (Array.isArray(state.settings.slowPool)) {
+      const before = state.settings.slowPool.length;
+      state.settings.slowPool = state.settings.slowPool.filter(s => !REMOVED_SLOW_NAMES.includes(s.name));
+      if (state.settings.slowPool.length !== before) settingsTouched = true;
+    }
     if (settingsTouched) saveSettings();
   }
 }
@@ -11238,8 +11250,10 @@ function openMonthlyFocusPicker() {
 function openSlowBranchPicker() {
   const overlay = document.createElement('div');
   overlay.className = 'phase-picker-overlay';
-  const pool = (state.settings.slowPool || DEFAULT_SETTINGS.slowPool).slice();
-  const current = state.settings.slowBranches || DEFAULT_SETTINGS.slowBranches;
+  // v9285：运行时过滤 v9283 已删除的 烹饪美食/志愿公益（防御老数据）
+  const REMOVED_SLOW_NAMES = ['烹饪美食', '志愿公益'];
+  const pool = (state.settings.slowPool || DEFAULT_SETTINGS.slowPool).filter(p => !REMOVED_SLOW_NAMES.includes(p.name));
+  const current = (state.settings.slowBranches || DEFAULT_SETTINGS.slowBranches).filter(s => !REMOVED_SLOW_NAMES.includes(s.name));
 
   overlay.innerHTML = `
     <div class="phase-picker-card">
@@ -11565,7 +11579,9 @@ function renderBranchesPage() {
     };
   });
   const keepList = (state.settings.keepBranches || DEFAULT_SETTINGS.keepBranches).filter(k => k.name !== '攒钱');
-  const slowList = state.settings.slowBranches || DEFAULT_SETTINGS.slowBranches;
+  // v9285：运行时过滤 v9283 已删除的 烹饪美食/志愿公益（防御老数据）
+  const REMOVED_SLOW_NAMES = ['烹饪美食', '志愿公益'];
+  const slowList = (state.settings.slowBranches || DEFAULT_SETTINGS.slowBranches).filter(s => !REMOVED_SLOW_NAMES.includes(s.name));
 
   // 本月主线标签按独立配色染色（每个标签一种颜色）
   const focusItems = monthlyFocus.map(name => {
