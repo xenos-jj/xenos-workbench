@@ -5803,10 +5803,17 @@ select.pf-input {
 }
 .qr-select-row:active { transform: scale(0.99); }
 
-/* 常用快捷入口 */
+/* v9289：常用快捷入口——4 张卡全显示（auto-fit 自适应窄屏）；标题与 modal 标题风格一致（13px/700）且左对齐；卡内文字横排（图标 + 主名 + 副名一行铺） */
 .qr-shortcuts { padding: 0 20px 14px; }
-.qr-short-title { font-size: 11px; color: var(--text-muted); margin-bottom: 10px; }
-.qr-short-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.qr-short-title {
+  font-size: 13px; color: var(--text); font-weight: 700;
+  margin: 8px 0 10px; text-align: left;
+  display: flex; align-items: center;
+}
+.qr-short-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+@media (max-width: 380px) {
+  .qr-short-grid { grid-template-columns: repeat(2, 1fr); }
+}
 .qr-short {
   background: #fff;
   border: 1px solid var(--border-soft);
@@ -5834,10 +5841,11 @@ select.pf-input {
 .qr-short-blue { background: #EDF3FF; color: #5B7FC7; }
 .qr-short-gold { background: #FFF4E6; color: var(--gold-deep); }
 .qr-short-pink { background: #FFF0F0; }
-.qr-short-text { display: flex; flex-direction: column; line-height: 1.2; }
-.qr-short-text b { font-size: 11px; color: var(--text); font-weight: 600; }
-.qr-short-text small { font-size: 9px; color: var(--text-muted); font-family: var(--font-small); }
-.qr-short-arrow { margin-left: auto; color: var(--text-muted); font-size: 14px; }
+/* v9289：横向排列「记运动」+ 副名；主名小加粗、副名浅色小字一行展示，不再竖排 */
+.qr-short-text { display: flex; flex-direction: row; align-items: baseline; gap: 5px; line-height: 1.2; min-width: 0; flex: 1; }
+.qr-short-text b { font-size: 12px; color: var(--text); font-weight: 700; }
+.qr-short-text small { font-size: 10px; color: var(--text-muted); font-family: var(--font-small); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.qr-short-arrow { color: var(--text-muted); font-size: 14px; flex-shrink: 0; }
 
 /* 保存按钮 */
 .qr-save {
@@ -6017,17 +6025,19 @@ select.pf-input {
 .ov-ring-val { font-size: 9px; font-family: var(--font-small); color: var(--text-muted); }
 
 /* 今日主任务 */
+/* v9289：每个主任务独立卡片（之前所有任务塞在一个大粉色块内，靠下边框分隔）——外层透明、间距与支线卡片 10px 一致 */
 .hp-main-task {
+  display: flex; flex-direction: column; gap: 10px;
+}
+.hmt-list { display: flex; flex-direction: column; gap: 10px; }
+.hmt-item {
+  display: flex; align-items: center; gap: 6px;
   background: linear-gradient(120deg, #FFF9F3 0%, #FFF3E8 100%);
   border: 1px solid #F8E4D4;
   border-radius: var(--radius-sm);
-  padding: 8px 10px;
+  padding: 10px 12px;
   box-shadow: var(--shadow);
-  position: relative;
-  overflow: hidden;
 }
-.hmt-list { display: flex; flex-direction: column; }
-.hmt-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
 .hmt-info { flex: 1; min-width: 0; }
 .hmt-label { font-size: 11px; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 5px; margin-bottom: 8px; }
 .hmt-target { font-size: 12px; }
@@ -6040,8 +6050,6 @@ select.pf-input {
 }
 .hmt-add:hover { background: var(--primary-hover); }
 .hmt-add:active { transform: scale(0.92); }
-.hmt-item { display: flex; align-items: center; gap: 6px; padding: 6px 0; border-bottom: 1px solid #F3E6D9; }
-.hmt-item:last-child { border-bottom: none; }
 .hmt-item-body { flex: 1; min-width: 0; }
 .hmt-title-row { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
 .hmt-title { margin: 0; font-size: 11.5px; font-weight: 700; color: var(--text); }

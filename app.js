@@ -13443,8 +13443,7 @@ function openQuickRecordModal(tab, subType) {
   qrMoneySubType = subType || 'expense';
   const modal = document.getElementById('quick-record-modal');
   if (!modal) return;
-  const bunny = modal.querySelector('#qr-bunny-deco');
-  if (bunny) bunny.innerHTML = quickRecordBunnySVG();
+  // v9289：移除 qr-bunny-deco 兔子装饰，标题区左对齐
   renderQuickRecordBody(qrCurrentTab, qrMoneySubType);
   modal.classList.add('active');
 }
@@ -13498,7 +13497,6 @@ function sleepTabHTML() {
       <label>睡眠备注 <span class="qr-optional">（可选）</span></label>
       <textarea id="qr-note" placeholder="记录一下昨晚的睡眠感受吧～" maxlength="100"></textarea>
       <span class="qr-count" id="qr-note-count">0/100</span>
-      <div class="qr-bunny-corner">🐰</div>
     </div>`;
 }
 
@@ -13522,7 +13520,6 @@ function ideaTabHTML() {
       <label>想法 / 灵感</label>
       <textarea id="qr-idea" placeholder="记下来，灵感才不会溜走～" maxlength="200"></textarea>
       <span class="qr-count" id="qr-idea-count">0/200</span>
-      <div class="qr-bunny-corner">🐰</div>
     </div>`;
 }
 
@@ -13536,7 +13533,8 @@ const QR_SHORT_COLORS = { sport: 'qr-short-green', sleep: 'qr-short-blue', money
 function renderQuickShortcuts(current) {
   const grid = document.getElementById('qr-short-grid');
   if (!grid) return;
-  const order = ['sport', 'sleep', 'money', 'idea'].filter(t => t !== current);
+  // v9289：显示全部 4 张快捷（含当前 tab）——用户截图是 4 张并排，文字横排
+  const order = ['sport', 'sleep', 'money', 'idea'];
   grid.innerHTML = order.map(t => {
     const sub = QR_SHORT_SUBS[t] || '';
     const subAttr = sub ? ` data-sub="${sub}"` : '';
