@@ -4660,7 +4660,6 @@ function renderMoney(opts) {
         </div>
       </div>
       <div class="cal-grid" id="cal-grid"></div>
-      <p class="section-note">双击某一天可查看当天消费明细 · 箭头切换月份</p>
     </div>
   `;
   (moneyMount || content).appendChild(card);
@@ -8185,13 +8184,6 @@ function renderOverview() {
       </div>
     </div>
 
-    <div class="hp-quote hp-quote-flat">
-      <div class="hp-quote-left">
-        <div class="hp-quote-label"><span class="hp-quote-star">${icon('star', 14)}</span> 今日一句</div>
-        <p class="quote-text">${escapeHTML(state.quote.text)}</p>
-        <div class="quote-author">—— ${escapeHTML(state.quote.author || '佚名')}</div>
-      </div>
-    </div>
     </div>
 
     <div class="hp-section-title">今日概览</div>
@@ -8624,7 +8616,6 @@ function renderLooksSkinHTML(today) {
     <div class="lk-card">
       <div class="lk-card-title">${icon('heart', 14)} 今日皮肤状态</div>
       <div class="lk-tags">${skinOpts}</div>
-      <p class="lk-note">仅做个人记录，不做诊断</p>
     </div>
     ${renderLooksWeekStatsHTML('skin', '#B07A9E')}
   `;
@@ -9683,70 +9674,6 @@ function renderDailyReviewInsight() {
 }
 
 // ============ 本周洞察 ============
-function renderInsights() {
-  const page = document.createElement('div');
-  page.className = 'page';
-
-  const totalFocus = getFocusMinutes();
-  const totalExercise = Object.values(state.exerciseLogs || {})
-    .reduce((s, list) => s + list.filter(e => e.done).reduce((a, e) => a + (Number(e.duration) || 0), 0), 0);
-  const checkinDays = Object.keys(state.checkins || {}).length;
-  const reviewCount = getReviewCount();
-  const totalIncome = state.transactions.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
-  const totalExpense = state.transactions.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
-  const lv = getLevelInfo();
-
-  const pointRank = getPointRankingItems().sort((a, b) => b.value - a.value);
-  const maxPoint = Math.max(1, pointRank[0] ? pointRank[0].value : 1);
-
-  // 近 7 天积分
-  const days = [];
-  for (let i = 6; i >= 0; i--) {
-    const key = shiftDate(getTodayKey(), -i);
-    const pts = Object.values(state.domains || {}).reduce((s, d) => s + (Number((d.log || {})[key]) || 0), 0);
-    days.push({ key, label: key.slice(5).replace('-', '/'), value: pts });
-  }
-  const maxDay = Math.max(1, ...days.map(d => d.value));
-
-  page.innerHTML = `
-    <div class="insight-grid">
-      <div class="insight-card"><div class="ic-icon">${icon('coins', 18)}</div><div class="ic-val">${lv.total}</div><div class="ic-label">累计积分</div></div>
-      <div class="insight-card"><div class="ic-icon">${icon('clock', 18)}</div><div class="ic-val">${totalFocus}<small>分</small></div><div class="ic-label">累计专注</div></div>
-      <div class="insight-card"><div class="ic-icon">${icon('dumbbell', 18)}</div><div class="ic-val">${totalExercise}<small>分</small></div><div class="ic-label">累计运动</div></div>
-      <div class="insight-card"><div class="ic-icon">${icon('calendar', 18)}</div><div class="ic-val">${checkinDays}<small>天</small></div><div class="ic-label">打卡天数</div></div>
-      <div class="insight-card"><div class="ic-icon">${icon('note', 18)}</div><div class="ic-val">${reviewCount}<small>次</small></div><div class="ic-label">复盘次数</div></div>
-      <div class="insight-card"><div class="ic-icon">${icon('coins', 18)}</div><div class="ic-val">¥${formatMoney(totalIncome)}</div><div class="ic-label">累计收入</div></div>
-      <div class="insight-card"><div class="ic-icon">${icon('coins', 18)}</div><div class="ic-val">¥${formatMoney(totalExpense)}</div><div class="ic-label">累计支出</div></div>
-    </div>
-
-    <div class="soft-card">
-      <div class="soft-card-title">${icon('leaf', 16)} 积分来源分布</div>
-      <div class="bar-list">
-        ${pointRank.map(d => `
-          <div class="bar-row">
-            <span class="bar-name"><span class="bar-ico">${icon(d.icon, 13)}</span>${d.name}</span>
-            <span class="bar-track"><span class="bar-fill" style="width:${Math.round((d.value / maxPoint) * 100)}%"></span></span>
-            <span class="bar-val">${d.value} 分</span>
-          </div>
-        `).join('')}
-      </div>
-    </div>
-
-    <div class="soft-card">
-      <div class="soft-card-title">📆 近 7 天积分</div>
-      <div class="bar-list">
-        ${days.map(d => `
-          <div class="bar-row">
-            <span class="bar-name">${d.label}</span>
-            <span class="bar-track"><span class="bar-fill" style="width:${Math.round((d.value / maxDay) * 100)}%"></span></span>
-            <span class="bar-val">${d.value} 分</span>
-          </div>
-        `).join('')}
-      </div>
-    </div>
-  `;
-  content.appendChild(page);
-}
 
 // ============ 奖励池 ============
 function rewardThumbHTML(item) {
@@ -11469,23 +11396,6 @@ function homeBunnyCoffeeSVG() {
 }
 
 // 今日一句：右侧小花绿植装饰
-function quoteFlowersSVG() {
-  return `<svg class="hp-quote-flowers" viewBox="0 0 90 90" aria-hidden="true">
-    <g transform="translate(10,10)">
-      <path d="M55 55 Q60 45 70 50 Q75 40 65 35 Q60 25 50 30 Q40 25 35 35 Q25 40 30 50 Q35 60 45 55 Z" fill="#FCE8D8"/>
-      <circle cx="52" cy="43" r="5" fill="#FBD9B0"/>
-      <circle cx="52" cy="43" r="2.5" fill="#FFF5E9"/>
-      <path d="M52 50 Q52 65 52 75" stroke="#A5C98B" stroke-width="1" fill="none"/>
-      <ellipse cx="46" cy="62" rx="5" ry="3" fill="#B8D9A8" transform="rotate(-25 46 62)"/>
-      <ellipse cx="58" cy="68" rx="5" ry="3" fill="#B8D9A8" transform="rotate(25 58 68)"/>
-      <circle cx="25" cy="35" r="4" fill="#F7D88A" opacity="0.9"/>
-      <circle cx="25" cy="35" r="1.5" fill="#FFF"/>
-      <path d="M25 40 L25 55" stroke="#A5C98B" stroke-width="1" fill="none"/>
-      <ellipse cx="20" cy="48" rx="4" ry="2.5" fill="#C5E0B4" transform="rotate(-20 20 48)"/>
-      <ellipse cx="30" cy="52" rx="4" ry="2.5" fill="#C5E0B4" transform="rotate(20 30 52)"/>
-    </g>
-  </svg>`;
-}
 
 // 主任务卡片：看书兔子
 function bunnyReadingSVG() {
@@ -11966,10 +11876,6 @@ function renderStudyPage() {
       ${historyHTML()}
     </div>
 
-    <div class="study-tip">
-      <span class="study-tip-bulb">${icon('bulb', 14)}</span>
-      <p>小贴士：把最难的口语练习放在精力最好的上午，用 25 分钟番茄钟降低启动阻力。</p>
-    </div>
   `;
   content.appendChild(page);
 
@@ -12121,7 +12027,7 @@ function renderLifeOrderPage() {
 
   function orderSuggest() {
     if (doneWeek > 0) return '已经把握住一些生活的小节奏，剩下的按自己的步调来就好 🌿';
-    return '不着急，先挑一件最不费力的秩序小事开始，比如喝一杯温水。';
+    return '';
   }
 
   page.innerHTML = `
@@ -12160,21 +12066,9 @@ function renderLifeOrderPage() {
       </div>
     </div>
 
-    <div class="section-card module-card">
-      <div class="module-card-head">
-        <span class="module-card-icon" style="color:#A0BB7A">${icon('chart', 14)}</span>
-        <span class="soft-card-title" style="margin:0;">本周小数据</span>
-      </div>
-      <div class="module-stats-grid">
-        <div class="module-stat"><b>${weekPts}</b><span>获得积分</span></div>
-        <div class="module-stat"><b>${doneWeek}/${total}</b><span>本周完成</span></div>
-      </div>
-      <p class="module-suggest">${orderSuggest()}</p>
-    </div>
 
     <div class="module-foot-note">
       <span>${icon('bulb', 14)}</span>
-      <p>小贴士：生活秩序不是追求完美，而是让 80% 的日常有迹可循。</p>
     </div>
   `;
   content.appendChild(page);
@@ -12249,7 +12143,7 @@ function renderInnerGrowthPage() {
 
   function growthSuggest() {
     if (doneWeek > 0) return '已经留了一些时间给自己，觉察本身就是很温柔的进步 🌱';
-    return '状态不好时，只做一个呼吸就好，不需要强迫自己完成全部。';
+    return '';
   }
 
   page.innerHTML = `
@@ -12285,21 +12179,9 @@ function renderInnerGrowthPage() {
       <p class="module-goal-text">${escapeHTML(g.theme || DEFAULT_GROWTH.theme)}</p>
     </div>
 
-    <div class="section-card module-card">
-      <div class="module-card-head">
-        <span class="module-card-icon" style="color:#C98FA8">${icon('chart', 14)}</span>
-        <span class="soft-card-title" style="margin:0;">本周小数据</span>
-      </div>
-      <div class="module-stats-grid">
-        <div class="module-stat"><b>${weekPts}</b><span>获得积分</span></div>
-        <div class="module-stat"><b>${doneWeek}/${total}</b><span>本周完成</span></div>
-      </div>
-      <p class="module-suggest">${growthSuggest()}</p>
-    </div>
 
     <div class="module-foot-note">
       <span>${icon('bulb', 14)}</span>
-      <p>小贴士：内在成长不是改变情绪，而是学会与情绪共处。</p>
     </div>
   `;
   content.appendChild(page);
@@ -12361,7 +12243,7 @@ function renderTravelPage() {
     if (weekPts > 0 && departed > 0) return '这周已经迈出轻量出门的第一步啦，顺着节奏慢慢来，旅行从楼下开始就很美好 🌿';
     if (weekPts > 0) return '这周已经积累了一些出门的小念头，顺着自己的节奏就好。';
     if (ph.places.length > 0) return '收藏一个家附近的小角落，就是今天很轻松的一步。';
-    return '不着急，先从想象一段舒服的散步开始，不用真的出门。';
+    return '';
   }
 
   function renderPlaceItem(p) {
@@ -12458,20 +12340,6 @@ function renderTravelPage() {
       </div>
     </div>
 
-    <div class="section-card module-card">
-      <div class="module-card-head">
-        <span class="module-card-icon" style="color:#8FB98C">${icon('chart', 14)}</span>
-        <span class="soft-card-title" style="margin:0;">本周小数据</span>
-      </div>
-      <div class="module-stats-grid">
-        <div class="module-stat"><b>${weekPts}</b><span>获得积分</span></div>
-        <div class="module-stat"><b>${ph.places.length}</b><span>想去的地方</span></div>
-        <div class="module-stat"><b>${departed}</b><span>已出发</span></div>
-        ${ph.actions.length ? `<div class="module-stat"><b>${actionsDone}</b><span>本周行动</span></div>` : ''}
-        <div class="module-stat"><b>${checkedCount}</b><span>已打卡地点</span></div>
-      </div>
-      <p class="module-suggest">${travelSuggest()}</p>
-    </div>
 
     <div class="section-card module-card module-checkin-entry" id="travel-goto-checkin">
       <div class="module-card-head">
@@ -12801,7 +12669,7 @@ function renderSocialPage() {
     if (weekPts > 0 && s.contactsThisWeek > 0) return '这周已经和舒服的老朋友有了联系，维系关系不费力就很好 💗';
     if (weekPts > 0) return '这周已经做了一些轻松的维系，不用强迫自己更多。';
     if (s.actions.length > 0) return '给熟悉的老朋友发一句简短问候，就是今天很温柔的一步。';
-    return '状态不好时可以直接跳过，保护精力比完成任务更重要。';
+    return '';
   }
 
   function renderActionItem(a, delType) {
@@ -12856,18 +12724,6 @@ function renderSocialPage() {
       <button class="module-edit-goal" id="social-edit-goal">${icon('edit', 11)} 修改目标</button>
     </div>
 
-    <div class="section-card module-card">
-      <div class="module-card-head">
-        <span class="module-card-icon" style="color:#C98FA8">${icon('chart', 14)}</span>
-        <span class="soft-card-title" style="margin:0;">本周小数据</span>
-      </div>
-      <div class="module-stats-grid">
-        <div class="module-stat"><b>${weekPts}</b><span>获得积分</span></div>
-        <div class="module-stat"><b>${doneWeek}/${s.actions.length}</b><span>本周行动</span></div>
-        <div class="module-stat"><b>${s.contactsThisWeek || 0}</b><span>已联系(人)</span></div>
-      </div>
-      <p class="module-suggest">${socialSuggest()}</p>
-    </div>
   `;
   content.appendChild(page);
 
@@ -13207,35 +13063,6 @@ function catCardHTML(s, hidden) {
     + '</div></div>';
 }
 
-function buildInsightSuggestions(stats) {
-  const out = [];
-  if (!stats.length) return [{ icon: icon('settings', 14), text: '还没有选择任何模块，点右上角「自定义」勾选要追踪的板块，洞察会更有针对性～' }];
-  const focus = stats.find(s => s.id === 'focus');
-  if (focus) {
-    if (focus.metric < 120) out.push({ icon: icon('time', 14), text: '这一周专注时长不多，没关系～每天先留 15 分钟给最重要的一件事就很好。' });
-    else out.push({ icon: icon('fire', 14), text: '本周专注 ' + Math.round(focus.metric) + ' 分钟，状态在线！顺着这个节奏就好，重要的事会一件件被啃下来。' });
-  }
-  // 全局规则 2：相同类型的空状态提示合并为一条，避免刷屏（每周每模块最多 1 条轻量提示）
-  const emptyModules = stats.filter(s => s.items === 0).map(s => s.name);
-  if (emptyModules.length) {
-    const names = emptyModules.slice(0, 3).join('、') + (emptyModules.length > 3 ? ' 等' : '');
-    out.push({ icon: icon('leaf', 14), text: '本周「' + names + '」还没记录，慢慢来～去对应页面点个完成、打次卡，数据就自然活起来了，不急。' });
-  }
-  stats.forEach(s => {
-    if (s.items === 0) return; // 已在上方的合并提示中统一处理
-    if (s.metricLast > 0 && s.metric < s.metricLast * 0.7) {
-      out.push({ icon: icon('trendDown', 14), text: '「' + s.name + '」本周比上周回落了一些（' + Math.round(s.metric) + s.metricUnit + ' vs 上周 ' + Math.round(s.metricLast) + s.metricUnit + '），回落也正常，顺着状态慢慢来，下周自然会回来。' });
-    } else if (s.metricLast > 0 && s.metric > s.metricLast * 1.15) {
-      out.push({ icon: icon('chartLine', 14), text: '「' + s.name + '」本周比上周更投入（' + Math.round(s.metric) + s.metricUnit + ' ↑），这个势头值得保持！' });
-    }
-  });
-  let activeDays = 0;
-  for (let i = 0; i < 7; i++) { if (stats.some(s => (s.dailyItems[i] > 0) || (s.daily[i] > 0))) activeDays++; }
-  if (activeDays <= 3) out.push({ icon: icon('calendar', 14), text: '本周有 ' + activeDays + ' 天留下了记录，已经是很好的开始；每天做 1–2 件小事，连续性比强度更重要。' });
-  else if (activeDays === 7) out.push({ icon: icon('sparkle', 14), text: '七天全勤！这种持续感是长期复利的关键，给自己点个赞 🐰。' });
-  if (!out.length) out.push({ icon: icon('star', 14), text: '各项数据都比较平稳，继续保持就好。想再进一步，可以挑一个板块做小幅度增量。' });
-  return out.slice(0, 6);
-}
 
 function openWeekPicker() {
   const opts = [];
@@ -13392,7 +13219,7 @@ function renderInsightPage() {
   }
 
   function suggestionsHTML(stats) {
-    return buildInsightSuggestions(stats).map(t => '<div class="insp-suggest-card"><span class="insp-suggest-ic">' + t.icon + '</span><p>' + t.text + '</p></div>').join('');
+    return '';
   }
 
   page.innerHTML = '<div class="insp-page">'
@@ -13410,8 +13237,6 @@ function renderInsightPage() {
     + '<div class="insp-section"><div class="insp-section-head"><span class="insp-section-title"><span class="insp-sec-heart">' + icon('heart', 14) + '</span> 习惯完成热力图</span><span class="insp-heat-legend"><i class="ht-low"></i><i class="ht-mid"></i><i class="ht-high"></i>完成度 低 → 高</span></div>'
     + '<div class="insp-heatmap-wrap"><div class="insp-heatmap-grid insp-heat-grid2" id="insp-heatmap-grid">' + heatmapHTML() + '</div></div></div>'
 
-    + '<div class="insp-section insp-suggest-section"><div class="insp-section-head"><span class="insp-section-title"><span class="insp-sec-star">' + icon('star', 14) + '</span> 每周优化建议</span></div>'
-    + '<div class="insp-suggest-list" id="insp-suggest-list">' + suggestionsHTML(visibleStats) + '</div></div>'
     + '</div>';
   content.appendChild(page);
   // 插入（或复用）折线图 SVG 实例：同一节点跨渲染移动，线条实例不重复生成
@@ -13915,16 +13740,6 @@ function slowWeekStats(key) {
 
 // 统计小卡片 + 折线圆点趋势
 function slowStatsCard(cfg, stats, items) {
-  return `<div class="section-card module-card">
-    <div class="module-card-head">
-      <span class="module-card-icon" style="color:${cfg.color}">${icon('chart', 14)}</span>
-      <span class="soft-card-title" style="margin:0;">本周小数据</span>
-    </div>
-    <div class="module-stats-grid">
-      ${items.map(it => `<div class="module-stat"><b>${it.value}</b><span>${it.label}</span></div>`).join('')}
-    </div>
-    <div class="slow-trend">${inlineSparkline(stats.series, cfg.color, null, cfg.bg, 9)}</div>
-  </div>`;
 }
 
 // 今日打卡卡片（字段可配置）
@@ -14098,7 +13913,7 @@ function renderPhotographyPage() {
   function photoSuggest() {
     if (stats.times >= 3) return '这周练习很稳定，可以挑一张最满意的作品写写心得 📷';
     if (stats.times > 0) return '已经开始了就很好，下次试试只练一个构图元素，不用一次到位。';
-    return '不着急出片，先翻 10 张喜欢的照片，找找它们的共同点就好。';
+    return '';
   }
 
   page.innerHTML = `
@@ -14169,13 +13984,6 @@ function renderPhotographyPage() {
       { value: stats.pts, label: '本周积分' }
     ])}
 
-    <div class="section-card module-card">
-      <div class="module-card-head">
-        <span class="module-card-icon" style="color:${cfg.color}">${icon('bulb', 14)}</span>
-        <span class="soft-card-title" style="margin:0;">本周优化建议</span>
-      </div>
-      <p class="module-suggest">${photoSuggest()}</p>
-    </div>
   `;
   content.appendChild(page);
 
@@ -14355,7 +14163,6 @@ function renderCertPage() {
         <span class="module-card-icon" style="color:${cfg.color}">${icon('bulb', 14)}</span>
         <span class="soft-card-title" style="margin:0;">备考小建议</span>
       </div>
-      <p class="module-suggest">${certSuggest()}</p>
     </div>
   `;
   content.appendChild(page);
@@ -14497,13 +14304,6 @@ function renderHomeOrgPage() {
       { value: stats.pts, label: '本周积分' }
     ])}
 
-    <div class="section-card module-card">
-      <div class="module-card-head">
-        <span class="module-card-icon" style="color:${cfg.color}">${icon('bulb', 14)}</span>
-        <span class="soft-card-title" style="margin:0;">整理小贴士</span>
-      </div>
-      <p class="module-suggest">${homeSuggest()}</p>
-    </div>
   `;
   content.appendChild(page);
 
@@ -14659,7 +14459,6 @@ function renderMusicPage() {
         <span class="module-card-icon" style="color:${cfg.color}">${icon('bulb', 14)}</span>
         <span class="soft-card-title" style="margin:0;">练习优化小建议</span>
       </div>
-      <p class="module-suggest">${musicSuggest()}</p>
     </div>
   `;
   content.appendChild(page);
