@@ -8205,14 +8205,13 @@ function renderOverview() {
       <div class="hp-qs-row">
         <div class="hp-qs-col">
           <span>${icon('star', 11)} 今日积分：<b>${todayPts}</b></span>
-          <span>${icon('check', 11)} 已完成任务：<b>${todayDone} 项</b></span>
+          <span>${icon('check', 11)} 已完成：<b>${todayDone}</b></span>
         </div>
         <div class="hp-qs-col">
           <span>${icon('sparkle', 11)} 本周积分：<b>${weekPts}</b></span>
-          <span>${icon('chart', 11)} 本周完成进度：<b>${weekPct}%</b></span>
+          <span>${icon('chart', 11)} 本周进度：<b>${weekPct}%</b></span>
         </div>
       </div>
-      <div class="hp-qs-bar"><div class="hp-qs-bar-fill" style="width:${weekPct}%"></div></div>
     </div>
 
     <div class="hp-section-title">今日概览</div>
@@ -10087,7 +10086,6 @@ function renderSystemPanel() {
     { name: '本周洞察', icon: 'chart', meta: `Lv.${lv.level}`, target: '本周洞察' },
     { name: '奖励池', icon: 'rewards', meta: `${getAvailablePoints()} 分可用`, target: '奖励池' },
     { name: '成就殿堂', icon: 'trophy', meta: `${DEFAULT_ACHIEVEMENTS.filter(a => state.achievements[a.id]).length} 枚徽章`, target: '成就殿堂' },
-    { name: '碎碎念', icon: 'note', meta: `${state.memos.length} 条`, target: '碎碎念' },
     { name: '当日计划', icon: 'calendar', meta: `${prog.done}/${prog.total}`, target: '每日计划' },
     { name: '饮食', icon: 'utensils', meta: `${getDietTotals().total} kcal`, target: '饮食' },
     { name: '健身', icon: 'dumbbell', meta: `${getTodayExerciseMinutes()} 分钟`, target: '健身' },

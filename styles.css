@@ -6006,10 +6006,11 @@ select.pf-input {
 /* v9293：缩第一个 section-title 上边距，补偿 hp-quick-stats 块新增的高度（避免「今日概览」明显下移） */
 .hp-section-title:first-of-type { margin-top: 10px; }
 
-/* v9293：轻量积分摘要（hp-top-block 与今日概览之间，无厚重卡片，仅图标+文字+细进度条） */
+/* v9296：轻量积分摘要（hp-top-block 与今日概览之间，无厚重卡片，仅图标+文字） */
 .hp-quick-stats {
   margin: 6px 4px 0;
   display: flex; flex-direction: column; gap: 5px;
+  transform: translateY(-20px);
 }
 .hp-qs-row {
   display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
@@ -6711,7 +6712,7 @@ select.pf-input {
 .eng-task-sub { font-size: 10px; color: var(--text-muted); font-family: var(--font); }
 .eng-task-row.done .eng-task-name { color: var(--text-muted); text-decoration: line-through; }
 .eng-task-points { font-size: 9px; color: var(--eng-color, var(--primary-dark)); font-weight: 400; margin-right: 8px; font-family: var(--font-small); }
-.eng-task-note { padding: 0 12px 10px; background: var(--eng-bg, var(--card)); }
+.eng-task-note { padding: 2px 12px 10px; background: var(--eng-bg, var(--card)); }
 .eng-task-note input {
   width: 100%; border: 1px solid var(--border-soft); border-radius: 8px; padding: 6px 10px;
   font-size: 11px; background: #fff; color: var(--text); outline: none;
