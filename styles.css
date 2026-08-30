@@ -1533,16 +1533,16 @@ svg text { font-family: var(--font-small) !important; }
 .text-btn svg { width: 13px; height: 13px; vertical-align: middle; margin-right: 2px; }
 
 .body-card {
-  background: #F5FBF8;
-  border: 1px solid #CFE5D4;
-  border-radius: var(--radius);
-  padding: 14px;
-  box-shadow: var(--shadow);
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  box-shadow: none;
   margin-bottom: 12px;
   cursor: pointer;
   user-select: none;
 }
-.body-card-fitness { border-color: #CFE5D4; }
+.body-card-fitness { border: none; }
 .section-card-green { border-color: #CFE5D4; }
 .section-card-purple { border-color: #DCD5EC; }
 

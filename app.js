@@ -4955,9 +4955,8 @@ function renderMoneyDetail(card, dateKey) {
 
   card.innerHTML = `
     <div class="money-detail-header">
-      <div class="md-title">${y}年${parseInt(m)}月${parseInt(d)}日</div>
+      <div class="md-title">${formatShortDate(new Date(dateKey))}</div>
       <button class="md-back-overview" id="back-cal" type="button">← 总览</button>
-      <div class="md-budget">预算 ¥${formatMoney(state.budget)}</div>
     </div>
 
     <div class="money-total-card md-card">
@@ -5471,9 +5470,7 @@ function bodyCardHTML(body, title = '我的身体数据', mode = 'default') {
     const exerciseBurn = getTodayExerciseCalories();
     return `
       <div class="body-card body-card-fitness" data-body-card data-mode="fitness">
-        <div class="body-card-header">
-          <span class="section-title">${title}</span>
-        </div>
+        ${title ? `<div class="body-card-header"><span class="section-title">${title}</span></div>` : ''}
         <div class="body-grid body-grid-2">
           <div class="body-cell"><span class="body-label">每日消耗大卡</span><span class="body-val">${burn.toFixed(0)} <small>kcal</small></span></div>
           <div class="body-cell"><span class="body-label">当日锻炼消耗</span><span class="body-val">${exerciseBurn.toFixed(0)} <small>kcal</small></span></div>
@@ -5484,9 +5481,7 @@ function bodyCardHTML(body, title = '我的身体数据', mode = 'default') {
 
   return `
     <div class="body-card" data-body-card>
-      <div class="body-card-header">
-        <span class="section-title">${title}</span>
-      </div>
+      ${title ? `<div class="body-card-header"><span class="section-title">${title}</span></div>` : ''}
       <div class="body-grid body-grid-3">
         <div class="body-cell" data-edit="bodyFat"><span class="body-label">体脂率</span><span class="body-val">${formatBodyValue(body.bodyFat, '%')}</span></div>
         <div class="body-cell" data-edit="weight"><span class="body-label">体重</span><span class="body-val">${formatBodyValue(body.weight, 'kg')}</span></div>
@@ -5678,39 +5673,31 @@ function renderHealthPage() {
       </div>
     </div>
 
-    <!-- 身体数据卡片：仅记录体脂率 / 体重 / 目标体重，不做达成提醒 -->
-    <div class="soft-card" id="health-body-card">
-      <div class="soft-card-title">${icon('heart', 16)} 身体数据</div>
-      <div id="health-body-mount"></div>
-    </div>
+    <!-- 身体数据：仅记录体脂率 / 体重 / 目标体重，不做达成提醒（v9301：去卡片套卡片 + 取消内层重复标题） -->
+    <div id="health-body-mount"></div>
 
-    <!-- 工具 / 资产入口 -->
+    <!-- 工具入口（v9301：删「资产」字 + 5→4 张 + 重命名为饮食/运动/睡眠/健康） -->
     <div class="soft-card health-module-card">
-      <div class="soft-card-title">工具 / 资产</div>
+      <div class="soft-card-title">工具</div>
       <div class="tool-grid">
         <button class="tool-btn" data-route="饮食">
           <span class="tb-icon">${icon('utensils', 18)}</span>
-          <span><b>饮食记录</b><span class="tb-sub">食材库存管理</span></span>
+          <span><b>饮食</b><span class="tb-sub">食材库存管理</span></span>
           <span class="tb-arrow">${icon('chevronLeft', 12)}</span>
         </button>
         <button class="tool-btn" data-route="健身">
           <span class="tb-icon">${icon('dumbbell', 18)}</span>
-          <span><b>健身训练</b><span class="tb-sub">运动</span></span>
+          <span><b>运动</b><span class="tb-sub">运动训练</span></span>
           <span class="tb-arrow">${icon('chevronLeft', 12)}</span>
         </button>
         <button class="tool-btn" data-route="睡眠管理">
           <span class="tb-icon">${icon('moon', 18)}</span>
-          <span><b>睡眠管理</b><span class="tb-sub">记录睡眠时长与质量</span></span>
-          <span class="tb-arrow">${icon('chevronLeft', 12)}</span>
-        </button>
-        <button class="tool-btn" data-route="今日心境">
-          <span class="tb-icon">${icon('smile', 18)}</span>
-          <span><b>今日心境</b><span class="tb-sub">一句话心情打卡</span></span>
+          <span><b>睡眠</b><span class="tb-sub">记录睡眠时长与质量</span></span>
           <span class="tb-arrow">${icon('chevronLeft', 12)}</span>
         </button>
         <button class="tool-btn" data-route="身体小状况">
           <span class="tb-icon">${icon('thermometer', 18)}</span>
-          <span><b>身体小状况</b><span class="tb-sub">轻量记录身体不适</span></span>
+          <span><b>健康</b><span class="tb-sub">轻量记录身体不适</span></span>
           <span class="tb-arrow">${icon('chevronLeft', 12)}</span>
         </button>
       </div>
@@ -5737,9 +5724,9 @@ function renderHealthPage() {
     onToday: () => { state.viewDate = ''; renderContent(); }
   });
 
-  // 身体数据卡片
+  // 身体数据卡片（v9301：title 传空字符串隐藏内层重复标题）
   const bodyMount = page.querySelector('#health-body-mount');
-  bodyMount.innerHTML = bodyCardHTML(state.body, '我的身体数据');
+  bodyMount.innerHTML = bodyCardHTML(state.body, '');
   bindBodyCard(bodyMount, () => renderContent());
 
   // 工具入口跳转
