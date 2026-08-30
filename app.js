@@ -8146,6 +8146,12 @@ function renderOverview() {
   const exerciseToday = getTodayExerciseMinutes(todayKey);
   const streak = calcStreak();
 
+  // v9293：首页轻量积分摘要（hp-quick-stats）数据源
+  const todayPts = getTodayPoints();
+  const weekPts = Number(state.points) || 0;
+  const todayDone = prog.done;
+  const weekPct = prog.percent;
+
   const EX_GOAL = 30;
   const sportPct = Math.min(100, Math.round(exerciseToday / EX_GOAL * 100));
   const sportVal = `${exerciseToday}/${EX_GOAL} 分钟`;
@@ -8193,6 +8199,20 @@ function renderOverview() {
       </div>
     </div>
 
+    </div>
+
+    <div class="hp-quick-stats">
+      <div class="hp-qs-row">
+        <div class="hp-qs-col">
+          <span>${icon('star', 11)} 今日积分：<b>${todayPts}</b></span>
+          <span>${icon('check', 11)} 已完成任务：<b>${todayDone} 项</b></span>
+        </div>
+        <div class="hp-qs-col">
+          <span>${icon('sparkle', 11)} 本周积分：<b>${weekPts}</b></span>
+          <span>${icon('chart', 11)} 本周完成进度：<b>${weekPct}%</b></span>
+        </div>
+      </div>
+      <div class="hp-qs-bar"><div class="hp-qs-bar-fill" style="width:${weekPct}%"></div></div>
     </div>
 
     <div class="hp-section-title">今日概览</div>

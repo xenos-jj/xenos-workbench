@@ -5942,6 +5942,7 @@ select.pf-input {
   justify-content: center;
   margin-left: auto;
   pointer-events: none;
+  transform: translateY(-20px);
 }
 .hp-mascot-img {
   width: 100%;
@@ -6003,6 +6004,33 @@ select.pf-input {
   display: flex; align-items: center; justify-content: space-between;
   font-size: 13px; font-weight: 700; color: var(--text);
   margin: 20px 4px 12px;
+}
+/* v9293：缩第一个 section-title 上边距，补偿 hp-quick-stats 块新增的高度（避免「今日概览」明显下移） */
+.hp-section-title:first-of-type { margin-top: 10px; }
+
+/* v9293：轻量积分摘要（hp-top-block 与今日概览之间，无厚重卡片，仅图标+文字+细进度条） */
+.hp-quick-stats {
+  margin: 6px 4px 0;
+  display: flex; flex-direction: column; gap: 5px;
+}
+.hp-qs-row {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+  font-size: 10.5px; color: var(--text-muted);
+  font-family: var(--font-small);
+  line-height: 1.5;
+}
+.hp-qs-col { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.hp-qs-col span { display: flex; align-items: center; gap: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hp-qs-col b { color: var(--text); font-weight: 700; font-family: var(--font); flex-shrink: 0; }
+.hp-qs-col svg { flex-shrink: 0; opacity: .75; }
+.hp-qs-bar {
+  height: 4px; background: rgba(232,159,92,0.14);
+  border-radius: 999px; overflow: hidden;
+}
+.hp-qs-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #F8C89A 0%, #E89F5C 100%);
+  border-radius: 999px; transition: width .3s ease;
 }
 .hp-section-title .hp-sec-heart { font-size: 12px; margin-right: 4px; }
 .hp-section-title .hp-more { font-size: 11px; color: var(--text-muted); font-weight: 400; display: flex; align-items: center; gap: 2px; }
