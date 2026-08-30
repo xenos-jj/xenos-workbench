@@ -6003,8 +6003,8 @@ select.pf-input {
   font-size: 13px; font-weight: 700; color: var(--text);
   margin: 20px 4px 12px;
 }
-/* v9298：今日概览 + 下方所有内容同步上移 30px（margin-top 10→-20，normal flow 跟随 title） */
-.hp-section-title:first-of-type { margin-top: -20px; }
+/* v9299：今日概览 + 下方所有内容再上移 30px（margin-top -20→-50，累计 60px 上移） */
+.hp-section-title:first-of-type { margin-top: -50px; }
 
 /* v9296：轻量积分摘要（hp-top-block 与今日概览之间，无厚重卡片，仅图标+文字） */
 .hp-quick-stats {
