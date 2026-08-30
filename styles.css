@@ -3831,21 +3831,22 @@ svg text { font-family: var(--font-small) !important; }
   margin: 0 auto;
 }
 .soft-card {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  padding: 14px;
-  margin-bottom: 14px;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 0;
+  margin-bottom: 18px;
 }
 .soft-card-title {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 700;
   color: var(--text);
-  margin-bottom: 12px;
+  margin: 4px 0 10px;
+  letter-spacing: .2px;
 }
 .soft-card-title .stitle-meta { margin-left: auto; font-size: 10.5px; font-weight: 400; color: var(--text-muted); }
 .muted-note { font-size: 10.5px; color: var(--text-muted); line-height: 1.6; margin: 8px 0 0; }
@@ -6892,14 +6893,14 @@ select.pf-input {
 /* ---------- 字体层级更清晰 ---------- */
 .page-title-main { font-size: 14px; font-weight: 700; }
 .page-subtitle { font-size: 11px; }
-.soft-card-title { font-size: 11px; font-weight: 700; letter-spacing: .2px; }
+.soft-card-title { font-size: 13px; font-weight: 700; letter-spacing: .2px; margin: 4px 0 10px; display: flex; align-items: center; gap: 6px; }
 .section-card {
-  background: var(--card);
+  background: transparent;
   border: none;
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  padding: 16px;
-  margin-bottom: 12px;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 0;
+  margin-bottom: 18px;
 }
 
 /* ---------- 按钮更圆润柔和 ---------- */
@@ -7321,14 +7322,14 @@ select.pf-input {
 /* ---------- 字体层级更清晰 ---------- */
 .page-title-main { font-size: 14px; font-weight: 700; }
 .page-subtitle { font-size: 11px; }
-.soft-card-title { font-size: 11px; font-weight: 700; letter-spacing: .2px; }
+.soft-card-title { font-size: 13px; font-weight: 700; letter-spacing: .2px; margin: 4px 0 10px; display: flex; align-items: center; gap: 6px; }
 .section-card {
-  background: var(--card);
+  background: transparent;
   border: none;
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  padding: 16px;
-  margin-bottom: 12px;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 0;
+  margin-bottom: 18px;
 }
 
 /* ---------- 按钮更圆润柔和 ---------- */
