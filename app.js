@@ -46,7 +46,9 @@ const DEFAULT_ENGLISH_CHECKIN = {
 // 仅选用工作台已存在的板块；新增板块后在此追加一项即可自动出现在 DIY 选项中。
 // 洞察页展示排除名单：这些模块的工作台本体页面（旅行体验/社交拓展）不受影响，
 // 只是不在本周洞察统计中展示（卡片/折线图标签/热力图/自定义列表）。想恢复展示时把对应 id 从数组移除即可。
-const INSIGHT_HIDDEN_MODULES = ['travel', 'social'];
+// v9288：洞察页临时隐藏 4 个慢模块（摄影/考证/家居/音乐）——自定义弹窗、卡片、折线图 legend、热力图统一不展示；
+// 工作台本体页面（我的支线 / 暂缓模块）不受影响；想恢复展示时把对应 id 从数组移除即可。
+const INSIGHT_HIDDEN_MODULES = ['travel', 'social', 'photography', 'cert', 'homeorg', 'music'];
 const INSIGHT_MODULES = [
   {
     id: 'focus',
@@ -12316,7 +12318,6 @@ function renderTravelPage() {
           <span>下一站：${escapeHTML(ph.nextDestination || '待定')}</span>
         </div>
       </div>
-      <div class="mh-mascot"><img src="images/mascot.png" alt="mascot"></div>
     </div>
 
     <div class="section-card module-card">
@@ -12714,7 +12715,6 @@ function renderSocialPage() {
           <span>本周待联系：${s.contactsThisWeek || 0} 人</span>
         </div>
       </div>
-      <div class="mh-mascot"><img src="images/mascot.png" alt="mascot"></div>
     </div>
 
     <div class="section-card module-card">
@@ -13948,7 +13948,6 @@ function renderPhotographyPage() {
 
   page.innerHTML = `
     ${slowPageHead(cfg)}
-    <img class="slow-mascot" src="images/mascot.png" alt="">
     ${slowCheckinCard(cfg, {
       title: '今日练习打卡',
       fields: [
@@ -14122,7 +14121,6 @@ function renderCertPage() {
 
   page.innerHTML = `
     ${slowPageHead(cfg)}
-    <img class="slow-mascot" src="images/mascot.png" alt="">
 
     <div class="section-card module-card">
       <div class="module-card-head">
@@ -14266,7 +14264,6 @@ function renderHomeOrgPage() {
 
   page.innerHTML = `
     ${slowPageHead(cfg)}
-    <img class="slow-mascot" src="images/mascot.png" alt="">
     ${slowCheckinCard(cfg, {
       title: '今日整理打卡',
       fields: [
@@ -14414,7 +14411,6 @@ function renderMusicPage() {
 
   page.innerHTML = `
     ${slowPageHead(cfg)}
-    <img class="slow-mascot" src="images/mascot.png" alt="">
     ${slowCheckinCard(cfg, {
       title: '练习打卡',
       fields: [
