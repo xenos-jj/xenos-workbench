@@ -5811,17 +5811,14 @@ select.pf-input {
 }
 .qr-select-row:active { transform: scale(0.99); }
 
-/* v9292：常用快捷入口——3 张并排（auto-fit 自适应；窄屏自动 wrap）；标题与 modal 标题风格一致（13px/700）且左对齐；卡内只保留副名（图标 + 副名一行） */
+/* v9294：常用快捷入口——4 张卡 2×2 排版（图2 参考）；标题与 modal 标题风格一致（13px/700）且左对齐；卡内文字横排（图标 + 主名 + 副名一行铺） */
 .qr-shortcuts { padding: 0 20px 14px; }
 .qr-short-title {
   font-size: 13px; color: var(--text); font-weight: 700;
   margin: 8px 0 10px; text-align: left;
   display: flex; align-items: center;
 }
-.qr-short-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-@media (max-width: 380px) {
-  .qr-short-grid { grid-template-columns: repeat(2, 1fr); }
-}
+.qr-short-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
 .qr-short {
   background: #fff;
   border: 1px solid var(--border-soft);

@@ -13539,7 +13539,7 @@ function ideaTabHTML() {
 }
 
 const QR_TITLES = { sport: '运动', sleep: '睡眠', money: '记账', idea: '灵感' };
-const QR_SHORT_LABELS = { sport: '运动', sleep: '睡眠', money: '记账', idea: '灵感' };
+const QR_SHORT_LABELS = { sport: '运动', sleep: '睡眠', money: '收支', idea: '想法' };
 const QR_SHORT_ICONS = { sport: 'dumbbell', sleep: 'moon', money: 'coins', idea: 'bulb' };
 const QR_SHORT_SUBS = { money: 'income' };
 const QR_SHORT_TIPS = { sport: '打卡运动时长', sleep: '记录睡眠时间', money: '记录一笔收入', idea: '闪现一个想法' };
@@ -13548,14 +13548,14 @@ const QR_SHORT_COLORS = { sport: 'qr-short-green', sleep: 'qr-short-blue', money
 function renderQuickShortcuts(current) {
   const grid = document.getElementById('qr-short-grid');
   if (!grid) return;
-  // v9292：排除当前 tab（4→3 张）+ 卡内只保留副名（小字）作为唯一文字
-  const order = ['sport', 'sleep', 'money', 'idea'].filter(t => t !== current);
+  // v9294：恢复 4 张全显示（图2 2×2 排版），加回<b>主名（类别名「运动/睡眠/收支/想法」），保留<small>副名
+  const order = ['sport', 'sleep', 'money', 'idea'];
   grid.innerHTML = order.map(t => {
     const sub = QR_SHORT_SUBS[t] || '';
     const subAttr = sub ? ` data-sub="${sub}"` : '';
     return `<button class="qr-short" data-qr="${t}"${subAttr}>
       <span class="qr-short-ico ${QR_SHORT_COLORS[t]}">${icon(QR_SHORT_ICONS[t], 15)}</span>
-      <span class="qr-short-text"><small>${QR_SHORT_TIPS[t]}</small></span>
+      <span class="qr-short-text"><b>${QR_SHORT_LABELS[t]}</b><small>${QR_SHORT_TIPS[t]}</small></span>
       <span class="qr-short-arrow">›</span>
     </button>`;
   }).join('');
