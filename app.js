@@ -2039,8 +2039,9 @@ function getEnglishStageProgress() {
       }
     }
     pct = Math.min(100, Math.round((checkedDays / totalDays) * 100));
-    if (month < s.startMonth) { pct = 0; }
-    else if (month > s.endMonth) { pct = Math.max(pct, 100); past = true; }
+    // v9297：pct 始终基于实际打卡日，不再因时间已过强制 100%；只标记 past/active 状态
+    if (month < s.startMonth) { past = false; active = false; }
+    else if (month > s.endMonth) { past = true; }
     else { active = true; }
     return { ...s, pct, active, past, checkedDays, totalDays };
   });
@@ -11811,7 +11812,7 @@ function renderStudyPage() {
             <div class="eng-stage-name">${s.name}</div>
             <div class="eng-stage-months">${s.months}</div>
           </div>
-          <span class="eng-stage-pct">${s.pct}%</span>
+          <span class="eng-stage-pct">${s.checkedDays === 0 ? '待开始' : s.pct + '%'}</span>
         </div>
         <div class="eng-stage-bar"><i style="width:${s.pct}%;background:${s.color}"></i></div>
       </div>
@@ -11870,14 +11871,6 @@ function renderStudyPage() {
     </div>
 
     <div class="section-card">
-      <div class="soft-card-title">${icon('layers', 14)} 打卡模式</div>
-      <div class="eng-mode-tabs">
-        <button class="eng-mode-tab ${mode === 'standard' ? 'active' : ''}" data-mode="standard">标准版 <span class="eng-mode-mins">45‑60 分钟</span></button>
-        <button class="eng-mode-tab ${mode === 'simplified' ? 'active' : ''}" data-mode="simplified">精简版 <span class="eng-mode-mins">20‑30 分钟</span></button>
-      </div>
-    </div>
-
-    <div class="section-card">
       <div class="soft-card-title">${icon('check', 14)} 今日学习任务</div>
       <div class="eng-daily-list">
         ${ENGLISH_DAILY_TASKS.map(dailyTaskHTML).join('')}
@@ -11910,14 +11903,6 @@ function renderStudyPage() {
 
   // 返回按钮
   page.querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', () => selectItem(b.dataset.go)));
-
-  // 模式切换
-  page.querySelectorAll('.eng-mode-tab').forEach(tab => {
-    tab.addEventListener('click', () => {
-      setEnglishDailyMode(tab.dataset.mode);
-      renderContent();
-    });
-  });
 
   // 任务勾选 + 笔记输入（v9275：in-place 更新避免位置移动）
   page.querySelectorAll('.eng-task-row').forEach(row => {
