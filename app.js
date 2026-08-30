@@ -4955,8 +4955,8 @@ function renderMoneyDetail(card, dateKey) {
 
   card.innerHTML = `
     <div class="money-detail-header">
-      <button class="sub-back-btn" id="back-cal" type="button" aria-label="返回">${BACK_ARROW_SVG}</button>
       <div class="md-title">${y}年${parseInt(m)}月${parseInt(d)}日</div>
+      <button class="md-back-overview" id="back-cal" type="button">← 总览</button>
       <div class="md-budget">预算 ¥${formatMoney(state.budget)}</div>
     </div>
 

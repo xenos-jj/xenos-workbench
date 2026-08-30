@@ -3836,7 +3836,7 @@ svg text { font-family: var(--font-small) !important; }
   border-radius: 0;
   box-shadow: none;
   padding: 0;
-  margin-bottom: 18px;
+  margin-bottom: 26px;
 }
 .soft-card-title {
   display: flex;
@@ -5190,6 +5190,19 @@ select.pf-input {
   border-color: var(--primary);
   color: #fff;
 }
+
+/* v9300：money-detail-header 内的"← 总览"文字小按钮（替代原 sub-back-btn 返回箭头，与父页面 sub-page-head 返回键去重） */
+.md-back-overview {
+  background: transparent; border: 1px solid var(--border-soft);
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-size: 11px; color: var(--text-muted);
+  cursor: pointer;
+  font-family: var(--font-small);
+  transition: all .15s ease;
+}
+.md-back-overview:hover { background: var(--primary-light); color: var(--primary-dark); border-color: var(--primary); }
+.md-back-overview:active { transform: scale(0.97); }
 
 /* 总资产卡片可点击 */
 .money-total-card.clickable {
@@ -6712,7 +6725,7 @@ select.pf-input {
 .eng-task-sub { font-size: 10px; color: var(--text-muted); font-family: var(--font); }
 .eng-task-row.done .eng-task-name { color: var(--text-muted); text-decoration: line-through; }
 .eng-task-points { font-size: 9px; color: var(--eng-color, var(--primary-dark)); font-weight: 400; margin-right: 8px; font-family: var(--font-small); }
-.eng-task-note { padding: 2px 12px 10px; background: var(--eng-bg, var(--card)); }
+.eng-task-note { padding: 5px 12px 10px; background: var(--eng-bg, var(--card)); }
 .eng-task-note input {
   width: 100%; border: 1px solid var(--border-soft); border-radius: 8px; padding: 6px 10px;
   font-size: 11px; background: #fff; color: var(--text); outline: none;
@@ -6901,7 +6914,7 @@ select.pf-input {
   border-radius: 0;
   box-shadow: none;
   padding: 0;
-  margin-bottom: 18px;
+  margin-bottom: 26px;
 }
 
 /* ---------- 按钮更圆润柔和 ---------- */
@@ -7330,7 +7343,7 @@ select.pf-input {
   border-radius: 0;
   box-shadow: none;
   padding: 0;
-  margin-bottom: 18px;
+  margin-bottom: 26px;
 }
 
 /* ---------- 按钮更圆润柔和 ---------- */
