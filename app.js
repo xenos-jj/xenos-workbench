@@ -8206,10 +8206,8 @@ function renderOverview() {
       <div class="hp-qs-row">
         <div class="hp-qs-col">
           <span>${icon('star', 11)} 今日积分：<b>${todayPts}</b></span>
-          <span>${icon('check', 11)} 已完成：<b>${todayDone}</b></span>
         </div>
         <div class="hp-qs-col">
-          <span>${icon('sparkle', 11)} 本周积分：<b>${weekPts}</b></span>
           <span>${icon('chart', 11)} 本周进度：<b>${weekPct}%</b></span>
         </div>
       </div>
