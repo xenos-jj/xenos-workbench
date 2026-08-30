@@ -547,10 +547,7 @@ const DEFAULT_GROUPS = [
     collapsed: false,
     items: [
       { id: 'i-home', name: '工作台首页', icon: 'home' },
-      { id: 'i-review', name: '每日计划', icon: 'review', todo: true },
-      { id: 'i-money', name: '记账', icon: 'coins' },
-      { id: 'i-insight', name: '本周洞察', icon: 'insight' },
-      { id: 'i-branches', name: '我的支线', icon: 'layers' }
+      { id: 'i-money', name: '记账', icon: 'coins' }
     ]
   },
   {
@@ -569,8 +566,6 @@ const DEFAULT_GROUPS = [
     icon: 'star',
     collapsed: false,
     items: [
-      { id: 'i-book', name: '书籍阅读', icon: 'book' },
-      { id: 'i-study', name: '学习成长', icon: 'bookOpen' },
       { id: 'i-video-edit', name: '视频剪辑', icon: 'video' },
       { id: 'i-3d', name: '3D建模', icon: 'model3d' }
     ]
@@ -2137,7 +2132,8 @@ function loadGroups() {
       const parsed = JSON.parse(raw);
       if (parsed && parsed.version === SCHEMA_VERSION && Array.isArray(parsed.data)) {
       // v9176：人生领域分组移除 旅行体验 / 社交拓展 侧边栏入口
-      const removed = new Set(['历史', '内容素材库', '旅行体验', '社交拓展']);
+      // v9291：移除 每日计划 / 本周洞察 / 我的支线 / 书籍阅读 / 学习成长（仅删侧边栏导航，页面本体保留）
+      const removed = new Set(['历史', '内容素材库', '旅行体验', '社交拓展', '每日计划', '本周洞察', '我的支线', '书籍阅读', '学习成长']);
       parsed.data.forEach(g => {
         if (Array.isArray(g.items)) {
           g.items = g.items.filter(i => !removed.has(i.name));
