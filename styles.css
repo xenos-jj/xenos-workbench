@@ -4908,7 +4908,7 @@ svg text { font-family: var(--font-small) !important; }
   .stat-boxes { grid-template-columns: repeat(3, 1fr); gap: 8px; }
   .stat-box { padding: 14px 4px; min-height: 70px; }
   .stat-box .stb-val { font-size: 16px; }
-  .hp-mascot { width: 64px; height: 64px; }
+  .hp-mascot { width: 96px; height: 96px; }
   .reward-stats { grid-template-columns: repeat(3, 1fr); gap: 8px; }
   .profile-fields { grid-template-columns: 1fr; }
   .swot-grid { grid-template-columns: 1fr; }
@@ -5927,8 +5927,8 @@ select.pf-input {
 /* 首页吉祥物 */
 .hp-mascot {
   flex-shrink: 0;
-  width: 90px;
-  height: 90px;
+  width: 135px;
+  height: 135px;
   display: flex;
   align-items: center;
   justify-content: center;

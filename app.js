@@ -8186,10 +8186,9 @@ function renderOverview() {
     <div class="hp-top-block">
     <div class="hp-header">
       <div class="hp-greet-wrap">
-        <h2 class="hp-greet">${greeting}呀！<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#E8A24E" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;margin-left:4px"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg></h2>
+        <h2 class="hp-greet">${greeting}呀！</h2>
         <p class="hp-sub">愿你稳步向理想的自己靠近${icon('sparkle', 12)}</p>
         <div class="hp-weather" id="hp-weather">
-          <span class="hp-weather-icon">${weatherBunnyIconSVG()}</span>
           <span id="hp-weather-text">${weather}</span>
         </div>
       </div>
