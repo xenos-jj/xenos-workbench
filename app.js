@@ -13223,6 +13223,16 @@ function renderInsightPage() {
     return allStats.map(s => catCardHTML(s, !enabled.includes(s.id))).join('');
   }
 
+  function cardsHTML() {
+    if (!allStats.length) return '<div class="insp-empty">当前没有显示任何模块卡片，点击右上角「自定义」勾选要追踪的板块～</div>';
+    return allStats.map(s => catCardHTML(s, !enabled.includes(s.id))).join('');
+  }
+
+  function cardsHTML() {
+    if (!allStats.length) return '<div class="insp-empty">当前没有显示任何模块卡片，点击右上角「自定义」勾选要追踪的板块～</div>';
+    return allStats.map(s => catCardHTML(s, !enabled.includes(s.id))).join('');
+  }
+
   function heatmapHTML() {
     const header = '<div class="ih-row ih-header-row"><span></span><span></span>' + weekdayLabels.map(l => '<span class="ih-day">' + l + '</span>').join('') + '</div>';
     const rows = allStats.map(s => {
@@ -13248,6 +13258,12 @@ function renderInsightPage() {
     + '<div class="insp-mascot-img" title="xenos"><img src="images/3.png" alt="mascot"></div>'
     + '</div>'
     + '</div>'
+
+    + '<div class="insp-cards-grid" id="insp-cards-grid">' + cardsHTML() + '</div>'
+
+    + '<div class="insp-section"><div class="insp-section-head"><span class="insp-section-title"><span class="insp-sec-spark">' + icon('sparkle', 14) + '</span> 每周数据变化</span><span class="insp-section-more">相对趋势 · 可同时勾选多个</span></div>'
+    + '<div class="insp-line-card combined-line-card"><div class="insp-line-wrap" id="insp-line-wrap"></div><div class="insp-line-legend" id="insp-line-legend">' + allStats.map(legendItemHTML).join('') + '</div></div></div>'
+
     + '<div class="insp-section"><div class="insp-section-head"><span class="insp-section-title"><span class="insp-sec-heart">' + icon('heart', 14) + '</span> 习惯完成热力图</span><span class="insp-heat-legend"><i class="ht-low"></i><i class="ht-mid"></i><i class="ht-high"></i>完成度 低 → 高</span></div>'
     + '<div class="insp-heatmap-wrap"><div class="insp-heatmap-grid insp-heat-grid2" id="insp-heatmap-grid">' + heatmapHTML() + '</div></div></div>'
 
