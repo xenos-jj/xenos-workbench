@@ -3899,6 +3899,14 @@ function backHeadHTML(title, fallback) {
 
 // 统一行为：有导航历史 → 回上一级（并恢复其滚动位置）；无历史 → 兜底页面
 function handleBackButton(fallback) {
+  // v9303：记账明细页 → 父页面 ← 键 = 先回总览（同页），不直接退出整个记账页
+  if (state.activeItem === '记账' && state.moneyView === 'detail') {
+    state.moneyView = 'overview';
+    state.selectedDate = null;
+    state._pendingScrollY = window.scrollY || document.documentElement.scrollTop || 0;
+    refreshMoneyView();
+    return;
+  }
   if (state.navStack.length) { goBack(); return; }
   if (fallback) { selectItem(fallback); return; }
   selectItem('工作台首页');
@@ -4540,6 +4548,12 @@ function refreshMoneyView() {
   } else {
     renderMoney();
   }
+  // v9303：恢复进入明细前的滚动位置（避免回总览跳到顶部）
+  if (state._pendingScrollY != null) {
+    const y = state._pendingScrollY;
+    state._pendingScrollY = null;
+    requestAnimationFrame(() => window.scrollTo(0, y));
+  }
 }
 
 let moneyMount = null;
@@ -4952,11 +4966,12 @@ function renderMoneyDetail(card, dateKey) {
   const expense = getDayExpense(dateKey);
   const income = getDayIncome(dateKey);
   const over = expense > state.budget;
+  // v9303：进入明细前保存滚动位置，refreshMoneyView 后恢复（避免返回总览跳到顶部）
+  state._pendingScrollY = window.scrollY || document.documentElement.scrollTop || 0;
 
   card.innerHTML = `
     <div class="money-detail-header">
       <div class="md-title">${formatShortDate(new Date(dateKey))}</div>
-      <button class="md-back-overview" id="back-cal" type="button">← 总览</button>
     </div>
 
     <div class="money-total-card md-card">
@@ -5013,12 +5028,6 @@ function renderMoneyDetail(card, dateKey) {
     </div>
   `;
   (moneyMount || content).appendChild(card);
-
-  card.querySelector('#back-cal').addEventListener('click', () => {
-    state.moneyView = 'overview';
-    state.selectedDate = null;
-    refreshMoneyView();
-  });
 
   // 删除交易
   card.querySelector('#tx-list').addEventListener('click', (e) => {
