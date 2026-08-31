@@ -3609,15 +3609,9 @@ function selectItem(name, skipHistory = false) {
   renderMobileTabs();
   updateBottomNav();
   renderTopbar();
-  // v9312 滚动位置修复：仅当目标页 scrollMemory 有值时恢复（确保新页面默认顶部加载）；
-  // 没值时（首次访问）=0+_pendingScrollY=null，不触发 restoreScroll，避免乱跳。
-  if (fromPage !== name && scrollMemory[name] != null) {
-    const targetTop = scrollMemory[name];
-    content.scrollTop = targetTop;
-    state._pendingScrollY = targetTop;
-    requestAnimationFrame(() => { content.scrollTop = targetTop; });
-  } else {
-    // 新页面/首次访问：强制 scrollTop=0，_pendingScrollY 清空（防御性，避免残留值乱跳）
+  // v9315 滚动位置硬性规则：进入新页面一律重置顶部（不继承 scrollMemory 旧值——避免「曾经访问过的页面重打开跳到中间/底部」）；
+  // 只有点击左上角返回键（handleBackButton）才设 _pendingScrollY 恢复旧位置。
+  if (fromPage !== name) {
     content.scrollTop = 0;
     state._pendingScrollY = null;
   }
@@ -3666,6 +3660,8 @@ function finishBack() {
   if (!state.navStack.length) return;
   lastBackAt = Date.now(); // 任何返回路径（箭头/JS 手势/popstate）都刷新时间锁，防同一次滑动手势双返回
   const prev = state.navStack.pop();
+  // v9315：内部返回——设 _pendingScrollY 让 renderContent 末尾 restoreScroll 恢复 prev 页位置（selectItem 进入新页面永远重置顶部，例外走 skipScrollReset）
+  state._pendingScrollY = scrollMemory[prev] != null ? scrollMemory[prev] : 0;
   selectItem(prev, true);
 }
 // 系统返回通道：浏览器左边缘右滑 / Android 返回键 / iOS 边缘滑动
