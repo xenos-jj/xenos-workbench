@@ -4641,9 +4641,6 @@ function renderMoney(opts) {
       <div class="budget-bar">
         <div class="budget-bar-fill ${todayOver ? 'over' : ''}" style="width:${budgetPct}%"></div>
       </div>
-      <div class="budget-hint ${todayOver ? 'over' : ''}">
-        ${todayOver ? `今日已超预算 ¥${formatMoney(todayExpense - state.budget)}，积分 -${overrunPoints(todayExpense - state.budget)}` : (state.budget > 0 ? '今日未超预算，可获得 +1 积分' : '未设置预算，仅记录支出')}
-      </div>
     </div>
 
     <div class="section-card">
@@ -4817,7 +4814,6 @@ function renderAssetAccounts() {
       <div class="asset-actions">
         <button class="gold-btn" id="asset-save" style="flex:1">保存</button>
       </div>
-      <p class="asset-tip">美团月付等负债账户输入正数会自动记为负值，从总资产中扣除。</p>
     </div>
   `;
   document.body.appendChild(overlay);
@@ -4979,9 +4975,6 @@ function renderMoneyDetail(card, dateKey) {
       <div class="mt-row" style="margin-top:0">
         <div class="mt-col"><span class="mt-col-label">支出</span><span class="mt-col-val expense">-¥${formatMoney(expense)}</span></div>
         <div class="mt-col"><span class="mt-col-label">收入</span><span class="mt-col-val income">+¥${formatMoney(income)}</span></div>
-      </div>
-      <div class="budget-hint ${over ? 'over' : ''}" style="margin-top:10px">
-        ${over ? `超出预算 ¥${formatMoney(expense - state.budget)} · 积分 -${overrunPoints(expense - state.budget)}` : `未超预算 · 积分 +5`}
       </div>
     </div>
 
@@ -6463,7 +6456,6 @@ function renderDiet() {
         <div class="diet-flat-treat-list" id="dp-treat-list"></div>
         ${isToday ? `<div class="diet-flat-treat-add-row"><input type="text" class="diet-flat-treat-input" id="dp-treat-input" placeholder="如 一块小蛋糕"><button class="diet-flat-treat-add-btn" id="dp-treat-add">添加</button></div>` : ''}
       </div>
-      <p class="diet-flat-tip">允许吃喜欢的食物，重点是整体节奏，不是每一顿都完美。</p>
     </section>
 
     <!-- 4. 饮食花费：扁平两列 -->
@@ -8701,7 +8693,6 @@ function renderLooksPostureHTML(today) {
   const types = r.trainingTypes.map(t => `<button class="lk-tag ${c.trainings && c.trainings[t] ? 'on' : ''}" data-pose-type="${t}">${t}</button>`).join('');
   const tasks = r.tasks.map(t => `<div class="lk-task ${td[t.id] ? 'done' : ''}" data-post-task="${t.id}"><span class="lk-check">${td[t.id] ? icon('check', 11) : ''}</span><span class="lk-text">${escapeHTML(t.text)}</span><span class="lk-pts">+${t.points}</span></div>`).join('');
   const mins = c.duration || (c.trainings ? Object.values(c.trainings).reduce((s, v) => s + (v | 0), 0) : 0);
-  const tips = r.tips.slice(0, 3).map(t => `<div class="lk-tip">${icon('leaf', 12)} <span>${escapeHTML(t)}</span></div>`).join('');
   return `
     <div class="lk-card">
       <div class="lk-card-title">${icon('check', 14)} 今日仪态打卡<span class="lk-meta" data-lk-meta>+${getLooksTodayPts('posture')} 分</span></div>
@@ -13058,9 +13049,9 @@ function catCardHTML(s, hidden) {
     + '<div class="insp-cat-head"><span class="insp-cat-ic" style="background:' + s.bg + ';color:' + s.color + '">' + icon(s.icon, 16) + '</span>'
     + '<span class="insp-cat-name">' + s.name + '</span><span class="insp-cat-go">›</span></div>'
     + '<div class="insp-cat-metrics">'
-    + '<div class="insp-cm"><div class="insp-cm-val">' + s.items + '<span class="insp-cm-unit">项</span></div><div class="insp-cm-label">完成总项 ' + deltaBadge(s.items, s.itemsLast, '项') + '</div></div>'
-    + '<div class="insp-cm"><div class="insp-cm-val">' + Math.round(s.metric) + '<span class="insp-cm-unit">' + s.metricUnit + '</span></div><div class="insp-cm-label">' + s.metricName + ' ' + deltaBadge(s.metric, s.metricLast, s.metricUnit) + '</div></div>'
-    + '<div class="insp-cm"><div class="insp-cm-val">' + s.avg + '<span class="insp-cm-unit">' + s.avgUnit + '</span></div><div class="insp-cm-label">' + s.avgName + '</div></div>'
+    + '<div class="insp-cm"><div class="insp-cm-val">' + s.items + '<span class="insp-cm-unit">项</span></div></div>'
+    + '<div class="insp-cm"><div class="insp-cm-val">' + Math.round(s.metric) + '<span class="insp-cm-unit">' + s.metricUnit + '</span></div></div>'
+    + '<div class="insp-cm"><div class="insp-cm-val">' + s.avg + '<span class="insp-cm-unit">' + s.avgUnit + '</span></div></div>'
     + '</div></div>';
 }
 
@@ -13109,11 +13100,10 @@ function openInsightDetail(s) {
   const weekdayLabels = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
   const dailyRows = weekdayLabels.map((d, i) => '<div class="insp-dt-row"><span class="insp-dt-day">' + d + '</span><span class="insp-dt-bar"><i style="width:' + barPct(s.daily[i], s.daily) + '%;background:' + s.color + '"></i></span><span class="insp-dt-val">' + fmtMetric(s.daily[i], s.metricUnit) + '</span><span class="insp-dt-items">' + s.dailyItems[i] + ' 项</span></div>').join('');
   const body = '<div class="insp-dt-head"><span class="insp-dt-ic" style="background:' + s.bg + ';color:' + s.color + '">' + icon(s.icon, 18) + '</span><div><div class="insp-dt-name">' + s.name + ' · 本周详情</div><div class="insp-dt-sub">' + shiftDate(s.weekStart, 0).slice(5) + ' ~ ' + shiftDate(s.weekStart, 6).slice(5) + '</div></div></div>'
-    + '<div class="insp-dt-nums"><div><b>' + s.items + ' 项</b><span>完成总项</span></div><div><b>' + Math.round(s.metric) + ' ' + s.metricUnit + '</b><span>' + s.metricName + '</span></div><div><b>' + s.avg + ' ' + s.avgUnit + '</b><span>' + s.avgName + '</span></div></div>'
-    + '<div class="insp-dt-cmp">较上周：完成 ' + deltaBadge(s.items, s.itemsLast, '项') + ' · ' + s.metricName + ' ' + deltaBadge(s.metric, s.metricLast, s.metricUnit) + '</div>'
+    + '<div class="insp-dt-nums"><div><b>' + s.items + ' 项</b></div><div><b>' + Math.round(s.metric) + ' ' + s.metricUnit + '</b></div><div><b>' + s.avg + ' ' + s.avgUnit + '</b></div></div>'
+    + '<div class="insp-dt-cmp">较上周：完成 ' + deltaBadge(s.items, s.itemsLast, '项') + ' · ' + deltaBadge(s.metric, s.metricLast, s.metricUnit) + '</div>'
     + '<div class="insp-dt-chart">' + weeklyLineChart(s.daily, s.color, s.metricUnit) + '</div>'
-    + '<div class="insp-dt-list">' + dailyRows + '</div>'
-    + '<p class="insp-dt-tip">本页仅作数据展示，打卡与记录请回到对应的工作台页面完成。</p>';
+    + '<div class="insp-dt-list">' + dailyRows + '</div>';
   openInsightSheet('', body);
 }
 
