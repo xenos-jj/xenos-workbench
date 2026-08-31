@@ -3460,8 +3460,8 @@ function renderMenu() {
           return;
         }
         clearActiveActions();
-        selectItem(item.name);
-        closeSidebar();
+        // v9316：try-finally 保证任何条目点击都关闭侧边栏——之前外貌等条目在 selectItem 异常时 closeSidebar 漏调用导致不收起
+        try { selectItem(item.name); } finally { closeSidebar(); }
       });
       setupLongPress(itemEl, () => showActions(itemEl));
       itemsEl.appendChild(itemEl);
