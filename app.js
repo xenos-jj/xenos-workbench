@@ -3617,7 +3617,8 @@ function selectItem(name, skipHistory = false) {
   if (fromPage !== name) {
     const targetTop = scrollMemory[name] || 0;
     content.scrollTop = targetTop;
-    // 异步布局（图片/字体加载导致高度变化）后再校准一次，避免被顶部钳制
+    // v9308：让 renderContent 末尾 restoreScroll() 也兜底（setTimeout(0)+rAF 双保险，应对 DOM 高度异步变化导致 scrollTop 被钳制）
+    state._pendingScrollY = targetTop;
     requestAnimationFrame(() => { content.scrollTop = targetTop; });
   }
 }
