@@ -8224,7 +8224,7 @@ function renderOverview() {
       </div>
     </div>
 
-    <div class="hp-section-title" style="margin-top: -70px">今日概览</div>
+    <div class="hp-section-title" style="margin-top: -50px">今日概览</div>
     <div class="hp-rings">
       ${overviewRingHTML(habitPct, 'ring-peach', habitIcon, '每日计划', habitPct + '%', habitVal, '#E8B4A8', '每日计划')}
       ${overviewRingHTML(sleepPct, 'ring-purple', sleepIcon, '睡眠', sleepPct + '%', sleepVal, '#B8AAD8', '睡眠管理')}
@@ -8232,7 +8232,7 @@ function renderOverview() {
       ${overviewRingHTML(langPct, 'ring-purple', langIcon, '学英语', langPct + '%', langVal, '#8978C3', '学习成长')}
     </div>
 
-    <div class="hp-section-title" style="margin-top: 6px">今日主任务 <button class="hmt-add" id="hmt-add" title="添加主任务">+</button></div>
+    <div class="hp-section-title" style="margin-top: 26px">今日主任务 <button class="hmt-add" id="hmt-add" title="添加主任务">+</button></div>
     <div class="hp-main-task">
       <div class="hmt-list">
         ${mainTaskList.length ? mainTaskList.map((t, i) => {
@@ -8275,7 +8275,7 @@ function renderOverview() {
 
 
     <div class="hp-quick">
-      <div class="hp-section-title">${icon('zap', 14)} 快速记录</div>
+      <div class="hp-section-title" style="margin-top: 66px">${icon('zap', 14)} 快速记录</div>
       <div class="hp-quick-grid">
         <button class="hp-quick-btn hp-qb-sport" data-qr="sport"><span class="hq-icon hq-sport">${icon('dumbbell', 15)}</span><span class="hq-label">记运动</span></button>
         <button class="hp-quick-btn hp-qb-sleep" data-qr="sleep"><span class="hq-icon hq-sleep">${icon('moon', 15)}</span><span class="hq-label">记睡眠</span></button>
