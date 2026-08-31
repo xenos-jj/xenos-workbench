@@ -641,8 +641,8 @@ svg text { font-family: var(--font-small) !important; }
 }
 .topbar-back:hover { background: transparent; color: var(--gold-deep); }
 .topbar-back:active { transform: scale(0.94); }
-/* 页面内已放置统一返回控件 → 顶栏箭头隐藏，保证每屏只有一个返回入口 */
-.topbar.has-page-back .topbar-back { display: none !important; }
+/* v9313：顶部顶栏 < 返回箭头为唯一返回键（user 硬性规则）—— 不再被页面内 sub-page-head 隐藏 */
+/* 顶栏返回箭头显示逻辑由 app.js renderTopbar 控制：BACK_ROOT_PAGES（首页/设置等顶层页面）= 隐藏，其他页面 = 显示 */
 
 .page-title {
   flex: 1;
@@ -6623,7 +6623,9 @@ select.pf-input {
 .study-goal h4 { margin: 0 0 4px; font-size: 14px; }
 .study-goal .sg-sub { font-size: 11px; color: var(--text-muted); margin: 0 0 8px; }
 .study-goal .sg-streak { font-size: 11px; color: var(--purple); font-weight: 600; }
+/* v9313：sub-page-head 去掉返回键后——只保留标题，布局简化为 block */
 .sub-page-head { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.sub-page-head .sub-title { margin: 0; }
 .sub-back-btn,
 .xn-back-btn {
   width: 34px; height: 34px;

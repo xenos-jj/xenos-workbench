@@ -3035,7 +3035,7 @@ function closeSidebar() {
 
 menuToggle.addEventListener('click', openSidebar);
 const topbarBack = document.getElementById('topbar-back');
-if (topbarBack) topbarBack.addEventListener('click', () => goBack());
+if (topbarBack) topbarBack.addEventListener('click', () => handleBackButton(''));
 overlay.addEventListener('click', () => {
   clearActiveActions();
   closeSidebar();
@@ -3094,11 +3094,8 @@ function renderTopbar() {
   if (!greetLine) return;
 
   if (topbar) topbar.classList.remove('branches-topbar');
-  // 页面内已有统一返回控件时，隐藏顶栏箭头，避免同一屏出现两个返回按钮
-  if (topbar) topbar.classList.toggle('has-page-back', !!(content && content.querySelector('.xn-back-btn')));
-  // 首页、设置等顶层入口不需要顶栏返回箭头
-  const hideTopbarBackPages = ['工作台首页', '设置'];
-  if (topbarBack) topbarBack.style.display = hideTopbarBackPages.includes(state.activeItem) ? 'none' : '';
+  // v9313：顶栏返回箭头是工作台唯一返回按钮——按 BACK_ROOT_PAGES（首页/我的支线/本周洞察/自我介绍/设置）隐藏，其他页面显示
+  if (topbarBack) topbarBack.style.display = BACK_ROOT_PAGES.has(state.activeItem) ? 'none' : '';
   greetLine.textContent = `${getGreeting()}，${state.settings.userName}`;
   greetLine.classList.remove('branches-page-title');
   if (greetDate) {
@@ -3887,8 +3884,8 @@ const PAGE_BACK_FALLBACK = {
   '3D建模': '学习成长'
 };
 
-// 不需要返回按钮的顶层页面（底部导航四个主标签页 + 首页）
-const BACK_ROOT_PAGES = new Set(['工作台首页', '我的支线', '本周洞察', '自我介绍']);
+// v9313：顶层入口（无上一级页面）= 顶栏返回箭头自动隐藏
+const BACK_ROOT_PAGES = new Set(['工作台首页', '我的支线', '本周洞察', '自我介绍', '设置']);
 
 // 生成统一返回按钮；fallback 为无历史时的兜底页面名
 function backButtonHTML(fallback) {
@@ -3896,9 +3893,9 @@ function backButtonHTML(fallback) {
   return `<button class="sub-back-btn xn-back-btn" type="button" aria-label="返回"${fb}>${BACK_ARROW_SVG}</button>`;
 }
 
-// 生成「返回 + 标题」的页面头部
+// v9313：sub-page-head 不再含返回按钮（顶部顶栏 < 才是唯一返回键）；只放标题
 function backHeadHTML(title, fallback) {
-  return `<div class="sub-page-head xn-page-head">${backButtonHTML(fallback)}<h3 class="sub-title">${title}</h3></div>`;
+  return `<div class="sub-page-head xn-page-head"><h3 class="sub-title">${title}</h3></div>`;
 }
 
 // 统一行为：有导航历史 → 回上一级（并恢复其滚动位置）；无历史 → 兜底页面
@@ -3926,42 +3923,14 @@ function initGlobalBackButtons() {
   });
 }
 
-// 兜底注入：页面渲染后若仍没有统一返回控件，自动补上（禁止任何页面缺失返回键）
-const BACK_HEAD_SELECTORS = ['.sub-page-head', '.br-page-head', '.domain-head', '.module-hero'];
+// v9313：删除 ensureBackControl 兜底插入逻辑——顶栏 < 箭头是工作台唯一返回键（用户硬性规则：仅顶部左上角 1 个返回按钮），不再向页面内兜底插入任何 < 按钮
 function ensureBackControl() {
-  if (!content) return;
-  const page = state.activeItem;
-  if (BACK_ROOT_PAGES.has(page)) return;
-  if (content.querySelector('.xn-back-btn')) return;
-  const fallback = SUB_PAGE_PARENT[page] || PAGE_BACK_FALLBACK[page] || '工作台首页';
-  // 页面已有标题行 → 只补返回按钮（避免出现重复标题）
-  let host = null;
-  for (let i = 0; i < BACK_HEAD_SELECTORS.length; i++) {
-    host = content.querySelector(BACK_HEAD_SELECTORS[i]);
-    if (host) break;
-  }
-  if (host) {
-    host.insertAdjacentHTML('afterbegin', backButtonHTML(fallback));
-    return;
-  }
-  // 页面自身已有标题 → 把返回按钮插到该标题前，避免重复标题
-  const heading = content.querySelector('h1, h2, h3, h4');
-  if (heading && heading.parentElement) {
-    heading.insertAdjacentHTML('beforebegin', backButtonHTML(fallback));
-    const row = heading.parentElement;
-    if (row && getComputedStyle(row).display === 'block') {
-      row.style.display = 'flex';
-      row.style.alignItems = 'center';
-      row.style.gap = '10px';
-    }
-    return;
-  }
-  // 没有标题行 → 生成标准的「返回 + 页面标题」头部
-  const head = document.createElement('div');
-  head.className = 'sub-page-head xn-page-head';
-  head.innerHTML = backButtonHTML(fallback) + `<h3 class="sub-title">${escapeHTML(page)}</h3>`;
-  content.insertBefore(head, content.firstChild);
+  // 保留函数壳（被 4 处 renderContent 末尾调用），但什么都不做——避免大规模重构调用方
+  return;
 }
+const BACK_HEAD_SELECTORS = ['.sub-page-head', '.br-page-head', '.domain-head', '.module-hero'];
+const _ensureBackControl_legacy = function() { /* v9313 弃用 */ };
+_ensureBackControl_legacy.toString = () => 'disabled v9313';
 
 // 全局：把所有可见文本中的阿拉伯数字 0 与百分号 % 包裹为 <span class="zpct">，
 // 使其字重（600）与进度环数字 .mr-num 一致；仅设置字重，颜色沿用父级，不改变既有颜色。
@@ -11884,7 +11853,6 @@ function renderStudyPage() {
 
   page.innerHTML = `
     <div class="sub-page-head">
-      ${backButtonHTML('我的支线')}
       <h3 class="sub-title">英语 <span class="sub-spark">${icon('sparkle', 14)}</span></h3>
     </div>
 
@@ -12072,7 +12040,6 @@ function renderLifeOrderPage() {
 
   page.innerHTML = `
     <div class="sub-page-head">
-      ${backButtonHTML('我的支线')}
       <h3 class="sub-title">生活秩序 <span class="sub-spark">${icon('sparkle', 14)}</span></h3>
     </div>
     ${dateBarHTML(viewKey, { id: 'order-date-trigger' })}
@@ -12188,7 +12155,6 @@ function renderInnerGrowthPage() {
 
   page.innerHTML = `
     <div class="sub-page-head">
-      ${backButtonHTML('我的支线')}
       <h3 class="sub-title">内在成长 <span class="sub-spark">${icon('sparkle', 14)}</span></h3>
     </div>
     ${dateBarHTML(viewKey, { id: 'growth-date-trigger' })}
@@ -12325,7 +12291,6 @@ function renderTravelPage() {
 
   page.innerHTML = `
     <div class="sub-page-head">
-      ${backButtonHTML('我的支线')}
       <h3 class="sub-title">旅行体验 <span class="sub-spark">${icon('sparkle', 14)}</span></h3>
     </div>
 
@@ -12566,7 +12531,6 @@ function renderTravelCheckinPage() {
 
   page.innerHTML = `
     <div class="sub-page-head">
-      ${backButtonHTML('旅行体验')}
       <h3 class="sub-title">地点打卡 <span class="sub-spark">${icon('flag', 14)}</span></h3>
     </div>
 
@@ -12726,7 +12690,6 @@ function renderSocialPage() {
 
   page.innerHTML = `
     <div class="sub-page-head">
-      ${backButtonHTML('我的支线')}
       <h3 class="sub-title">社交拓展 <span class="sub-spark">${icon('sparkle', 14)}</span></h3>
     </div>
 
@@ -13359,7 +13322,6 @@ function renderProjectPage() {
 
   page.innerHTML = `
     <div class="sub-page-head">
-      ${backButtonHTML('我的支线')}
       <h3 class="sub-title">项目计划 <span class="sub-spark">${icon('sparkle', 14)}</span></h3>
       <span class="sub-more" title="更多" hidden>⋯</span>
     </div>
@@ -13764,7 +13726,6 @@ function slowPageHead(cfg) {
   const m = state[cfg.key] || {};
   const on = !!m.enabled;
   return `<div class="slow-head">
-    ${backButtonHTML('我的支线')}
     <h3 class="slow-title">${cfg.title}</h3>
     <button class="slow-insight-toggle${on ? ' on' : ''}" data-insight-toggle="${cfg.key}" title="是否纳入本周洞察统计">${icon('chart', 13)}<span>${on ? '已统计' : '统计'}</span></button>
   </div>`;
