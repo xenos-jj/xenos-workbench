@@ -139,8 +139,9 @@ button, input {
    新增组件约定：小字用 var(--font-small)；禁止私自把数字/小字改成草莓字体。*/
 .xn-num { font-family: var(--font-small) !important; }   /* 数字默认站酷快乐体（含组合数字 / 日期 / 带前后符号） */
 .xn-num0 { font-family: var(--font) !important; }        /* 仅「孤立单独的 0」用草莓字体 */
-/* 输入框提示文字（含其中的数字）统一站酷快乐体，与「小字 / 数字」规则一致 */
-input::placeholder, textarea::placeholder { font-family: var(--font-small) !important; }
+/* 输入框提示文字（含其中的数字）统一站酷快乐体，与「小字 / 数字」规则一致；v9304 颜色对齐工作台风格 + 视觉居中 */
+input::placeholder, textarea::placeholder { font-family: var(--font-small) !important; color: var(--text-muted) !important; }
+textarea.pf-input { padding: 8px 10px; min-height: 32px; resize: vertical; }
 /* SVG 图表内的数字 / 日期标签（趋势图 x/y 轴）同样遵循数字→站酷快乐体规则 */
 svg text { font-family: var(--font-small) !important; }
 
@@ -9104,18 +9105,22 @@ select.pf-input {
 .lk-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--border-soft); border: 1px solid var(--border-soft); }
 .lk-dot.on { background: var(--primary); border-color: var(--primary); }
 .lk-week-extra { font-size: 9.5px; color: var(--text-muted); margin-top: 6px; font-family: var(--font-small); }
-/* ============ v9267 饮食页瘦身 + v9274 去卡片化 ============ */
+/* v9304：饮食页恢复轻量独立卡片（user 改主意：底色删 + 不同模块用不同卡片划分 + 卡片距离符合本工作台 26px 标准） */
 .diet-flat {
   padding: 0 0 20px;
+  background: transparent;
 }
 .diet-flat .domain-hero { margin-bottom: 8px; }
 
-/* v9274：去卡片化（用户反馈"模块间底色删掉"）—— 纯 border-top 分隔线，回归 v9267 极简风 */
 .diet-flat-section {
-  padding: 14px 0 10px;
-  border-top: 1px solid var(--border-soft);
+  background: var(--card);
+  border: 1px solid var(--border-soft);
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 26px;
+  box-shadow: none;
 }
-.diet-flat-section:first-of-type { border-top: none; padding-top: 8px; }
+.diet-flat-section:first-of-type { border-top: 1px solid var(--border-soft); }
 .diet-flat-head {
   display: flex; align-items: center; gap: 6px;
   font-size: 12px; font-weight: 700; color: var(--text);
@@ -9313,18 +9318,22 @@ select.pf-input {
   .diet-flat-wi-grid { grid-template-columns: 1fr; }
   .diet-flat-dwa-stats { grid-template-columns: repeat(2, 1fr); }
 }
-/* ============ v9267 饮食页瘦身 + v9274 去卡片化 ============ */
+/* v9304：饮食页恢复轻量独立卡片（user 改主意：底色删 + 不同模块用不同卡片划分 + 卡片距离符合本工作台 26px 标准） */
 .diet-flat {
   padding: 0 0 20px;
+  background: transparent;
 }
 .diet-flat .domain-hero { margin-bottom: 8px; }
 
-/* v9274：去卡片化（用户反馈"模块间底色删掉"）—— 纯 border-top 分隔线，回归 v9267 极简风 */
 .diet-flat-section {
-  padding: 14px 0 10px;
-  border-top: 1px solid var(--border-soft);
+  background: var(--card);
+  border: 1px solid var(--border-soft);
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 26px;
+  box-shadow: none;
 }
-.diet-flat-section:first-of-type { border-top: none; padding-top: 8px; }
+.diet-flat-section:first-of-type { border-top: 1px solid var(--border-soft); }
 .diet-flat-head {
   display: flex; align-items: center; gap: 6px;
   font-size: 12px; font-weight: 700; color: var(--text);
