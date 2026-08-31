@@ -8212,8 +8212,6 @@ function renderOverview() {
       </div>
     </div>
 
-    </div>
-
     <div class="hp-quick-stats">
       <div class="hp-qs-row">
         <div class="hp-qs-col">
@@ -8223,6 +8221,8 @@ function renderOverview() {
           <span>${icon('chart', 11)} 本周进度：<b>${weekPct}%</b></span>
         </div>
       </div>
+    </div>
+
     </div>
 
     <div class="hp-section-title" style="margin-top: -50px">今日概览</div>
