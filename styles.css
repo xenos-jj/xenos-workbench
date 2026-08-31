@@ -5244,18 +5244,22 @@ select.pf-input {
   gap: 12px;
   margin-bottom: 12px;
 }
-.asset-back {
+/* v9312：删除 asset-back 样式（弹层内部返回键，按 user 硬性规则仅允许顶部唯一返回） */
+.asset-close {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  justify-content: center;
   border: none;
   background: transparent;
   color: var(--text-muted);
-  font-size: 11px;
+  font-size: 22px;
+  font-weight: 300;
   cursor: pointer;
-  padding: 4px;
+  padding: 0 8px;
+  margin-left: auto;
+  line-height: 1;
 }
-.asset-back:hover { color: var(--text); }
+.asset-close:hover { color: var(--text); }
 .asset-title {
   font-size: 13px;
   font-weight: 700;

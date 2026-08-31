@@ -3612,14 +3612,17 @@ function selectItem(name, skipHistory = false) {
   renderMobileTabs();
   updateBottomNav();
   renderTopbar();
-  // 滚动位置记忆：恢复到目标页面离开时的停留位置；首次进入则停在顶部。
-  // 同页重渲染（fromPage===name）不改动滚动位置。
-  if (fromPage !== name) {
-    const targetTop = scrollMemory[name] || 0;
+  // v9312 滚动位置修复：仅当目标页 scrollMemory 有值时恢复（确保新页面默认顶部加载）；
+  // 没值时（首次访问）=0+_pendingScrollY=null，不触发 restoreScroll，避免乱跳。
+  if (fromPage !== name && scrollMemory[name] != null) {
+    const targetTop = scrollMemory[name];
     content.scrollTop = targetTop;
-    // v9308：让 renderContent 末尾 restoreScroll() 也兜底（setTimeout(0)+rAF 双保险，应对 DOM 高度异步变化导致 scrollTop 被钳制）
     state._pendingScrollY = targetTop;
     requestAnimationFrame(() => { content.scrollTop = targetTop; });
+  } else {
+    // 新页面/首次访问：强制 scrollTop=0，_pendingScrollY 清空（防御性，避免残留值乱跳）
+    content.scrollTop = 0;
+    state._pendingScrollY = null;
   }
 }
 
@@ -4824,16 +4827,18 @@ function renderMoney(opts) {
   });
 }
 
-// 资产账户管理（总资产卡片点击进入）
+// 资产账户管理（总资产卡片点击进入——v9312：弹层去掉内部返回键，按 user 硬性规则）
 function renderAssetAccounts() {
   const total = calcAssetTotal();
   const overlay = document.createElement('div');
   overlay.className = 'asset-overlay';
+  // v9312：弹层去除内部返回键（user 规则：仅顶部左上角唯一返回）；保存当前 scrollY 以便 close 后回到原位置
+  const _savedScrollY = content.scrollTop || window.scrollY || document.documentElement.scrollTop || 0;
   overlay.innerHTML = `
     <div class="asset-panel">
       <div class="asset-header">
-        <button class="sub-back-btn asset-back" id="asset-back" type="button" aria-label="返回">${BACK_ARROW_SVG}</button>
         <h3 class="asset-title">资产账户</h3>
+        <button class="asset-close" id="asset-close" type="button" aria-label="关闭">×</button>
       </div>
       <div class="asset-total">
         <div class="asset-total-label">总资产（元）</div>
@@ -4867,9 +4872,14 @@ function renderAssetAccounts() {
 
   function close() {
     overlay.remove();
+    // v9312：关闭弹层后恢复原记账页滚动位置（避免跳到顶部）
+    requestAnimationFrame(() => {
+      content.scrollTop = _savedScrollY;
+      window.scrollTo(0, _savedScrollY);
+    });
   }
 
-  overlay.querySelector('#asset-back').addEventListener('click', close);
+  overlay.querySelector('#asset-close').addEventListener('click', close);
   overlay.addEventListener('click', (e) => {
     if (e.target === overlay) close();
   });
@@ -4889,7 +4899,6 @@ function renderAssetAccounts() {
     state.money.total = calcAssetTotal();
     saveMoney();
     close();
-    refreshMoneyView();
     renderProfileCard();
     renderTopbar();
   });
