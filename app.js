@@ -4053,15 +4053,22 @@ function renderContent() {
 }
 
 // v9306：渲染完成后恢复"进入子视图前"保存的滚动位置（记账明细→总览等内部视图切换、以及所有返回场景），避免回顶部
+// v9311：多轮重试——content.scrollHeight 在图片/字体加载完后才稳定，多次尝试直到 scrollHeight 够用
 function restoreScroll() {
   if (state._pendingScrollY == null) return;
   const y = state._pendingScrollY;
   state._pendingScrollY = null;
-  setTimeout(() => {
-    content.scrollTop = y;
-    window.scrollTo(0, y);
-    requestAnimationFrame(() => { content.scrollTop = y; window.scrollTo(0, y); });
-  }, 0);
+  const trySet = () => {
+    if (Math.abs(content.scrollTop - y) > 1 && content.scrollHeight > y) {
+      content.scrollTop = y;
+    }
+  };
+  // 同步 + rAF + 50ms + 200ms + 500ms 共 5 次（应对字体/图片异步加载）
+  trySet();
+  requestAnimationFrame(trySet);
+  setTimeout(() => requestAnimationFrame(trySet), 50);
+  setTimeout(() => requestAnimationFrame(trySet), 200);
+  setTimeout(() => requestAnimationFrame(trySet), 500);
 }
 
 // Daily plan
