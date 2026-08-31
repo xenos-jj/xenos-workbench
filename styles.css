@@ -5438,14 +5438,15 @@ select.pf-input {
 /* ---- 身体数据卡片网格（图4 / 健身页 两格模式） ---- */
 .body-grid-2 { grid-template-columns: repeat(2, 1fr); gap: 10px; }
 .body-grid-3 { grid-template-columns: repeat(3, 1fr); gap: 10px; }
-.body-card-fitness { background: linear-gradient(135deg, #F5FBF8 0%, #F1F6F2 100%); }
+/* v9307：取消多余边框底色——body-card-fitness 渐变 + body-cell 浅色背景 + 阴影全部去掉，保留边框/圆角/padding 作为独立小卡标识 */
+.body-card-fitness { background: transparent; }
 .body-cell {
-  background: #FBFDFC;
+  background: transparent;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   padding: 10px 6px;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.02);
-  transition: transform .12s ease, box-shadow .12s ease;
+  box-shadow: none;
+  transition: transform .12s ease;
 }
 .body-cell:hover { transform: translateY(-1px); box-shadow: 0 3px 8px rgba(0,0,0,0.05); }
 .body-cell[data-edit] { cursor: pointer; }
