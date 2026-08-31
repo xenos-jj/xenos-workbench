@@ -4011,6 +4011,7 @@ function renderContent() {
     route();
     ensureBackControl();
     boldZeroPct(content);
+    restoreScroll();
     return;
   }
 
@@ -4031,6 +4032,7 @@ function renderContent() {
     renderDomainPage(state.activeItem);
     ensureBackControl();
     boldZeroPct(content);
+    restoreScroll();
     return;
   }
 
@@ -4046,6 +4048,19 @@ function renderContent() {
   content.appendChild(card);
   ensureBackControl();
   boldZeroPct(content);
+  restoreScroll();
+}
+
+// v9306：渲染完成后恢复"进入子视图前"保存的滚动位置（记账明细→总览等内部视图切换、以及所有返回场景），避免回顶部
+function restoreScroll() {
+  if (state._pendingScrollY == null) return;
+  const y = state._pendingScrollY;
+  state._pendingScrollY = null;
+  setTimeout(() => {
+    content.scrollTop = y;
+    window.scrollTo(0, y);
+    requestAnimationFrame(() => { content.scrollTop = y; window.scrollTo(0, y); });
+  }, 0);
 }
 
 // Daily plan
