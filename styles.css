@@ -6014,7 +6014,7 @@ select.pf-input {
 .hp-section-title {
   display: flex; align-items: center; justify-content: space-between;
   font-size: 13px; font-weight: 700; color: var(--text);
-  margin: 20px 4px 12px;
+  margin: 26px 4px 14px;
 }
 /* v9299：今日概览 + 下方所有内容再上移 30px（margin-top -20→-50，累计 60px 上移） */
 .hp-section-title:first-of-type { margin-top: -50px; }
