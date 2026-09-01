@@ -4002,6 +4002,8 @@ function renderContent() {
     ensureBackControl();
     boldZeroPct(content);
     restoreScroll();
+    // v9321：清理所有文本节点中的 "undefined" 字面量（防止某些 page 底部 foot-note/状态变量在数据缺失时显示 undefined 字符串）
+    cleanupUndefinedText(content);
     return;
   }
 
@@ -4023,6 +4025,7 @@ function renderContent() {
     ensureBackControl();
     boldZeroPct(content);
     restoreScroll();
+    cleanupUndefinedText(content);
     return;
   }
 
@@ -4039,6 +4042,20 @@ function renderContent() {
   ensureBackControl();
   boldZeroPct(content);
   restoreScroll();
+  cleanupUndefinedText(content);
+}
+
+// v9321：清理所有文本节点中的 "undefined" 字面量字符串 —— 防止某些 page 末尾脚注/状态变量在数据缺失时渲染出 "undefined" 文字（user 反馈）
+function cleanupUndefinedText(root) {
+  if (!root) return;
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null, false);
+  let node;
+  const re = /\bundefined\b/g;
+  while ((node = walker.nextNode())) {
+    if (node.nodeValue && re.test(node.nodeValue)) {
+      node.nodeValue = node.nodeValue.replace(re, '');
+    }
+  }
 }
 
 // v9306：渲染完成后恢复"进入子视图前"保存的滚动位置（记账明细→总览等内部视图切换、以及所有返回场景），避免回顶部
