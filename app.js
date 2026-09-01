@@ -1769,6 +1769,22 @@ function migrateData() {
       state.settings.slowPool = state.settings.slowPool.filter(s => !REMOVED_SLOW_NAMES.includes(s.name));
       if (state.settings.slowPool.length !== before) settingsTouched = true;
     }
+    // v9317：迁移「社交拓展」→「爱好拓展」——用户 localStorage 里旧的 slowBranches/slowPool 卡片名为「社交拓展」+ emoji/icon，
+    // 否则点击进入路由 '社交拓展'（v9317 已删）→ 空内容；以及 actions 旧 s1-s5 整体替换为新 h1-h8（user 期望预置 8 项爱好任务）。
+    const RENAME_SOCIAL_TO_HOBBY = { name: '爱好拓展', emoji: '✨', icon: 'sparkles' };
+    [['slowBranches'], ['slowPool']].forEach(([key]) => {
+      if (Array.isArray(state.settings[key])) {
+        state.settings[key] = state.settings[key].map(s => s.name === '社交拓展' ? { ...s, ...RENAME_SOCIAL_TO_HOBBY } : s);
+      }
+    });
+    // 替换 state.social.actions：旧社交 actions（id 以 s 开头）整体替换为新 8 项爱好 h1-h8（保留 s.log 积分记录）
+    if (state.social && Array.isArray(state.social.actions)) {
+      const hasOldSocial = state.social.actions.some(a => /^s\d+$/.test(a.id));
+      if (hasOldSocial) {
+        state.social.actions = JSON.parse(JSON.stringify(DEFAULT_SOCIAL.actions));
+        saveSocial();
+      }
+    }
     if (settingsTouched) saveSettings();
   }
 }
