@@ -10,7 +10,7 @@
     // 内联版本探针：独立于 app.js，确保即使脚本被缓存也能发现新版本
     (function () {
       try {
-        var BUILT = 9321;
+        var BUILT = 9322;
         fetch('./version.json?v=' + Date.now(), { cache: 'no-store' })
           .then(function (r) { return r.ok ? r.json() : null; })
           .then(function (d) {
@@ -27,13 +27,13 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <link rel="manifest" href="manifest.webmanifest?v=321">
-  <link rel="apple-touch-icon" href="icon-192.png?v=321">
-  <link rel="stylesheet" href="styles.css?v=321">
+  <link rel="manifest" href="manifest.webmanifest?v=322">
+  <link rel="apple-touch-icon" href="icon-192.png?v=322">
+  <link rel="stylesheet" href="styles.css?v=322">
   <!-- 预加载关键资源，缩短首屏等待 -->
-  <link rel="preload" href="app.js?v=321" as="script">
-  <link rel="preload" href="fonts/zcool-sub.ttf?v=321" as="font" type="font/ttf" crossorigin>
-  <link rel="preload" href="fonts/strawberry-sub.ttf?v=321" as="font" type="font/ttf" crossorigin>
+  <link rel="preload" href="app.js?v=322" as="script">
+  <link rel="preload" href="fonts/zcool-sub.ttf?v=322" as="font" type="font/ttf" crossorigin>
+  <link rel="preload" href="fonts/strawberry-sub.ttf?v=322" as="font" type="font/ttf" crossorigin>
   <title>xenos - 人生系统工作台</title>
 <meta name="theme-color" content="#FFE4CC">
   <!-- 字体已改为本地自托管 ZCOOL KuaiLe，见 styles.css 顶部 @font-face -->
@@ -288,6 +288,6 @@
     </div>
   </div>
 
-  <script src="app.js?v=321"></script>
+  <script src="app.js?v=322"></script>
 </body>
 </html>

@@ -14140,13 +14140,6 @@ function renderCertPage() {
       { value: stats.times, label: '学习次数' },
       { value: stats.pts, label: '本周积分' }
     ])}
-
-    <div class="section-card module-card">
-      <div class="module-card-head">
-        <span class="module-card-icon" style="color:${cfg.color}">${icon('bulb', 14)}</span>
-        <span class="soft-card-title" style="margin:0;">备考小建议</span>
-      </div>
-    </div>
   `;
   content.appendChild(page);
 
@@ -14434,13 +14427,6 @@ function renderMusicPage() {
       { value: stats.times, label: '练习次数' },
       { value: stats.pts, label: '本周积分' }
     ])}
-
-    <div class="section-card module-card">
-      <div class="module-card-head">
-        <span class="module-card-icon" style="color:${cfg.color}">${icon('bulb', 14)}</span>
-        <span class="soft-card-title" style="margin:0;">练习优化小建议</span>
-      </div>
-    </div>
   `;
   content.appendChild(page);
 
