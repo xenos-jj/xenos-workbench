@@ -844,11 +844,11 @@ const DEFAULT_SETTINGS = {
   ],
   slowBranches: [
     { name: '旅行体验', emoji: '✈️', icon: 'plane' },
-    { name: '社交拓展', emoji: '💬', icon: 'message' }
+    { name: '爱好拓展', emoji: '✨', icon: 'sparkles' }
   ],
   slowPool: [
     { name: '旅行体验', emoji: '✈️', icon: 'plane', desc: '探索世界，记录美好风景' },
-    { name: '社交拓展', emoji: '💬', icon: 'message', desc: '维护关系，认识新朋友' },
+    { name: '爱好拓展', emoji: '✨', icon: 'sparkles', desc: '滋养自己的爱好，享受过程' },
     { name: '摄影审美', emoji: '📷', icon: 'camera', desc: '练习构图与后期，积累作品集' },
     { name: '技能考证', emoji: '📜', icon: 'scroll', desc: '考取职业或兴趣相关证书' },
     { name: '家居整理', emoji: '🏠', icon: 'home', desc: '打造舒适整洁的生活空间' },
@@ -974,18 +974,21 @@ const DEFAULT_TRAVEL = {
   log: {}
 };
 
-// 社交拓展（低精力版）默认数据
+// 爱好拓展（v9317：原「社交拓展（低精力版）」重命名为「爱好拓展」，任务改为 8 项爱好打卡）默认数据
 const DEFAULT_SOCIAL = {
   enabled: true,
-  contactsThisWeek: 0,
+  contactsThisWeek: 0, // v9317：沿用旧字段名（避免迁移破坏用户数据），渲染时显示为「本周待尝试：N 项」
   actions: [
-    { id: 's1', text: '给 1 位熟悉老朋友发一条简短消息', points: 5, done: false },
-    { id: 's2', text: '刷线下活动介绍图文，仅浏览，不用报名', points: 10, done: false },
-    { id: 's3', text: '记录 1 条自己的想法，仅分享给自己', points: 10, done: false },
-    { id: 's4', text: '在感兴趣的小众群 / 帖子里发 1 条评论 / 回复', points: 8, done: false },
-    { id: 's5', text: '参与 1 次线上同好小分享（不用露脸、不用长聊）', points: 10, done: false }
+    { id: 'h1', text: '手绘 / 简笔画练习 20 分钟，完成一张作品', points: 6, done: false },
+    { id: 'h2', text: '阅读兴趣书籍，读完 1 个章节并简单写下感悟', points: 7, done: false },
+    { id: 'h3', text: '手工创作（黏土 / 拼贴 / 手作）完成一件小成品', points: 9, done: false },
+    { id: 'h4', text: '拍摄生活照片 5 张，简单整理归档', points: 6, done: false },
+    { id: 'h5', text: '练习音乐乐器 / 哼唱乐理基础，练习 15-20 分钟', points: 8, done: false },
+    { id: 'h6', text: '摘抄优美文字，整理属于自己的摘抄片段集', points: 5, done: false },
+    { id: 'h7', text: '进行穿搭审美练习：搭配整套造型并记录复盘', points: 7, done: false },
+    { id: 'h8', text: '学习一个审美相关小知识（色彩 / 构图）并做简单记录', points: 8, done: false }
   ],
-  goal: '维护 1-2 段舒服的旧关系，不强迫拓展新圈子，减少消耗自己的无效社交。',
+  goal: '慢慢沉淀属于自己的爱好，不必追求精通，持续积累就会获得成就感，滋养自我。',
   log: {}
 };
 
@@ -2135,6 +2138,7 @@ function loadGroups() {
       // v9176：人生领域分组移除 旅行体验 / 社交拓展 侧边栏入口
       // v9291：移除 每日计划 / 本周洞察 / 我的支线 / 书籍阅读 / 学习成长（仅删侧边栏导航，页面本体保留）
       const removed = new Set(['历史', '内容素材库', '旅行体验', '社交拓展', '每日计划', '本周洞察', '我的支线', '书籍阅读', '学习成长']);
+      // v9317：兼容旧的「社交拓展」入口过滤（已迁移为「爱好拓展」）
       parsed.data.forEach(g => {
         if (Array.isArray(g.items)) {
           g.items = g.items.filter(i => !removed.has(i.name));
@@ -3782,7 +3786,8 @@ const PAGE_ROUTES = {
   '内在成长': renderInnerGrowthPage,
   '旅行体验': renderTravelPage,
   '地点打卡': renderTravelCheckinPage,
-  '社交拓展': renderSocialPage,
+  // v9317：社交拓展重命名为「爱好拓展」（user 需求）
+  '爱好拓展': renderSocialPage,
   '护肤': renderSkincarePage,
   // v9253：暂时放缓 6 模块（从「我的支线 → 暂时放缓」卡片进入）
   '摄影审美': renderPhotographyPage,
@@ -9954,7 +9959,7 @@ function openPointBreakdownModal() {
     { name: '生活秩序', icon: 'layers', value: getLifeOrderPoints() },
     { name: '内在成长', icon: 'leaf', value: getInnerGrowthPoints() },
     { name: '旅行体验', icon: 'plane', value: getTravelPoints() },
-    { name: '社交拓展', icon: 'message', value: getSocialPoints() },
+    { name: '爱好拓展', icon: 'sparkles', value: getSocialPoints() },
     { name: '英语学习', icon: 'language', value: getLanguagePoints() },
     { name: '奖励池兑换', icon: 'gift', value: -getSpentPoints(), spent: true }
   ];
@@ -10270,7 +10275,7 @@ function renderSettings() {
         <div class="xn-toggle ${s.moduleTravel !== false ? 'on' : ''}" data-mod="travel" role="switch" tabindex="0" aria-checked="${s.moduleTravel !== false}"><span class="xn-knob"></span></div>
       </div>
       <div class="setting-row">
-        <div class="setting-label">社交拓展<small>低精力版 · 只维系舒服的旧关系</small></div>
+        <div class="setting-label">爱好拓展<small>滋养自己的爱好，享受过程</small></div>
         <div class="xn-toggle ${s.moduleSocial !== false ? 'on' : ''}" data-mod="social" role="switch" tabindex="0" aria-checked="${s.moduleSocial !== false}"><span class="xn-knob"></span></div>
       </div>
     </div>
@@ -12641,13 +12646,13 @@ function renderTravelCheckinPage() {
   });
 }
 
-// ============ 社交拓展（低精力版） ============
+// ============ 爱好拓展（v9317：原社交拓展低精力版） ============
 function renderSocialPage() {
   // 关键：内部 toggle / + 按钮会递归调用本函数，必须先清空防止整页叠加
   content.innerHTML = '';
   const page = document.createElement('div');
   page.className = 'page';
-  if (greetLine) greetLine.textContent = '社交拓展';
+  if (greetLine) greetLine.textContent = '爱好拓展';
   const s = state.social || JSON.parse(JSON.stringify(DEFAULT_SOCIAL));
   const today = getTodayKey();
   const doneToday = s.actions.filter(a => a.done && a.date === today).length;
@@ -12656,9 +12661,8 @@ function renderSocialPage() {
   for (const k in (s.log || {})) { if (k >= ws && k <= today) weekPts += (s.log[k] || 0); }
   const doneWeek = s.actions.filter(a => a.done && a.date >= ws && a.date <= today).length;
   function socialSuggest() {
-    if (weekPts > 0 && s.contactsThisWeek > 0) return '这周已经和舒服的老朋友有了联系，维系关系不费力就很好 💗';
-    if (weekPts > 0) return '这周已经做了一些轻松的维系，不用强迫自己更多。';
-    if (s.actions.length > 0) return '给熟悉的老朋友发一句简短问候，就是今天很温柔的一步。';
+    if (weekPts > 0) return '这周已经为自己的爱好做了一些投入，慢慢来就好 ✨';
+    if (s.actions.length > 0) return '今天挑一项感兴趣的爱好试一试，不必追求完美。';
     return '';
   }
 
@@ -12677,16 +12681,16 @@ function renderSocialPage() {
 
   page.innerHTML = `
     <div class="sub-page-head">
-      <h3 class="sub-title">社交拓展 <span class="sub-spark">${icon('sparkle', 14)}</span></h3>
+      <h3 class="sub-title">爱好拓展 <span class="sub-spark">${icon('sparkle', 14)}</span></h3>
     </div>
 
     <div class="module-hero module-hero-social">
       <div class="mh-body">
-        <h4>关系需要养护</h4>
-        <p class="mh-sub">社交不必勉强，小幅度维系就足够</p>
+        <h4>爱好滋养</h4>
+        <p class="mh-sub">发展爱好只为取悦自己，没有必须达成的压力</p>
         <div class="mh-tag" id="social-contact-tag">
           <span class="mh-tag-dot"></span>
-          <span>本周待联系：${s.contactsThisWeek || 0} 人</span>
+          <span>本周待尝试：${s.contactsThisWeek || 0} 项</span>
         </div>
       </div>
     </div>
@@ -12706,7 +12710,7 @@ function renderSocialPage() {
     <div class="section-card module-card">
       <div class="module-card-head">
         <span class="module-card-icon" style="color:#A99BD6">${icon('target', 14)}</span>
-        <span class="soft-card-title" style="margin:0;">关系目标</span>
+        <span class="soft-card-title" style="margin:0;">爱好目标</span>
       </div>
       <p class="module-goal-text" id="social-goal-text">${escapeHTML(s.goal || DEFAULT_SOCIAL.goal)}</p>
       <button class="module-edit-goal" id="social-edit-goal">${icon('edit', 11)} 修改目标</button>
@@ -12717,7 +12721,8 @@ function renderSocialPage() {
 
   page.querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', () => selectItem(b.dataset.go)));
 
-  // 完成行动
+  // v9317：原位更新 toggle（v9258.1 标准）—— 仅切换当前行 done 状态，不调 renderSocialPage() 整页重渲染；
+  // 修复：勾选不会重复生成条目（toggle handler 不再 push 新条目，仅修改 done/date）
   page.querySelectorAll('#social-actions .module-list-item').forEach(row => {
     row.addEventListener('click', () => {
       if (row.classList.contains('show-delete')) return;
@@ -12727,11 +12732,6 @@ function renderSocialPage() {
       const wasDone = action.done && action.date === today;
       action.done = !wasDone;
       action.date = today;
-      if (action.text.includes('老朋友') && action.done) {
-        s.contactsThisWeek = (s.contactsThisWeek || 0) + 1;
-      } else if (action.text.includes('老朋友') && !action.done) {
-        s.contactsThisWeek = Math.max(0, (s.contactsThisWeek || 0) - 1);
-      }
       if (action.done) {
         state.points = (state.points || 0) + action.points;
         s.log[today] = (s.log[today] || 0) + action.points;
@@ -12741,15 +12741,27 @@ function renderSocialPage() {
       }
       savePoints();
       saveSocial();
-      renderSocialPage();
+      // 原位更新 row 的 done 样式 + 勾选图标 + 卡片计数
+      row.classList.toggle('done', action.done);
+      const checkBtn = row.querySelector('.mli-check');
+      if (checkBtn) checkBtn.innerHTML = action.done ? icon('check', 10) : '';
+      const card = row.closest('.module-card');
+      if (card) {
+        const meta = card.querySelector('.module-card-meta');
+        if (meta) meta.textContent = `${s.actions.filter(a => a.done && a.date === today).length}/${s.actions.length}`;
+      }
+      renderTopbar();
+      updateBottomNav();
+      renderMenu();
+      renderProfileCard();
     });
   });
 
   // 新增行动
   page.querySelector('#social-add-action').addEventListener('click', async () => {
-    const text = await openModal('新增本周行动', '', '例如：给老朋友发一句问候');
+    const text = await openModal('新增爱好行动', '', '例如：手绘一张小画');
     if (text === null || !text.trim()) return;
-    const pts = await openModal('奖励积分', '5', '输入数字');
+    const pts = await openModal('奖励积分', '6', '输入数字');
     const points = Number(pts);
     s.actions.push({ id: uid('sa'), text: text.trim(), points: Number.isFinite(points) && points > 0 ? points : 5, done: false });
     saveSocial();
@@ -12758,7 +12770,7 @@ function renderSocialPage() {
 
   // 修改目标
   page.querySelector('#social-edit-goal').addEventListener('click', async () => {
-    const text = await openModal('修改关系目标', s.goal || DEFAULT_SOCIAL.goal, '请输入新的关系目标');
+    const text = await openModal('修改爱好目标', s.goal || DEFAULT_SOCIAL.goal, '请输入新的爱好目标');
     if (text === null) return;
     s.goal = text.trim() || DEFAULT_SOCIAL.goal;
     saveSocial();
