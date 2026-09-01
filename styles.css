@@ -20,13 +20,13 @@
 :root {
   --bg: #fcfbf6;                 /* 更通透的奶油白，接近白 */
   --bg-soft: #FFF8F2;
-  --card: #FFFFFF;
+  --card: #FFFFFF;                /* v9325：保持纯白，由 --border + --shadow 双重叠加保证卡片与背景区分 */
   --sidebar-bg: #FFF7F0;         /* 奶油侧栏 */
   --text: #6B5D4F;               /* 柔和暖棕，不要太深 */
   --text-muted: #B8A99A;
   --text-group: #C5B6A6;
-  --border: #EBDDD0;             /* 统一淡奶油边，轻可见 */
-  --border-soft: #F3E8DF;         /* 与主边框同色系但更淡，用于内部分隔 */
+  --border: #E2D3C0;             /* v9325：统一淡奶油边加深（原 #EBDDD0 接近背景）—— 卡片与背景区分明显 */
+  --border-soft: #EFE4D5;         /* 与主边框同色系但更淡，用于内部分隔 */
   --primary: #F4B678;            /* 更淡的杏橘，不发红 */
   --primary-dark: #E89F5C;
   --primary-light: #FFF4EB;
@@ -47,9 +47,9 @@
   --radius: 12px;                /* 更大的统一圆角 */
   --radius-sm: 12px;
   --radius-xs: 12px;
-  --shadow: 0 4px 16px rgba(120, 80, 40, 0.04);      /* 更淡外阴影 */
-  --shadow-sm: 0 3px 12px rgba(120, 80, 40, 0.035);
-  --shadow-lg: 0 16px 40px rgba(120, 80, 40, 0.06);
+  --shadow: 0 4px 16px rgba(120, 80, 40, 0.10);      /* v9325：阴影加深（原 0.04 几乎看不见）—— 卡片浮起来与背景分离 */
+  --shadow-sm: 0 3px 12px rgba(120, 80, 40, 0.08);
+  --shadow-lg: 0 16px 40px rgba(120, 80, 40, 0.12);
   --danger: #D88C7A;
   --danger-hover: #FBEFED;
   --hot: #E8B4A8;
@@ -6971,8 +6971,9 @@ select.pf-input {
 /* ---------- 卡片通用精致感 ---------- */
 .soft-card {
   border-radius: var(--radius);
-  border: none;
-  box-shadow: var(--shadow);
+  background: #FFFCF7;             /* v9325：加底色——原 transparent 与背景融合看不清 */
+  border: 1px solid var(--border);  /* 加边框 */
+  box-shadow: var(--shadow);        /* 加深阴影（0.10 透明度） */
   padding: 14px;
   margin-bottom: 12px;
 }
@@ -7400,8 +7401,9 @@ select.pf-input {
 /* ---------- 卡片通用精致感 ---------- */
 .soft-card {
   border-radius: var(--radius);
-  border: none;
-  box-shadow: var(--shadow);
+  background: #FFFCF7;             /* v9325：加底色——原 transparent 与背景融合看不清 */
+  border: 1px solid var(--border);  /* 加边框 */
+  box-shadow: var(--shadow);        /* 加深阴影（0.10 透明度） */
   padding: 14px;
   margin-bottom: 12px;
 }
