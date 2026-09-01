@@ -12870,7 +12870,7 @@ function renderSettingsPage() {
       </div>
       <div class="me-card" data-me="focus"><span class="mc-emoji" style="color:var(--purple)">${icon('bell', 20)}</span><span class="mc-title">提醒与专注</span><span class="mc-desc">专注提醒 已开启</span></div>
       <div class="me-card" data-me="privacy"><span class="mc-emoji" style="color:var(--green)">${icon('lock', 20)}</span><span class="mc-title">数据与隐私</span><span class="mc-desc">数据统计 / 隐私</span></div>
-      <div class="me-card" data-me="export"><span class="mc-emoji" style="color:var(--gold-deep)">${icon('save', 20)}</span><span class="mc-title">导出备份</span><span class="mc-desc">导出 / 云端</span></div>
+      <div class="me-card" data-me="export"><span class="mc-emoji" style="color:var(--gold-deep)">${icon('save', 20)}</span><span class="mc-title">导出备份</span><span class="mc-desc">导出 / 导入</span></div>
     </div>
 
     <div class="me-milestones">
@@ -12901,6 +12901,12 @@ function renderSettingsPage() {
       <div class="setting-row"><div class="setting-label">重置菜单结构<small>恢复默认的人生系统菜单</small></div><button class="ghost-btn" id="me-reset-menu">重置菜单</button></div>
       <div class="setting-row"><div class="setting-label" style="color:var(--danger)">清空全部数据<small>不可恢复，请先导出备份</small></div><button class="ghost-btn" id="me-reset-all" style="color:var(--danger);border-color:var(--danger)">清空</button></div>
     </div>
+
+    <div class="section-card" id="me-export-card" hidden style="margin-top:14px;">
+      <div class="soft-card-title">${icon('save', 16)} 导出 / 导入</div>
+      <div class="setting-row"><div class="setting-label">导出全部数据<small>生成 JSON 备份文件</small></div><button class="ghost-btn" id="me-export-btn">导出</button></div>
+      <div class="setting-row"><div class="setting-label">导入备份<small>会覆盖当前本地数据</small></div><button class="ghost-btn" id="me-import-btn">导入</button></div>
+    </div>
   `;
   content.appendChild(page);
 
@@ -12928,7 +12934,8 @@ function renderSettingsPage() {
   page.querySelectorAll('.me-card').forEach(card => {
     card.addEventListener('click', () => {
       const kind = card.dataset.me;
-      if (kind === 'export') { exportData(); return; }
+      // v9324：导出备份卡改为展开（含导出+导入）——不再点击直接下载，让用户能看到导入入口
+      if (kind === 'export') { toggleCard('#me-export-card'); return; }
       if (kind === 'focus') { toggleCard('#me-focus-card'); return; }
       if (kind === 'privacy') { toggleCard('#me-privacy-card'); return; }
     });
@@ -12944,6 +12951,9 @@ function renderSettingsPage() {
   });
   page.querySelector('#me-export').addEventListener('click', exportData);
   page.querySelector('#me-import').addEventListener('click', () => importFile.click());
+  // v9324：导出/导入展开卡按钮
+  page.querySelector('#me-export-btn').addEventListener('click', exportData);
+  page.querySelector('#me-import-btn').addEventListener('click', () => importFile.click());
   page.querySelector('#me-reset-menu').addEventListener('click', async () => {
     if (!await appConfirm('确认恢复默认菜单结构？自定义分组会丢失。')) return;
     localStorage.removeItem('xenos-groups');
