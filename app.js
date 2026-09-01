@@ -4399,7 +4399,7 @@ function getWeeklyPlanInsight() {
     else if (rate < 70) insights.push(`${g}本周完成 ${rate}%，进度稳稳的；把最顺手的那件放在精力最好的时候做就行。`);
     else insights.push(`${g}完成率 ${rate}%，保持得很好，下周可以继续这个节奏。`);
   });
-  if (!insights.length) insights.push('本周数据不足，坚持记录几天后会出现个性化建议。');
+  if (!insights.length) return [];
   return insights;
 }
 
@@ -5674,7 +5674,6 @@ function renderHealthPage() {
         <div class="domain-icon">${icon('health', 24)}</div>
         <div>
           <h3 class="domain-title">健康</h3>
-          <p class="domain-subtitle">身体是所有事情的地基</p>
         </div>
       </div>
     </div>
@@ -5841,7 +5840,6 @@ function renderSleepPage() {
         <div class="domain-icon">${icon('moon', 24)}</div>
         <div>
           <h3 class="domain-title">睡眠管理</h3>
-          <p class="domain-subtitle">只记录，不评判，睡得怎样都可以</p>
         </div>
       </div>
     </div>
@@ -5920,7 +5918,6 @@ function renderMoodPage() {
         <div class="domain-icon">${icon('smile', 24)}</div>
         <div>
           <h3 class="domain-title">今日心境</h3>
-          <p class="domain-subtitle">随便选一个，不选也没关系</p>
         </div>
       </div>
     </div>
@@ -5994,7 +5991,6 @@ function renderBodyConditionPage() {
         <div class="domain-icon">${icon('thermometer', 24)}</div>
         <div>
           <h3 class="domain-title">身体小状况</h3>
-          <p class="domain-subtitle">轻轻记录，不放大不适，也不过度担心</p>
         </div>
       </div>
     </div>
@@ -6420,7 +6416,6 @@ function renderDiet() {
         <div class="domain-icon">${icon('utensils', 24)}</div>
         <div>
           <h3 class="domain-title">饮食</h3>
-          <p class="domain-subtitle">好好吃饭，是最朴素的照顾自己</p>
         </div>
       </div>
     </div>
@@ -7686,18 +7681,8 @@ function getWeeklyInsight(key, name) {
   return { total, activeDays, rate, text };
 }
 
-function renderDomainInsight(key, name) {
-  const insight = getWeeklyInsight(key, name);
-  return `
-    <div class="plan-insight-card">
-      <div class="plan-insight-title">本周${name}洞察</div>
-      <div class="plan-insight-item"><span>7 天总积分</span><strong>${insight.total}</strong></div>
-      <div class="plan-insight-item"><span>活跃天数</span><strong>${insight.activeDays}/7</strong></div>
-      <div class="plan-insight-item"><span>完成率</span><strong>${insight.rate}%</strong></div>
-      <p class="plan-insight-text">${insight.text}</p>
-    </div>
-  `;
-}
+// v9319：renderDomainInsight/renderDailyReviewInsight 改为 no-op（user 反馈所有建议删除）—— 函数保留作为空函数防止旧引用报错
+function renderDomainInsight(key, name) { return ''; }
 
 // ============ 专注时钟（番茄钟） ============
 const FOCUS_RING_LEN = 2 * Math.PI * 52;
@@ -9291,7 +9276,6 @@ function renderDomainPage(name) {
         <div class="domain-icon">${icon(cfg.icon, 24)}</div>
         <div>
           <h3 class="domain-title">${name}</h3>
-          <p class="domain-subtitle">${cfg.subtitle}</p>
         </div>
       </div>
       ${cfg.tags && cfg.tags.length ? `<div class="domain-tags tag-filter">${cfg.tags.map(t => `<button class="tag-chip${activeTag === t ? ' active' : ''}" data-tagfilter="${escapeHTML(t)}">${escapeHTML(t)}</button>`).join('')}</div>` : ''}
@@ -9354,13 +9338,9 @@ function renderDomainPage(name) {
 
   // v9258：外貌页 — 挂载 4 标签内容（护肤/仪态/穿搭/妆容）
   if (name === '外貌') mountLooksTabIntoPage(page);
-
-  // 任务3：本周领域洞察移到页面最下方（所有 body 数据卡之后）
+  // v9319：删除所有领域洞察/计划洞察卡片（user 反馈：所有"建议"删除）
   const insightCard = page.querySelector('#domain-insight-card');
-  if (insightCard && (key === 'health' || key === 'money')) {
-    insightCard.innerHTML = renderDomainInsight(key, name);
-    insightCard.hidden = false;
-  }
+  if (insightCard) { insightCard.hidden = true; insightCard.innerHTML = ''; }
 
 
   // 日期导航：全局统一日期组件
@@ -9696,13 +9676,8 @@ function renderDailyReview() {
 }
 
 function renderDailyReviewInsight() {
-  const insights = getWeeklyPlanInsight();
-  return `
-    <div class="plan-insight-card">
-      <div class="plan-insight-title">本周计划洞察</div>
-      ${insights.map(t => `<p class="plan-insight-text">${t}</p>`).join('')}
-    </div>
-  `;
+  // v9319：删除（user 反馈所有建议/提示删除）—— 函数保留作为 no-op 防止旧引用报错
+  return '';
 }
 
 // ============ 本周洞察 ============
@@ -10155,7 +10130,6 @@ function renderSelfIntro() {
         <div class="domain-icon">${icon('user', 24)}</div>
         <div>
           <h3 class="domain-title">${escapeHTML(p.name || 'Xenos')}</h3>
-          <p class="domain-subtitle">认识自己，是所有改变的起点</p>
         </div>
       </div>
     </div>
@@ -12080,11 +12054,6 @@ function renderLifeOrderPage() {
         ${o.evening.map(a => renderActionItem(a, 'order-evening')).join('')}
       </div>
     </div>
-
-
-    <div class="module-foot-note">
-      <span>${icon('bulb', 14)}</span>
-    </div>
   `;
   content.appendChild(page);
   page.querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', () => selectItem(b.dataset.go)));
@@ -12192,14 +12161,7 @@ function renderInnerGrowthPage() {
       </div>
       <p class="module-goal-text">${escapeHTML(g.theme || DEFAULT_GROWTH.theme)}</p>
     </div>
-
-
-    <div class="module-foot-note">
-      <span>${icon('bulb', 14)}</span>
-    </div>
   `;
-  content.appendChild(page);
-  page.querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', () => selectItem(b.dataset.go)));
 
   // 日期切换：全局统一日期组件
   bindDateBar(page, {
@@ -12309,11 +12271,7 @@ function renderTravelPage() {
     <div class="module-hero module-hero-travel">
       <div class="mh-body">
         <h4>待出发清单 · ${escapeHTML(ph.name)}</h4>
-        <p class="mh-sub">${escapeHTML(ph.meta || '')}</p>
-        <div class="mh-tag" id="travel-next-tag">
-          <span class="mh-tag-dot"></span>
-          <span>下一站：${escapeHTML(ph.nextDestination || '待定')}</span>
-        </div>
+        <div class="mh-body">
       </div>
     </div>
 
@@ -12548,11 +12506,6 @@ function renderTravelCheckinPage() {
     </div>
 
     ${cats.map(renderCat).join('')}
-
-    <div class="module-foot-note">
-      <span>${icon('info', 12)}</span>
-      <p>这是一份轻松的「想去清单」，不强制、不赶场；哪天顺路就打个卡，攒点小积分也好。</p>
-    </div>
   `;
   content.appendChild(page);
 
@@ -12703,11 +12656,6 @@ function renderSocialPage() {
     <div class="module-hero module-hero-social">
       <div class="mh-body">
         <h4>爱好滋养</h4>
-        <p class="mh-sub">发展爱好只为取悦自己，没有必须达成的压力</p>
-        <div class="mh-tag" id="social-contact-tag">
-          <span class="mh-tag-dot"></span>
-          <span>本周待尝试：${s.contactsThisWeek || 0} 项</span>
-        </div>
       </div>
     </div>
 
@@ -12830,7 +12778,6 @@ function renderSkincarePage() {
         <div class="domain-icon">${icon('leaf', 24)}</div>
         <div>
           <h3 class="domain-title">护肤日常</h3>
-          <p class="domain-subtitle">低精力也能坚持的轻松护肤节奏</p>
         </div>
       </div>
     </div>
@@ -12850,11 +12797,6 @@ function renderSkincarePage() {
     <div class="soft-card" style="margin-top:12px;">
       <div class="soft-card-title">${icon('edit', 16)} 护肤小记</div>
       <textarea class="swot-area" id="sk-notes" placeholder="记下今天皮肤状态、想试的新品，或偷懒的那天也没关系～">${escapeHTML(sc.notes || '')}</textarea>
-    </div>
-
-    <div class="module-foot-note">
-      <span>${icon('info', 12)}</span>
-      <p>护肤是给自己的小小照顾，完成了开心，没完成也别自责。</p>
     </div>
   `;
   content.appendChild(page);
