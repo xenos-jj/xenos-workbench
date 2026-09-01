@@ -12333,7 +12333,6 @@ function renderTravelPage() {
         <span class="soft-card-title" style="margin:0;">地点打卡</span>
         <span class="module-card-meta">${checkedCount}/${totalPlaces} 已打卡</span>
       </div>
-      <p class="module-tip">按分类记录想实地到访的地点，完成打卡拿积分，可上传照片与心情。</p>
       <button class="module-go-btn" id="travel-open-checkin">进入地点打卡 ›</button>
     </div>
   `;
@@ -12496,12 +12495,18 @@ function renderTravelCheckinPage() {
     </div>`;
   }
 
+  // v9323：清理分类名中的「（xx｜xx）」括号备注（不改原始数据，渲染时去掉括号内容）
+  function cleanCategoryName(name) {
+    if (!name) return name;
+    return String(name).replace(/（[^）]*）/g, '').trim();
+  }
+
   function renderCat(cat) {
     const checked = cat.places.filter(p => p.checked).length;
     return `<div class="ck-group">
       <div class="ck-group-head">
         <span class="ck-group-icon" style="color:#7FB0D3">${icon(cat.icon || 'mountain', 14)}</span>
-        <span class="ck-group-name">${escapeHTML(cat.name)}</span>
+        <span class="ck-group-name">${escapeHTML(cleanCategoryName(cat.name))}</span>
         <span class="ck-group-meta">${checked}/${cat.places.length}</span>
         <button class="module-add-btn" data-add-place="${cat.id}" title="新增地点">${icon('plus', 12)}</button>
       </div>
@@ -12514,11 +12519,6 @@ function renderTravelCheckinPage() {
   page.innerHTML = `
     <div class="sub-page-head">
       <h3 class="sub-title">地点打卡 <span class="sub-spark">${icon('flag', 14)}</span></h3>
-    </div>
-
-    <div class="module-rule-banner" id="checkin-rule" title="打卡说明">
-      <span class="mrb-icon">${icon('info', 12)}</span>
-      <span class="mrb-text">实地到访完成打卡拿对应积分；可上传打卡照片、记录心得心情。状态不好可直接跳过，无惩罚。</span>
     </div>
 
     ${cats.map(renderCat).join('')}
@@ -14257,7 +14257,7 @@ function renderHomeOrgPage() {
               </div>
             </div>
             <button class="slow-record-del" data-del-type="hm-item" data-del-id="${r.id}" title="删除">${icon('delete', 12)}</button>
-          </div>`).join('') : slowEmpty('还没有录入物品')}
+          </div>`).join('') : ''}
       </div>
     </div>
 
@@ -14269,7 +14269,7 @@ function renderHomeOrgPage() {
       <div class="slow-field"><span class="slow-label">心得</span><input class="pf-input" id="hm-note-input" placeholder="记下好用的收纳方法或灵感"></div>
       <div class="focus-actions" style="margin-top:6px;"><button class="gold-btn" id="hm-note-add">保存心得</button></div>
       <div class="slow-record-list" id="hm-notes">
-        ${(m.notes || []).length ? m.notes.map(r => slowRecordItem(r, 'hm-note', false)).join('') : slowEmpty('还没有心得记录')}
+        ${(m.notes || []).length ? m.notes.map(r => slowRecordItem(r, 'hm-note', false)).join('') : ''}
       </div>
     </div>
 
