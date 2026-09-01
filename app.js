@@ -12271,7 +12271,6 @@ function renderTravelPage() {
     <div class="module-hero module-hero-travel">
       <div class="mh-body">
         <h4>待出发清单 · ${escapeHTML(ph.name)}</h4>
-        <div class="mh-body">
       </div>
     </div>
 
