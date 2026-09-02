@@ -4046,14 +4046,17 @@ function renderContent() {
 }
 
 // v9321：清理所有文本节点中的 "undefined" 字面量字符串 —— 防止某些 page 末尾脚注/状态变量在数据缺失时渲染出 "undefined" 文字（user 反馈）
+// v9326：避免触发不必要的 characterData mutation —— 仅在真的需要清理时才赋值 nodeValue（否则跳过，避免 enforceGlobalFonts MutationObserver 被反复唤醒引起"一闪一闪"）
 function cleanupUndefinedText(root) {
   if (!root) return;
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null, false);
   let node;
-  const re = /\bundefined\b/g;
   while ((node = walker.nextNode())) {
-    if (node.nodeValue && re.test(node.nodeValue)) {
-      node.nodeValue = node.nodeValue.replace(re, '');
+    const val = node.nodeValue;
+    if (val && val.indexOf('undefined') !== -1) {
+      const cleaned = val.split('undefined').join('');
+      // 仅在真的改变时才赋值，避免触发 characterData mutation → enforceGlobalFonts 持续 wrap → 页面"一闪一闪"
+      if (cleaned !== val) node.nodeValue = cleaned;
     }
   }
 }
