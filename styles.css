@@ -8957,8 +8957,8 @@ select.pf-input {
 
 /* 任务/步骤行（护肤、仪态、妆容共用） */
 .lk-tasks { display: flex; flex-direction: column; gap: 6px; }
-.lk-task { display: flex; align-items: center; gap: 8px; padding: 7px 10px; border-radius: 10px; background: var(--bg-soft); cursor: pointer; transition: background .15s ease; }
-.lk-task:hover { background: var(--border-soft); }
+.lk-task { display: flex; align-items: center; gap: 8px; padding: 7px 10px; border-radius: 10px; background: var(--bg-soft); cursor: pointer; transition: background .15s ease; -webkit-tap-highlight-color: transparent; }
+@media (hover: hover) { .lk-task:hover { background: var(--border-soft); } }
 .lk-task.done .lk-text { color: var(--text-muted); text-decoration: line-through; }
 .lk-check { width: 18px; height: 18px; border-radius: 50%; border: 1px solid var(--border-soft); background: #fff; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: #fff; }
 .lk-task.done .lk-check { background: var(--green); border-color: var(--green); }
@@ -9071,8 +9071,8 @@ select.pf-input {
 
 /* 任务/步骤行（护肤、仪态、妆容共用） */
 .lk-tasks { display: flex; flex-direction: column; gap: 6px; }
-.lk-task { display: flex; align-items: center; gap: 8px; padding: 7px 10px; border-radius: 10px; background: var(--bg-soft); cursor: pointer; transition: background .15s ease; }
-.lk-task:hover { background: var(--border-soft); }
+.lk-task { display: flex; align-items: center; gap: 8px; padding: 7px 10px; border-radius: 10px; background: var(--bg-soft); cursor: pointer; transition: background .15s ease; -webkit-tap-highlight-color: transparent; }
+@media (hover: hover) { .lk-task:hover { background: var(--border-soft); } }
 .lk-task.done .lk-text { color: var(--text-muted); text-decoration: line-through; }
 .lk-check { width: 18px; height: 18px; border-radius: 50%; border: 1px solid var(--border-soft); background: #fff; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: #fff; }
 .lk-task.done .lk-check { background: var(--green); border-color: var(--green); }
