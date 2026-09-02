@@ -8936,7 +8936,13 @@ select.pf-input {
 
 /* ============ v9258 外貌页 4 标签内容（护肤/仪态/穿搭/妆容）============ */
 #looks-content { margin-top: 12px; display: flex; flex-direction: column; gap: 12px; }
-.lk-card { background: var(--card); border: 1px solid var(--border-soft); border-radius: var(--radius); padding: 14px; }
+.lk-card {
+  /* v9330：去掉外层卡的额外边框/背景/圆角——user 反馈外貌页 4 个 tab（护肤/仪态/穿搭/妆容）卡片有额外边框，保留内层小卡（.lk-period / .lk-task / .lk-tag / .lk-input 等）的边框。padding 保留以免内容太挤。 */
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+}
 .lk-card-title { font-size: 14px; font-weight: 700; color: var(--text); margin: 0 0 10px; display: flex; align-items: center; gap: 6px; }
 .lk-card-title .lk-meta { margin-left: auto; font-size: 9.5px; font-weight: 600; color: var(--gold-deep); font-family: var(--font-small); }
 .lk-sub-title { font-size: 9.5px; color: var(--text-muted); margin: 0 0 6px; font-family: var(--font-small); }
@@ -9038,7 +9044,13 @@ select.pf-input {
 
 /* ============ v9258 外貌页 4 标签内容（护肤/仪态/穿搭/妆容）============ */
 #looks-content { margin-top: 12px; display: flex; flex-direction: column; gap: 12px; }
-.lk-card { background: var(--card); border: 1px solid var(--border-soft); border-radius: var(--radius); padding: 14px; }
+.lk-card {
+  /* v9330：去掉外层卡的额外边框/背景/圆角——user 反馈外貌页 4 个 tab（护肤/仪态/穿搭/妆容）卡片有额外边框，保留内层小卡（.lk-period / .lk-task / .lk-tag / .lk-input 等）的边框。padding 保留以免内容太挤。 */
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+}
 .lk-card-title { font-size: 14px; font-weight: 700; color: var(--text); margin: 0 0 10px; display: flex; align-items: center; gap: 6px; }
 .lk-card-title .lk-meta { margin-left: auto; font-size: 9.5px; font-weight: 600; color: var(--gold-deep); font-family: var(--font-small); }
 .lk-sub-title { font-size: 9.5px; color: var(--text-muted); margin: 0 0 6px; font-family: var(--font-small); }
