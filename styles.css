@@ -604,7 +604,7 @@ svg text { font-family: var(--font-small) !important; }
   align-items: center;
   gap: 14px;
   background: var(--bg);
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--border-soft);
   flex-shrink: 0;
 }
 
@@ -4052,8 +4052,8 @@ svg text { font-family: var(--font-small) !important; }
   width: 48px;
   height: 48px;
   border-radius: 12px;
-  background: #fff;
-  border: 1px solid var(--border);
+  background: transparent;
+  border: none;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -4149,7 +4149,7 @@ svg text { font-family: var(--font-small) !important; }
   min-width: 0;
   height: 26px;
   padding: 0 12px;
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-soft);
   border-radius: 999px;
   background: var(--card);
   color: var(--text);
@@ -6269,7 +6269,7 @@ select.pf-input {
   top: 0;
   z-index: 60;
   background: var(--bg);
-  border-bottom: none;
+  border-bottom: 1px solid var(--border-soft);
 }
 .topbar.branches-topbar .menu-toggle,
 .topbar.branches-topbar .menu-toggle:hover {
@@ -8960,7 +8960,7 @@ select.pf-input {
 .lk-task { display: flex; align-items: center; gap: 8px; padding: 7px 10px; border-radius: 10px; background: var(--bg-soft); cursor: pointer; transition: background .15s ease; }
 .lk-task:hover { background: var(--border-soft); }
 .lk-task.done .lk-text { color: var(--text-muted); text-decoration: line-through; }
-.lk-check { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid var(--border); background: #fff; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: #fff; }
+.lk-check { width: 18px; height: 18px; border-radius: 50%; border: 1px solid var(--border-soft); background: #fff; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: #fff; }
 .lk-task.done .lk-check { background: var(--green); border-color: var(--green); }
 .lk-text { flex: 1; font-size: 11.5px; color: var(--text); }
 .lk-pts { font-size: 9px; color: var(--gold-deep); font-family: var(--font-small); flex-shrink: 0; }
@@ -9074,7 +9074,7 @@ select.pf-input {
 .lk-task { display: flex; align-items: center; gap: 8px; padding: 7px 10px; border-radius: 10px; background: var(--bg-soft); cursor: pointer; transition: background .15s ease; }
 .lk-task:hover { background: var(--border-soft); }
 .lk-task.done .lk-text { color: var(--text-muted); text-decoration: line-through; }
-.lk-check { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid var(--border); background: #fff; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: #fff; }
+.lk-check { width: 18px; height: 18px; border-radius: 50%; border: 1px solid var(--border-soft); background: #fff; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: #fff; }
 .lk-task.done .lk-check { background: var(--green); border-color: var(--green); }
 .lk-text { flex: 1; font-size: 11.5px; color: var(--text); }
 .lk-pts { font-size: 9px; color: var(--gold-deep); font-family: var(--font-small); flex-shrink: 0; }
