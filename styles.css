@@ -737,6 +737,16 @@ svg text { font-family: var(--font-small) !important; }
   min-height: 0;
 }
 
+/* v9329：健身页 content-card.fitness-card 同样去掉外框——和饮食页一致 */
+.content-card.fitness-card {
+  background: transparent;
+  box-shadow: none;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  min-height: 0;
+}
+
 .content-empty {
   display: flex;
   flex-direction: column;
@@ -3567,7 +3577,7 @@ svg text { font-family: var(--font-small) !important; }
    ============================================================ */
 
 /* ---- 旧硬编码颜色覆盖 ---- */
-.body-card { background: var(--primary-light); border-color: var(--primary-hover); }
+/* v9329：取消 .body-card 主题覆盖层的橙色背景+边框——user 反馈运动健身页有「外层大外框」；L1546 的 .body-card 已经是 transparent 无边框，让 .body-card-fitness（身体数据卡「运动训练」）也无外框 */
 .body-cell { background: var(--card); border-color: var(--border); }
 .mt-col-val.income, .cat-bar-val.income { color: var(--income); }
 .mt-col-val.expense { color: var(--expense); }
