@@ -9122,14 +9122,15 @@ select.pf-input {
 .diet-flat .domain-hero { margin-bottom: 8px; }
 
 .diet-flat-section {
-  background: var(--card);
-  border: 1px solid var(--border-soft);
-  border-radius: 10px;
-  padding: 16px;
-  margin-bottom: 26px;
+  /* v9327：去掉外层大卡的边框/背景/圆角——user 反馈「框住所有模块卡片的大边框卡片」影响浏览，让模块直接显示在 content 区，不再被外层大框包住。内层元素（meal-row / stat）保留各自的 border-bottom / 边框作为视觉分隔。 */
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0 0 4px;
+  margin-bottom: 22px;
   box-shadow: none;
 }
-.diet-flat-section:first-of-type { border-top: 1px solid var(--border-soft); }
+.diet-flat-section:first-of-type { border-top: none; }
 .diet-flat-head {
   display: flex; align-items: center; gap: 6px;
   font-size: 12px; font-weight: 700; color: var(--text);
@@ -9335,14 +9336,15 @@ select.pf-input {
 .diet-flat .domain-hero { margin-bottom: 8px; }
 
 .diet-flat-section {
-  background: var(--card);
-  border: 1px solid var(--border-soft);
-  border-radius: 10px;
-  padding: 16px;
-  margin-bottom: 26px;
+  /* v9327：去掉外层大卡的边框/背景/圆角——user 反馈「框住所有模块卡片的大边框卡片」影响浏览，让模块直接显示在 content 区，不再被外层大框包住。内层元素（meal-row / stat）保留各自的 border-bottom / 边框作为视觉分隔。 */
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0 0 4px;
+  margin-bottom: 22px;
   box-shadow: none;
 }
-.diet-flat-section:first-of-type { border-top: 1px solid var(--border-soft); }
+.diet-flat-section:first-of-type { border-top: none; }
 .diet-flat-head {
   display: flex; align-items: center; gap: 6px;
   font-size: 12px; font-weight: 700; color: var(--text);
