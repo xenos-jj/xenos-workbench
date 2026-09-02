@@ -613,7 +613,7 @@ svg text { font-family: var(--font-small) !important; }
   display: none;
   width: 32px;
   height: 32px;
-  border: 1px solid var(--border-soft);
+  border: none;
   background: transparent;
   color: var(--text);
   cursor: pointer;
@@ -636,7 +636,7 @@ svg text { font-family: var(--font-small) !important; }
 .topbar-back {
   width: 34px;
   height: 34px;
-  border: 1px solid var(--border-soft);
+  border: none;
   background: transparent;
 }
 .topbar-back:hover { background: transparent; color: var(--gold-deep); }
