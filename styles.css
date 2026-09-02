@@ -9589,3 +9589,27 @@ select.pf-input {
   .diet-flat-wi-grid { grid-template-columns: 1fr; }
   .diet-flat-dwa-stats { grid-template-columns: repeat(2, 1fr); }
 }
+
+/* =========================================================
+   v9332：所有无描边的内容型小卡片统一加描边
+   user 反馈「没有描边的小卡片都要有一个描边用来区分和背景的颜色」。
+   采用工作台最常用的描边规格：1px solid var(--border)（115 处使用，#E2D3C0 淡奶油边）。
+   仅覆盖 app.js 实际使用的「内容容器型」小卡（14 个），
+   不影响按钮 / 图标 / 进度条 / 徽章 / 圆点 / 弹层 / 输入框。
+   ========================================================= */
+.lk-task,
+.lk-insp,
+.lk-insp-img,
+.lk-wd-row,
+.module-stat,
+.ck-mood,
+.diet-cost-item,
+.calorie-stat,
+.proj-col,
+.mtk-suggest,
+.phase-option,
+.tp-clock,
+.tp-num,
+.xn-picker-item {
+  border: 1px solid var(--border);
+}
