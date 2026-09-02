@@ -5691,9 +5691,9 @@ function renderHealthPage() {
   page.innerHTML = `
     <div class="domain-hero">
       <div class="domain-head">
-        <div class="domain-icon">${icon('health', 24)}</div>
+        <div class="domain-icon">${icon('dumbbell', 24)}</div>
         <div>
-          <h3 class="domain-title">健康</h3>
+          <h3 class="domain-title">运动</h3>
         </div>
       </div>
     </div>
@@ -6080,12 +6080,12 @@ function renderFitness() {
   card.innerHTML = `
     <div class="page-header">
       <div>
-        <h3 class="page-title-main">健身</h3>
+        <h3 class="page-title-main">运动</h3>
         <p class="page-subtitle">${dateString}</p>
       </div>
     </div>
 
-    <div class="fitness-body">${bodyCardHTML(state.body, '我的身体数据', 'fitness')}</div>
+    <div class="fitness-body">${bodyCardHTML(state.body, '身体健康', 'fitness')}</div>
 
     <div class="section-card">
       <div class="section-header">
@@ -6103,7 +6103,7 @@ function renderFitness() {
 
     <div class="section-card">
       <div class="section-header">
-        <span class="section-icon">🎬</span>
+        <span class="section-icon">${icon('video', 16)}</span>
         <span class="section-title">跟练视频</span>
       </div>
       <div class="video-list" id="video-list"></div>
