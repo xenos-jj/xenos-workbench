@@ -8967,7 +8967,13 @@ select.pf-input {
 
 /* 早/晚间护肤分组 */
 .lk-skin-periods { display: flex; flex-direction: column; gap: 10px; }
-.lk-period { padding: 10px; border: 1px solid var(--border-soft); border-radius: 10px; background: var(--bg); }
+.lk-period {
+  /* v9331：去掉早间/晚间块的外边框/背景/圆角——user 反馈护肤 tab 的「早间」「晚间」外框要删；保留里面最内层 .lk-task 任务行的视觉边界。padding 保留以免内容挤在一起。 */
+  padding: 0 0 4px;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+}
 .lk-period-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; font-size: 11px; color: var(--text); }
 .lk-period-state { font-size: 9.5px; font-family: var(--font-small); padding: 2px 8px; border-radius: 999px; background: var(--bg-soft); color: var(--text-muted); }
 .lk-period-state.on { background: var(--green-light); color: #5DAE6C; }
@@ -9075,7 +9081,13 @@ select.pf-input {
 
 /* 早/晚间护肤分组 */
 .lk-skin-periods { display: flex; flex-direction: column; gap: 10px; }
-.lk-period { padding: 10px; border: 1px solid var(--border-soft); border-radius: 10px; background: var(--bg); }
+.lk-period {
+  /* v9331：去掉早间/晚间块的外边框/背景/圆角——user 反馈护肤 tab 的「早间」「晚间」外框要删；保留里面最内层 .lk-task 任务行的视觉边界。padding 保留以免内容挤在一起。 */
+  padding: 0 0 4px;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+}
 .lk-period-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; font-size: 11px; color: var(--text); }
 .lk-period-state { font-size: 9.5px; font-family: var(--font-small); padding: 2px 8px; border-radius: 999px; background: var(--bg-soft); color: var(--text-muted); }
 .lk-period-state.on { background: var(--green-light); color: #5DAE6C; }
