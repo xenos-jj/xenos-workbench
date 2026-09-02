@@ -727,6 +727,16 @@ svg text { font-family: var(--font-small) !important; }
   padding: 0;
 }
 
+/* v9328：饮食页 content-card.diet-page.diet-flat 同样去掉外框——和首页/支线页一致 */
+.content-card.diet-page.diet-flat {
+  background: transparent;
+  box-shadow: none;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  min-height: 0;
+}
+
 .content-empty {
   display: flex;
   flex-direction: column;
@@ -1698,12 +1708,13 @@ svg text { font-family: var(--font-small) !important; }
 }
 
 .section-card {
-  background: var(--card);
-  border: 1px solid var(--border);
+  /* v9328：撤回 v9325 默认加的 background+border+box-shadow——user 反馈「首页和支线页没有外边框」是工作台的视觉规范，外层 section 大卡应保持透明无框，让内层模块卡片独立显示。border-radius + padding + margin-bottom 保留以保持卡片间距。 */
+  background: transparent;
+  border: none;
   border-radius: var(--radius);
   padding: 12px;
   margin-bottom: 10px;
-  box-shadow: var(--shadow);
+  box-shadow: none;
 }
 
 .section-header {
@@ -3569,7 +3580,7 @@ svg text { font-family: var(--font-small) !important; }
 .sidebar-footer { background: var(--sidebar-bg); }
 .footer-btn { background: var(--card); }
 .content-card { background: var(--card); }
-.section-card { background: var(--card); }
+/* v9328：.section-card 主题覆盖层取消——默认 .section-card 已是 transparent 无边框（让外层大卡无外框，符合首页/支线页视觉规范） */
 
 /* ---- 侧边栏：用户资料卡 ---- */
 .profile-card {
@@ -6970,10 +6981,11 @@ select.pf-input {
 
 /* ---------- 卡片通用精致感 ---------- */
 .soft-card {
+  /* v9328：撤回 v9325 加的 background + border——user 反馈「想要首页和支线页面那种没有外边框的」，外层大卡应该透明无框，让内层模块卡片独立显示。保留 box-shadow（让有阴影的内层卡片仍浮起来）+ border-radius + padding。 */
   border-radius: var(--radius);
-  background: #FFFCF7;             /* v9325：加底色——原 transparent 与背景融合看不清 */
-  border: 1px solid var(--border);  /* 加边框 */
-  box-shadow: var(--shadow);        /* 加深阴影（0.10 透明度） */
+  background: transparent;
+  border: none;
+  box-shadow: none;
   padding: 14px;
   margin-bottom: 12px;
 }
@@ -7400,10 +7412,11 @@ select.pf-input {
 
 /* ---------- 卡片通用精致感 ---------- */
 .soft-card {
+  /* v9328：撤回 v9325 加的 background + border——user 反馈「想要首页和支线页面那种没有外边框的」，外层大卡应该透明无框，让内层模块卡片独立显示。保留 box-shadow（让有阴影的内层卡片仍浮起来）+ border-radius + padding。 */
   border-radius: var(--radius);
-  background: #FFFCF7;             /* v9325：加底色——原 transparent 与背景融合看不清 */
-  border: 1px solid var(--border);  /* 加边框 */
-  box-shadow: var(--shadow);        /* 加深阴影（0.10 透明度） */
+  background: transparent;
+  border: none;
+  box-shadow: none;
   padding: 14px;
   margin-bottom: 12px;
 }
