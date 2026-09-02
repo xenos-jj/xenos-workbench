@@ -6116,7 +6116,7 @@ function renderFitness() {
 
     <div class="section-card">
       <div class="section-header">
-        <span class="section-icon">📏</span>
+        <span class="section-icon">${icon('ruler', 16)}</span>
         <span class="section-title">身体维度</span>
       </div>
       <div class="measure-form-row">

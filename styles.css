@@ -2110,19 +2110,29 @@ svg text { font-family: var(--font-small) !important; }
 .bar-ico svg { width: 14px; height: 14px; }
 
 .exercise-list {
+  /* v9339：每个任务行现在有自己的边框，用 gap 让行与行分离（原 border-bottom 分隔线已移除） */
   margin-bottom: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
 }
 
 .exercise-row {
+  /* v9339：对齐通用打卡任务 .module-list-item 的规格——每个任务有自己的边框（原只有 border-bottom 分隔线） */
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 7px 0;
-  border-bottom: 1px solid var(--border);
+  background: #fff;
+  border: 1px solid var(--border-soft);
+  border-radius: 10px;
+  padding: 9px 10px;
+  cursor: pointer;
+  transition: all 0.12s ease;
 }
 
-.exercise-row:last-child {
-  border-bottom: none;
+/* v9339：@media (hover: hover) 包裹——mobile 触屏会误触发 hover 导致边框变色 */
+@media (hover: hover) {
+  .exercise-row:hover { border-color: var(--primary-hover); }
 }
 
 .exercise-row.done .ex-name {
@@ -2136,10 +2146,11 @@ svg text { font-family: var(--font-small) !important; }
 }
 
 .ex-check {
-  width: 16px;
-  height: 16px;
-  border-radius: 5px;
-  border: 1px solid var(--primary);
+  /* v9339：对齐通用打卡任务 .mli-check 的规格（圆形 18x18 + 1px solid var(--border-soft)） */
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1px solid var(--border-soft);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2147,6 +2158,7 @@ svg text { font-family: var(--font-small) !important; }
   color: #fff;
   background: #fff;
   cursor: pointer;
+  padding: 0;
   transition: all 0.15s ease;
 }
 
@@ -2163,21 +2175,27 @@ svg text { font-family: var(--font-small) !important; }
   transform: scale(1);
 }
 
+/* v9339：字体大小对齐通用打卡任务 .mli-text（11px）+ .mli-points（9px + font-small） */
 .ex-name {
   flex: 1;
-  font-size: 10px;
+  font-size: 11px;
   color: var(--text);
+  line-height: 1.4;
 }
 
 .ex-duration {
-  font-size: 11px;
+  font-size: 9px;
+  font-family: var(--font-small);
   color: var(--text-muted);
+  flex-shrink: 0;
 }
 
 .ex-kcal {
-  font-size: 11px;
+  font-size: 9px;
+  font-family: var(--font-small);
   font-weight: 600;
   color: var(--primary-dark);
+  flex-shrink: 0;
 }
 
 .exercise-add-row {
@@ -2227,7 +2245,7 @@ svg text { font-family: var(--font-small) !important; }
   padding: 12px;
   border-radius: var(--radius-sm);
   background: var(--bg);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-soft);
   text-decoration: none;
   color: var(--text);
   transition: all 0.15s ease;
@@ -2235,9 +2253,12 @@ svg text { font-family: var(--font-small) !important; }
   cursor: pointer;
 }
 
-.video-card:hover {
-  background: var(--primary-light);
-  border-color: var(--primary-hover);
+/* v9339：@media (hover: hover) 包裹——mobile 触屏会误触发 hover 导致边框变色 */
+@media (hover: hover) {
+  .video-card:hover {
+    background: var(--primary-light);
+    border-color: var(--primary-hover);
+  }
 }
 
 .video-card.invalid {
@@ -2341,7 +2362,7 @@ svg text { font-family: var(--font-small) !important; }
 
 .measure-form input {
   height: 34px;
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-soft);
   border-radius: var(--radius-sm);
   padding: 0 4px;
   font-size: 11px;
@@ -2427,12 +2448,12 @@ svg text { font-family: var(--font-small) !important; }
 .measure-table th {
   color: var(--text-muted);
   font-weight: 500;
-  border-bottom: 0.5px solid var(--border-soft);
+  border-bottom: 1px solid var(--border-soft);
 }
 
 .measure-table td {
   color: var(--text);
-  border-bottom: 0.5px solid var(--border-soft);
+  border-bottom: 1px solid var(--border-soft);
 }
 
 .chart-wrap {
