@@ -6075,8 +6075,9 @@ select.pf-input {
 .hp-section-title:first-of-type { margin-top: -50px; }
 
 /* v9310：轻量积分摘要（hp-top-block 内、weather 紧下方，2 列紧凑布局） */
+/* v9344：margin-top 6px → -4px，今日积分/本周进度上移 10px */
 .hp-quick-stats {
-  margin: 6px 4px 0;
+  margin: -4px 4px 0;
   display: flex; flex-direction: column; gap: 5px;
 }
 .hp-qs-row {
