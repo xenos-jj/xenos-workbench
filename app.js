@@ -1,5 +1,22 @@
 // xenos workbench app —— 人生系统工作台
 
+// v9342：URL ?reset=1 一键清空全部数据（user 请求清空积分/打卡/收支等所有记录）。
+// 放在文件最顶部、任何 state 加载之前执行——清空 localStorage 后移除 URL 参数并重载，
+// 第二次加载时 state 全部从默认值开始。必须在 replaceState 后再 reload，避免死循环。
+(function () {
+  try {
+    if (new URLSearchParams(location.search).get('reset') === '1') {
+      if (window.confirm('⚠️ 将清空积分、打卡、收支等全部数据，不可恢复。\n确认清空吗？')) {
+        Object.keys(localStorage)
+          .filter(function (k) { return k.indexOf('xenos-') === 0; })
+          .forEach(function (k) { localStorage.removeItem(k); });
+      }
+      history.replaceState(null, '', location.pathname + location.hash);
+      location.reload();
+    }
+  } catch (e) { /* noop */ }
+})();
+
 // ---------- 成长提升：外语模块默认数据（提前定义，避免初始化 TDZ） ----------
 const DEFAULT_LANGUAGE = {
   lang: 'en',
@@ -2563,9 +2580,11 @@ function saveAssetAccounts() {
 }
 
 function accountDelta(t, acc) {
-  const sign = acc.debt ? -1 : 1;
+  // v9342：移除 debt 翻转——负债账户（美团月付）的 balance 本身存的是负数欠款（弹层保存 -Math.abs），
+  // 收支对余额的影响方向与普通账户一致：收入 → 余额变正方向（+amt），支出 → 余额变负方向（-amt）。
+  // 旧代码 sign = acc.debt ? -1 : 1 会把美团支出错算成「欠款减少」（-200 → -150），正确应为欠款增加（-200 → -250）。
   const amt = Number(t.amount) || 0;
-  return sign * (t.type === 'income' ? amt : -amt);
+  return t.type === 'income' ? amt : -amt;
 }
 function accountEffectiveAmount(acc) {
   if (!acc) return 0;
