@@ -8430,11 +8430,14 @@ select.pf-input {
   background: #fff; border: 1px solid var(--border-soft); border-radius: 10px;
   padding: 9px 10px; cursor: pointer; transition: all .12s ease;
 }
-.module-list-item:hover { border-color: var(--primary-hover); }
-.module-list-item.done { background: var(--bg-soft); border-color: var(--border); }
+/* v9341：@media (hover: hover) 包裹——mobile 触屏误触发 hover 会改变边框颜色 */
+@media (hover: hover) {
+  .module-list-item:hover { border-color: var(--primary-hover); }
+}
+.module-list-item.done { background: var(--bg-soft); border-color: var(--border-soft); }
 .module-list-item.done .mli-text { color: var(--text-muted); text-decoration: line-through; }
 .module-list-item .mli-check {
-  width: 18px; height: 18px; border-radius: 50%; border: 1.2px solid var(--border);
+  width: 18px; height: 18px; border-radius: 50%; border: 1px solid var(--border-soft);
   background: #fff; color: var(--text-muted); display: flex; align-items: center; justify-content: center;
   flex-shrink: 0; cursor: pointer; padding: 0;
 }
