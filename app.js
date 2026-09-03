@@ -8295,10 +8295,10 @@ function renderOverview() {
     <div class="hp-quick">
       <div class="hp-section-title" style="margin-top: 66px">${icon('zap', 14)} 快速记录</div>
       <div class="hp-quick-grid">
-        <button class="hp-quick-btn hp-qb-sport" data-qr="sport"><span class="hq-icon hq-sport">${icon('dumbbell', 15)}</span><span class="hq-label">记运动</span></button>
-        <button class="hp-quick-btn hp-qb-sleep" data-qr="sleep"><span class="hq-icon hq-sleep">${icon('moon', 15)}</span><span class="hq-label">记睡眠</span></button>
+        <button class="hp-quick-btn hp-qb-sport" data-qr="sport"><span class="hq-icon hq-sport">${icon('dumbbell', 15)}</span><span class="hq-label">运动</span></button>
+        <button class="hp-quick-btn hp-qb-sleep" data-qr="sleep"><span class="hq-icon hq-sleep">${icon('moon', 15)}</span><span class="hq-label">睡眠</span></button>
         <button class="hp-quick-btn hp-qb-money" data-qr="money"><span class="hq-icon hq-money">${icon('coins', 15)}</span><span class="hq-label">记账</span></button>
-        <button class="hp-quick-btn hp-qb-idea" data-qr="idea"><span class="hq-icon hq-idea">${icon('bulb', 15)}</span><span class="hq-label">记想法</span></button>
+        <button class="hp-quick-btn hp-qb-idea" data-qr="idea"><span class="hq-icon hq-idea">${icon('bulb', 15)}</span><span class="hq-label">灵感</span></button>
       </div>
     </div>
   `;
