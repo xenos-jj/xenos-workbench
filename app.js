@@ -8006,11 +8006,15 @@ async function fetchWeather(city) {
 function overviewRingHTML(pct, colorClass, iconSvg, name, pctLabel, val, color, route) {
   const r = 26, c = 2 * Math.PI * r;
   pct = Math.max(0, Math.min(100, pct || 0));
-  return `<div class="ov-ring ${colorClass}" data-jump="${escapeHTML(route || '')}">
+  // v9345：0% 无数据状态 fg 画满 + opacity 0.35（浅淡可见，不融入背景）；>0% 时正常 dashoffset + opacity 1（深色凸显）
+  const isEmpty = pct === 0;
+  const dashoffset = isEmpty ? 0 : (c * (1 - pct / 100));
+  const fgOpacity = isEmpty ? 0.35 : 1;
+  return `<div class="ov-ring ${colorClass}${isEmpty ? ' is-empty' : ''}" data-jump="${escapeHTML(route || '')}">
     <div class="ov-ring-circle">
       <svg viewBox="0 0 64 64" class="ov-ring-svg">
         <circle class="mr-bg" cx="32" cy="32" r="${r}"></circle>
-        <circle class="mr-fg" cx="32" cy="32" r="${r}" style="stroke-dasharray:${c.toFixed(1)};stroke-dashoffset:${(c * (1 - pct / 100)).toFixed(1)}"></circle>
+        <circle class="mr-fg" cx="32" cy="32" r="${r}" style="stroke-dasharray:${c.toFixed(1)};stroke-dashoffset:${dashoffset.toFixed(1)};opacity:${fgOpacity}"></circle>
       </svg>
       <span class="ov-ring-icon" style="color:${color}">${iconSvg}</span>
     </div>
@@ -8190,7 +8194,9 @@ function renderOverview() {
   const sleepHours = review.sleepHours || 0;
   const SLEEP_GOAL = 8;
   const sleepPct = Math.min(100, Math.round(sleepHours / SLEEP_GOAL * 100));
-  const sleepVal = `${sleepHours.toFixed(1)}/${SLEEP_GOAL} 小时`;
+  // v9345：去掉 .0——整数小时显示 `0` 而非 `0.0`，与"百分比/分数不显示 .0"规则统一
+  const fmtHour = h => h % 1 === 0 ? String(h) : String(parseFloat(h.toFixed(1)));
+  const sleepVal = `${fmtHour(sleepHours)}/${SLEEP_GOAL} 小时`;
 
   const langPct = state.language.dailyGoal ? Math.min(100, Math.round((state.language.todayCount || 0) / state.language.dailyGoal * 100)) : 0;
   const langVal = `${state.language.todayCount || 0}/${state.language.dailyGoal || 20} 分钟`;
@@ -8228,7 +8234,9 @@ function renderOverview() {
         <img src="images/6.png" alt="mascot" class="hp-mascot-img" loading="lazy">
       </div>
     </div>
+    </div>
 
+    <!-- v9345：今日积分/本周进度 移到「今日概览」上方独立一行（独立块，不再嵌入 hp-top-block 或 section-title 内） -->
     <div class="hp-quick-stats">
       <div class="hp-qs-row">
         <div class="hp-qs-col">
@@ -8240,9 +8248,7 @@ function renderOverview() {
       </div>
     </div>
 
-    </div>
-
-    <div class="hp-section-title" style="margin-top: -50px">今日概览</div>
+    <div class="hp-section-title">今日概览</div>
     <div class="hp-rings">
       ${overviewRingHTML(habitPct, 'ring-peach', habitIcon, '每日计划', habitPct + '%', habitVal, '#E8B4A8', '每日计划')}
       ${overviewRingHTML(sleepPct, 'ring-purple', sleepIcon, '睡眠', sleepPct + '%', sleepVal, '#B8AAD8', '睡眠管理')}
@@ -8250,7 +8256,11 @@ function renderOverview() {
       ${overviewRingHTML(langPct, 'ring-purple', langIcon, '学英语', langPct + '%', langVal, '#8978C3', '学习成长')}
     </div>
 
-    <div class="hp-section-title" style="margin-top: 26px">今日主任务 <button class="hmt-add" id="hmt-add" title="添加主任务">+</button></div>
+    <!-- v9345：+ 按钮靠左归属标题（之前用 flex 推到右侧，现在标题行：标题 + + 在左对齐，间距紧凑） -->
+    <div class="hp-section-title hp-section-title-row">
+      <span class="hp-section-title-text">今日主任务</span>
+      <button class="hmt-add" id="hmt-add" title="添加主任务">+</button>
+    </div>
     <div class="hp-main-task">
       <div class="hmt-list">
         ${mainTaskList.length ? mainTaskList.map((t, i) => {
@@ -8292,8 +8302,12 @@ function renderOverview() {
     </div>
 
 
+    <!-- v9345：快速记录标题水平居中（闪电图标 + 文字 水平居中对齐） -->
     <div class="hp-quick">
-      <div class="hp-section-title" style="margin-top: 66px">${icon('zap', 14)} 快速记录</div>
+      <div class="hp-section-title hp-section-title-center">
+        <span class="hp-section-title-icon">${icon('zap', 14)}</span>
+        <span class="hp-section-title-text">快速记录</span>
+      </div>
       <div class="hp-quick-grid">
         <button class="hp-quick-btn hp-qb-sport" data-qr="sport"><span class="hq-icon hq-sport">${icon('dumbbell', 15)}</span><span class="hq-label">运动</span></button>
         <button class="hp-quick-btn hp-qb-sleep" data-qr="sleep"><span class="hq-icon hq-sleep">${icon('moon', 15)}</span><span class="hq-label">睡眠</span></button>

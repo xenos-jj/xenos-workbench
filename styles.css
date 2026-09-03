@@ -5984,12 +5984,13 @@ select.pf-input {
 .hp-greet-wrap { flex: 1; min-width: 0; }
 .hp-greet { font-size: 18px; font-weight: 400; color: var(--text); margin: 0; letter-spacing: .3px; font-family: var(--font-title); }
 .hp-sub { font-size: 11px; color: var(--text-muted); margin: 6px 0 0; }
+/* v9345：天气组件圆角统一为 var(--radius) + 平衡左右排版（与吉祥物插画并排时文字不挤压） */
 .hp-weather {
   display: inline-flex; align-items: center; gap: 6px;
   margin-top: 12px;
   background: rgba(255,255,255,0.85);
   border: 1px solid var(--primary-light);
-  border-radius: 999px;
+  border-radius: var(--radius);
   padding: 5px 12px;
   font-size: 11px; color: var(--primary-dark);
   font-weight: 600;
@@ -6067,17 +6068,20 @@ select.pf-input {
 
 /* 板块标题 */
 .hp-section-title {
-  display: flex; align-items: center; justify-content: space-between;
+  display: flex; align-items: center; justify-content: flex-start; gap: 8px;
   font-size: 13px; font-weight: 700; color: var(--text);
   margin: 26px 4px 14px;
 }
-/* v9299：今日概览 + 下方所有内容再上移 30px（margin-top -20→-50，累计 60px 上移） */
-.hp-section-title:first-of-type { margin-top: -50px; }
+/* v9345：水平居中变体（快速记录标题——闪电图标 + 文字 水平居中对齐） */
+.hp-section-title-center { justify-content: center; }
+/* v9345：行变体（标题 + 按钮靠左归属同一模块） */
+.hp-section-title-row { gap: 6px; }
+.hp-section-title-row .hp-section-title-text { display: inline-block; }
+/* v9345：删除 `:first-of-type { margin-top: -50px }` 历史 hack——现在通过 hp-quick-stats 独立块 + 统一 margin 协调布局 */
 
-/* v9310：轻量积分摘要（hp-top-block 内、weather 紧下方，2 列紧凑布局） */
-/* v9344：margin-top 6px → -4px，今日积分/本周进度上移 10px */
+/* v9345：hp-quick-stats（今日积分+本周进度）现在独立块，置于 hero 下方、今日概览上方；margin 协调全局间距 */
 .hp-quick-stats {
-  margin: -4px 4px 0;
+  margin: 12px 4px 0;
   display: flex; flex-direction: column; gap: 5px;
 }
 .hp-qs-row {
@@ -6103,9 +6107,11 @@ select.pf-input {
 .hp-section-title .hp-more { font-size: 11px; color: var(--text-muted); font-weight: 400; display: flex; align-items: center; gap: 2px; }
 
 /* 今日概览圆环 */
-.hp-rings { display: flex; justify-content: space-between; gap: 8px; }
+/* v9345：横向间距统一 10px（与卡片间 gap 保持一致），4 卡片 padding 留白优化 */
+.hp-rings { display: flex; justify-content: space-between; gap: 10px; }
 .hp-ring { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; }
-.ov-ring { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 4px; box-shadow: var(--shadow); cursor: pointer; transition: transform .12s ease, box-shadow .12s ease; }
+/* v9345：边框 var(--border) → var(--border-soft)（与全局描边规格统一），padding 微调 */
+.ov-ring { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; background: var(--card); border: 1px solid var(--border-soft); border-radius: var(--radius); padding: 14px 4px 12px; box-shadow: var(--shadow); cursor: pointer; transition: transform .12s ease, box-shadow .12s ease; }
 .ov-ring:hover { transform: translateY(-1px); box-shadow: var(--shadow-sm); }
 .ov-ring:active { transform: scale(0.97); }
 .ov-ring-circle { position: relative; width: 56px; height: 56px; }
@@ -6133,10 +6139,11 @@ select.pf-input {
   display: flex; flex-direction: column; gap: 10px;
 }
 .hmt-list { display: flex; flex-direction: column; gap: 10px; }
+/* v9345：今日主任务卡片背景降低橙色饱和度（与整体柔和 UI 协调），保留暖色温但不再饱和刺眼 */
 .hmt-item {
   display: flex; align-items: center; gap: 6px;
-  background: linear-gradient(120deg, #FFF9F3 0%, #FFF3E8 100%);
-  border: 1px solid #F8E4D4;
+  background: linear-gradient(120deg, #FBF6F0 0%, #F7EFE6 100%);
+  border: 1px solid var(--border-soft);
   border-radius: var(--radius-sm);
   padding: 10px 12px;
   box-shadow: var(--shadow);
@@ -6178,12 +6185,13 @@ select.pf-input {
 
 /* 快速记录 */
 .hp-quick { min-width: 0; }
-.hp-quick-grid { display: flex; justify-content: space-around; align-items: center; flex-wrap: wrap; gap: 8px; }
+.hp-quick-grid { display: flex; justify-content: space-around; align-items: center; flex-wrap: wrap; gap: 10px; }
+/* v9345：快速记录按钮 border var(--border) → var(--border-soft) + 优化内部留白 */
 .hp-quick-btn {
   background: #fff;
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-soft);
   border-radius: var(--radius);
-  padding: 8px 14px;
+  padding: 10px 16px;
   display: flex;
   flex-direction: row;
   align-items: center;
