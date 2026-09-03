@@ -4870,6 +4870,7 @@ svg text { font-family: var(--font-small) !important; }
 .profile-fields { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
 .pf-field { display: flex; flex-direction: column; gap: 5px; }
 .pf-label { font-size: 10px; color: var(--text-muted); }
+/* v9347：通用表单 input——padding 上下相等（0）+ line-height 与 height 等 → 文字垂直居中 + box-sizing border-box 包含 padding */
 .pf-input {
   height: 32px;
   border: 1px solid var(--border);
@@ -4881,6 +4882,8 @@ svg text { font-family: var(--font-small) !important; }
   outline: none;
   font-family: inherit;
   width: 100%;
+  box-sizing: border-box;
+  line-height: 32px;
 }
 .pf-input:focus { border-color: var(--primary); }
 /* v9274：工作台日期触发器（替换浏览器默认 input type=date） */
@@ -6790,10 +6793,13 @@ select.pf-input {
 .eng-task-sub { font-size: 10px; color: var(--text-muted); font-family: var(--font); }
 .eng-task-row.done .eng-task-name { color: var(--text-muted); text-decoration: line-through; }
 .eng-task-points { font-size: 9px; color: var(--eng-color, var(--primary-dark)); font-weight: 400; margin-right: 8px; font-family: var(--font-small); }
-.eng-task-note { padding: 5px 12px 10px; background: var(--eng-bg, var(--card)); }
+/* v9347：英语页记录笔记输入框——padding 上下相等（5/12/10 → 10/12/10）+ input 文字垂直居中（line-height: 1 + box-sizing） */
+.eng-task-note { padding: 10px 12px; background: var(--eng-bg, var(--card)); }
 .eng-task-note input {
   width: 100%; border: 1px solid var(--border-soft); border-radius: 8px; padding: 6px 10px;
   font-size: 11px; background: #fff; color: var(--text); outline: none;
+  box-sizing: border-box;
+  line-height: 1.4;
 }
 .eng-task-note input:focus { border-color: var(--eng-color, var(--purple)); }
 .eng-task-row .item-delete {
@@ -8900,11 +8906,15 @@ select.pf-input {
   opacity: 0.38; pointer-events: none; z-index: 5;
 }
 
-.slow-field { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+/* v9347：slow-field（slow-form 内表单组件）—— 卡片内上下间距协调：首项 margin-top 等于项间/末项间距（默认 margin-bottom: 8px）→ 整体视觉上下留白相等；最后一项 margin-bottom 清零 */
+.slow-field { display: flex; align-items: center; gap: 8px; margin: 8px 0; }
+.slow-field:first-child { margin-top: 0; }
+.slow-field:last-child { margin-bottom: 0; }
 .slow-label { flex: 0 0 62px; font-size: 10px; color: var(--text-muted); font-family: var(--font); }
 .slow-field .pf-input { flex: 1; min-width: 0; }
 /* v9283：选择文件卡片统一工作台风格——浅米白底 + 桃色描边 + 圆角，
    内部"选择文件"按钮用 primary 桃色，与工作台其他按钮一致。*/
+/* v9347：file input——padding 上下相等（6px 8px 保持）+ display:flex + align-items:center 让「选择文件」按钮和文字垂直居中（解决内联 baseline 偏移） */
 .slow-field input[type="file"] {
   font-size: 10px;
   padding: 6px 8px;
@@ -8915,6 +8925,10 @@ select.pf-input {
   font-family: var(--font);
   width: 100%;
   cursor: pointer;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  line-height: 1.4;
 }
 .slow-field input[type="file"]::file-selector-button {
   background: var(--primary);
@@ -8926,6 +8940,8 @@ select.pf-input {
   font-family: var(--font);
   cursor: pointer;
   margin-right: 8px;
+  align-self: center;
+  height: auto;
 }
 .slow-field input[type="file"]::file-selector-button:hover {
   background: var(--primary-dark);
