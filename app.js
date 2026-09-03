@@ -6164,7 +6164,6 @@ function renderFitness() {
     const planExercises = state.plans.filter(p => p.group === '运动计划');
     planExercises.forEach(plan => {
       const duration = parsePlanDuration(plan.text);
-      const calories = estimateExerciseCalories(plan.text, duration);
       const row = document.createElement('div');
       row.className = 'exercise-row' + (plan.done ? ' done' : '');
       row.dataset.planId = plan.id;
@@ -6172,7 +6171,7 @@ function renderFitness() {
         <span class="ex-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
         <span class="ex-name">${plan.text}</span>
         <span class="ex-duration">${duration} 分钟</span>
-        <span class="ex-kcal">${calories} kcal</span>
+        <span class="ex-points">+3 分</span>
         <button class="item-delete" data-del-type="plan" data-id="${plan.id}" aria-label="删除"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
       `;
       list.appendChild(row);
@@ -6186,7 +6185,7 @@ function renderFitness() {
         <span class="ex-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
         <span class="ex-name">${ex.name}</span>
         <span class="ex-duration">${ex.duration} 分钟</span>
-        <span class="ex-kcal">${ex.calories} kcal</span>
+        <span class="ex-points">+3 分</span>
         <button class="item-delete" data-del-type="exercise" data-idx="${idx}" aria-label="删除"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
       `;
       list.appendChild(row);

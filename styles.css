@@ -2146,7 +2146,7 @@ svg text { font-family: var(--font-small) !important; }
 }
 
 .ex-check {
-  /* v9339：对齐通用打卡任务 .mli-check 的规格（圆形 18x18 + 1px solid var(--border-soft)） */
+  /* v9340：取消白底——user 截图反馈左侧打卡圈内有底色要删掉。border 1px solid var(--border-soft) 保留（user 明确要求）。 */
   width: 18px;
   height: 18px;
   border-radius: 50%;
@@ -2156,7 +2156,7 @@ svg text { font-family: var(--font-small) !important; }
   justify-content: center;
   flex-shrink: 0;
   color: #fff;
-  background: #fff;
+  background: transparent;
   cursor: pointer;
   padding: 0;
   transition: all 0.15s ease;
@@ -2190,7 +2190,8 @@ svg text { font-family: var(--font-small) !important; }
   flex-shrink: 0;
 }
 
-.ex-kcal {
+/* v9340：.ex-kcal 改为 .ex-points，每项任务显示 +3 分（user 要求每项任务 3 积分），样式对齐 .mli-points / .plan-points（font-size 9px + var(--font-small) + var(--primary-dark) + font-weight 600）。 */
+.ex-points {
   font-size: 9px;
   font-family: var(--font-small);
   font-weight: 600;
