@@ -12244,6 +12244,9 @@ function renderInnerGrowthPage() {
       renderInnerGrowthPage();
     });
   });
+
+  // v9346：修复空白 bug——构造完 page 后从未挂载到 content，导致点击「内在成长」内容区一片空白
+  content.appendChild(page);
 }
 
 
