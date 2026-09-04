@@ -6187,7 +6187,8 @@ select.pf-input {
 
 /* 快速记录 */
 .hp-quick { min-width: 0; }
-.hp-quick-grid { display: flex; justify-content: space-around; align-items: center; flex-wrap: wrap; gap: 10px; }
+/* v9349：参考支线页 .br-slow-list-clean 两列网格布局——4 个快速记录按钮 2×2 排布，每个按钮内 icon+文字 横排不换行 */
+.hp-quick-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 /* v9345：快速记录按钮 border var(--border) → var(--border-soft) + 优化内部留白 */
 .hp-quick-btn {
   background: #fff;
@@ -6200,6 +6201,7 @@ select.pf-input {
   justify-content: center;
   gap: 8px;
   cursor: pointer;
+  white-space: nowrap;
   box-shadow: none;
   transition: transform .12s ease, background .12s ease;
   flex: 1 1 0;
