@@ -12707,10 +12707,14 @@ function renderSocialPage() {
       <h3 class="sub-title">爱好拓展 <span class="sub-spark">${icon('sparkle', 14)}</span></h3>
     </div>
 
-    <div class="module-hero module-hero-social">
-      <div class="mh-body">
-        <h4>爱好滋养</h4>
+    <!-- v9350：原 hero（爱好滋育）+ 下方原「爱好目标」section 合并为一个完整的「爱好目标」模块（参考 user 给的图2：target 图标 + 标题 + 描述 + 修改目标按钮），删掉原来的空白 hero「爱好滋养」卡 -->
+    <div class="section-card module-card">
+      <div class="module-card-head">
+        <span class="module-card-icon" style="color:#A99BD6">${icon('target', 14)}</span>
+        <span class="soft-card-title" style="margin:0;">爱好目标</span>
       </div>
+      <p class="module-goal-text" id="social-goal-text">${escapeHTML(s.goal || DEFAULT_SOCIAL.goal)}</p>
+      <button class="module-edit-goal" id="social-edit-goal">${icon('edit', 11)} 修改目标</button>
     </div>
 
     <div class="section-card module-card">
@@ -12724,16 +12728,6 @@ function renderSocialPage() {
         ${s.actions.length ? s.actions.map(a => renderActionItem(a, 'social-action')).join('') : '<div class="module-empty">本周还没有行动，状态不好时可以直接跳过～</div>'}
       </div>
     </div>
-
-    <div class="section-card module-card">
-      <div class="module-card-head">
-        <span class="module-card-icon" style="color:#A99BD6">${icon('target', 14)}</span>
-        <span class="soft-card-title" style="margin:0;">爱好目标</span>
-      </div>
-      <p class="module-goal-text" id="social-goal-text">${escapeHTML(s.goal || DEFAULT_SOCIAL.goal)}</p>
-      <button class="module-edit-goal" id="social-edit-goal">${icon('edit', 11)} 修改目标</button>
-    </div>
-
   `;
   content.appendChild(page);
 
