@@ -5890,13 +5890,13 @@ select.pf-input {
   margin: 8px 0 10px; text-align: left;
   display: flex; align-items: center;
 }
-/* v9352：3 列（过滤当前 tab 后剩 3 个快捷入口，一行排布不分两行） */
-.qr-short-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+/* v9353：3 列（过滤当前 tab 后剩 3 个快捷入口），总宽 max 限制 + 居中——避免撑到 modal 边缘 */
+.qr-short-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; max-width: 420px; margin: 0 auto; }
 .qr-short {
   background: #fff;
   border: 1px solid var(--border-soft);
   border-radius: var(--radius-sm);
-  padding: 11px 8px;
+  padding: 9px 8px;
   cursor: pointer;
   display: flex;
   align-items: center;
