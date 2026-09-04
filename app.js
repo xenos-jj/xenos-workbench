@@ -8256,8 +8256,8 @@ function renderOverview() {
       ${overviewRingHTML(langPct, 'ring-purple', langIcon, '学英语', langPct + '%', langVal, '#8978C3', '学习成长')}
     </div>
 
-    <!-- v9345：+ 按钮靠左归属标题（之前用 flex 推到右侧，现在标题行：标题 + + 在左对齐，间距紧凑） -->
-    <div class="hp-section-title hp-section-title-row">
+    <!-- v9348：今日主任务 + 按钮放屏幕右侧（space-between：标题左 + + 右） -->
+    <div class="hp-section-title hp-title-split">
       <span class="hp-section-title-text">今日主任务</span>
       <button class="hmt-add" id="hmt-add" title="添加主任务">+</button>
     </div>
@@ -8302,11 +8302,11 @@ function renderOverview() {
     </div>
 
 
-    <!-- v9345：快速记录标题水平居中（闪电图标 + 文字 水平居中对齐） -->
+    <!-- v9348：快速记录标题左对齐「今日主任务」最左侧；文字「快速记录」在前、闪电图标在后 -->
     <div class="hp-quick">
-      <div class="hp-section-title hp-section-title-center">
-        <span class="hp-section-title-icon">${icon('zap', 14)}</span>
+      <div class="hp-section-title">
         <span class="hp-section-title-text">快速记录</span>
+        <span class="hp-section-title-icon">${icon('zap', 14)}</span>
       </div>
       <div class="hp-quick-grid">
         <button class="hp-quick-btn hp-qb-sport" data-qr="sport"><span class="hq-icon hq-sport">${icon('dumbbell', 15)}</span><span class="hq-label">运动</span></button>
