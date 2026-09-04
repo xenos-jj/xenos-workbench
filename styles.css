@@ -6217,10 +6217,10 @@ select.pf-input {
   font-size: 15px; box-sizing: border-box;
   flex-shrink: 0;
 }
-/* v9355：文字区横排——主名 + · + 副名（同行），flex:1 占中间 */
+/* v9356：主名 13→10.5px（与今日概览 .ov-ring-name 一致）/ 副名 10→9px（与 .ov-ring-val 一致），都是小灰字风 */
 .hp-quick-btn .hq-text { display: flex; flex-direction: row; align-items: baseline; gap: 6px; flex: 1; min-width: 0; overflow: hidden; line-height: 1.2; }
-.hp-quick-btn .hq-title { font-size: 13px; font-weight: 700; color: var(--text); line-height: 1.2; white-space: nowrap; flex-shrink: 0; }
-.hp-quick-btn .hq-sub { font-size: 10px; color: var(--text-muted); font-family: var(--font-small); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; flex: 1; }
+.hp-quick-btn .hq-title { font-size: 10.5px; font-weight: 600; color: var(--text); line-height: 1.2; white-space: nowrap; flex-shrink: 0; }
+.hp-quick-btn .hq-sub { font-size: 9px; color: var(--text-muted); font-family: var(--font-small); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; flex: 1; }
 /* v9355：保留旧 .hq-label 兼容（无引用但保留无害） */
 .hp-quick-btn .hq-label { font-size: 11.5px; font-weight: 600; color: var(--text); line-height: 1.2; }
 .hp-quick-btn .hq-arrow { font-size: 16px; color: var(--text-muted); flex-shrink: 0; line-height: 1; font-weight: 400; }
