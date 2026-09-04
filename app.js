@@ -8309,10 +8309,39 @@ function renderOverview() {
         <span class="hp-section-title-icon">${icon('zap', 14)}</span>
       </div>
       <div class="hp-quick-grid">
-        <button class="hp-quick-btn hp-qb-sport" data-qr="sport"><span class="hq-icon hq-sport">${icon('dumbbell', 15)}</span><span class="hq-label">运动</span></button>
-        <button class="hp-quick-btn hp-qb-sleep" data-qr="sleep"><span class="hq-icon hq-sleep">${icon('moon', 15)}</span><span class="hq-label">睡眠</span></button>
-        <button class="hp-quick-btn hp-qb-money" data-qr="money"><span class="hq-icon hq-money">${icon('coins', 15)}</span><span class="hq-label">记账</span></button>
-        <button class="hp-quick-btn hp-qb-idea" data-qr="idea"><span class="hq-icon hq-idea">${icon('bulb', 15)}</span><span class="hq-label">灵感</span></button>
+        <!-- v9351：1:1 还原参考样式——白底 + 各色描边 + 图标 + 粗体标题 + 灰色副标题 + 右箭头；标题改为"收支/想法" -->
+        <button class="hp-quick-btn hp-qb-sport" data-qr="sport">
+          <span class="hq-icon hq-sport">${icon('dumbbell', 15)}</span>
+          <span class="hq-text">
+            <span class="hq-title">运动</span>
+            <span class="hq-sub">打卡运动时长</span>
+          </span>
+          <span class="hq-arrow">›</span>
+        </button>
+        <button class="hp-quick-btn hp-qb-sleep" data-qr="sleep">
+          <span class="hq-icon hq-sleep">${icon('moon', 15)}</span>
+          <span class="hq-text">
+            <span class="hq-title">睡眠</span>
+            <span class="hq-sub">记录睡眠时间</span>
+          </span>
+          <span class="hq-arrow">›</span>
+        </button>
+        <button class="hp-quick-btn hp-qb-money" data-qr="money">
+          <span class="hq-icon hq-money">${icon('coins', 15)}</span>
+          <span class="hq-text">
+            <span class="hq-title">收支</span>
+            <span class="hq-sub">记录一笔收入</span>
+          </span>
+          <span class="hq-arrow">›</span>
+        </button>
+        <button class="hp-quick-btn hp-qb-idea" data-qr="idea">
+          <span class="hq-icon hq-idea">${icon('bulb', 15)}</span>
+          <span class="hq-text">
+            <span class="hq-title">想法</span>
+            <span class="hq-sub">闪现一个想法</span>
+          </span>
+          <span class="hq-arrow">›</span>
+        </button>
       </div>
     </div>
   `;

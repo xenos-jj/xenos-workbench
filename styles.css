@@ -6189,40 +6189,48 @@ select.pf-input {
 .hp-quick { min-width: 0; }
 /* v9349：参考支线页 .br-slow-list-clean 两列网格布局——4 个快速记录按钮 2×2 排布，每个按钮内 icon+文字 横排不换行 */
 .hp-quick-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-/* v9345：快速记录按钮 border var(--border) → var(--border-soft) + 优化内部留白 */
+/* v9351：1:1 还原参考样式——白底 + 各色描边 + 三段式 [icon / title+sub / ›] */
 .hp-quick-btn {
   background: #fff;
-  border: 1px solid var(--border-soft);
+  border: 1.5px solid var(--border-soft);
   border-radius: var(--radius);
-  padding: 10px 16px;
+  padding: 12px 14px;
   display: flex;
   flex-direction: row;
   align-items: center;
-  justify-content: center;
-  gap: 8px;
+  justify-content: flex-start;
+  gap: 10px;
   cursor: pointer;
   white-space: nowrap;
   box-shadow: none;
-  transition: transform .12s ease, background .12s ease;
+  transition: transform .12s ease, background .12s ease, border-color .12s ease;
   flex: 1 1 0;
   min-width: 0;
 }
 .hp-quick-btn:hover { transform: translateY(-1px); }
-.hp-quick-btn:active { transform: scale(0.95); }
+.hp-quick-btn:active { transform: scale(0.98); }
 .hp-quick-btn .hq-icon {
-  width: 28px; height: 28px; border-radius: 50%;
+  width: 32px; height: 32px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
   font-size: 15px; box-sizing: border-box;
   flex-shrink: 0;
 }
-.hp-quick-btn .hq-label { font-size: 11.5px; font-weight: 600; color: var(--text); line-height: 1.2; }
-.hp-qb-sport { background: #F4FBF1; border-color: #9ACB86; }
+/* v9351：文字区（标题 + 副标题）—— 垂直排列，flex:1 占满中间 */
+.hp-quick-btn .hq-text { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; align-items: flex-start; }
+.hp-quick-btn .hq-title { font-size: 12.5px; font-weight: 700; color: var(--text); line-height: 1.2; }
+.hp-quick-btn .hq-sub { font-size: 9.5px; color: var(--text-muted); line-height: 1.2; font-family: var(--font-small); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hp-quick-btn .hq-arrow { font-size: 16px; color: var(--text-muted); flex-shrink: 0; line-height: 1; font-weight: 400; }
+/* v9351：v9343 改的"去掉旧 hq-label"——本版本不再使用但保留兼容（旧 class 已无引用） */
+/* 各按钮保持原有 4 色调色：绿/紫/橙/金，仅底色从浅彩色改为白色 */
+/* 颜色仍按旧色系：绿 9ACB86 / 紫 B8AAD8 / 橙 F4B75B / 金 E6C95B */
+.hp-qb-sport { border-color: #9ACB86; }
 .hp-qb-sport .hq-icon { background: #E8F5E4; color: #5A8A4A; }
-.hp-qb-sleep { background: #FAF8FD; border-color: #B8AAD8; }
+.hp-qb-sleep { border-color: #B8AAD8; }
 .hp-qb-sleep .hq-icon { background: #F0EBF8; color: #7C6DA8; }
-.hp-qb-money { background: #FFFBF5; border-color: #F4B75B; }
+.hp-qb-money { border-color: #F4B75B; }
 .hp-qb-money .hq-icon { background: #FFF6E6; color: #C88F2A; }
-.hp-qb-idea { background: #FFFDF5; border-color: #E6C95B; }
+/* v9351：白底——移除浅金底色 #FFFDF5 */
+.hp-qb-idea { border-color: #E6C95B; }
 .hp-qb-idea .hq-icon { background: #FCF6DD; color: #A8942D; }
 
 /* 主任务 / 支线 选择弹窗 */
