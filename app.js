@@ -8309,12 +8309,11 @@ function renderOverview() {
         <span class="hp-section-title-icon">${icon('zap', 14)}</span>
       </div>
       <div class="hp-quick-grid">
-        <!-- v9351：1:1 还原参考样式——白底 + 各色描边 + 图标 + 粗体标题 + 灰色副标题 + 右箭头；标题改为"收支/想法" -->
+        <!-- v9354：删除副标题小字；标题改回「记账」「灵感」（user 要求保留 运动/睡眠/记账/灵感） -->
         <button class="hp-quick-btn hp-qb-sport" data-qr="sport">
           <span class="hq-icon hq-sport">${icon('dumbbell', 15)}</span>
           <span class="hq-text">
             <span class="hq-title">运动</span>
-            <span class="hq-sub">打卡运动时长</span>
           </span>
           <span class="hq-arrow">›</span>
         </button>
@@ -8322,23 +8321,20 @@ function renderOverview() {
           <span class="hq-icon hq-sleep">${icon('moon', 15)}</span>
           <span class="hq-text">
             <span class="hq-title">睡眠</span>
-            <span class="hq-sub">记录睡眠时间</span>
           </span>
           <span class="hq-arrow">›</span>
         </button>
         <button class="hp-quick-btn hp-qb-money" data-qr="money">
           <span class="hq-icon hq-money">${icon('coins', 15)}</span>
           <span class="hq-text">
-            <span class="hq-title">收支</span>
-            <span class="hq-sub">记录一笔收入</span>
+            <span class="hq-title">记账</span>
           </span>
           <span class="hq-arrow">›</span>
         </button>
         <button class="hp-quick-btn hp-qb-idea" data-qr="idea">
           <span class="hq-icon hq-idea">${icon('bulb', 15)}</span>
           <span class="hq-text">
-            <span class="hq-title">想法</span>
-            <span class="hq-sub">闪现一个想法</span>
+            <span class="hq-title">灵感</span>
           </span>
           <span class="hq-arrow">›</span>
         </button>
@@ -13553,10 +13549,11 @@ function ideaTabHTML() {
 }
 
 const QR_TITLES = { sport: '运动', sleep: '睡眠', money: '记账', idea: '灵感' };
-const QR_SHORT_LABELS = { sport: '运动', sleep: '睡眠', money: '收支', idea: '想法' };
+const QR_SHORT_LABELS = { sport: '运动', sleep: '睡眠', money: '记账', idea: '灵感' };
 const QR_SHORT_ICONS = { sport: 'dumbbell', sleep: 'moon', money: 'coins', idea: 'bulb' };
 const QR_SHORT_SUBS = { money: 'income' };
-const QR_SHORT_TIPS = { sport: '打卡运动时长', sleep: '记录睡眠时间', money: '记录一笔收入', idea: '闪现一个想法' };
+// v9354：副标题小字已删除（QR_SHORT_TIPS 保留空文案表仅防遗漏引用报错）
+const QR_SHORT_TIPS = { sport: '', sleep: '', money: '', idea: '' };
 const QR_SHORT_COLORS = { sport: 'qr-short-green', sleep: 'qr-short-blue', money: 'qr-short-gold', idea: 'qr-short-pink' };
 
 function renderQuickShortcuts(current) {
@@ -13570,7 +13567,7 @@ function renderQuickShortcuts(current) {
     const subAttr = sub ? ` data-sub="${sub}"` : '';
     return `<button class="qr-short" data-qr="${t}"${subAttr}>
       <span class="qr-short-ico ${QR_SHORT_COLORS[t]}">${icon(QR_SHORT_ICONS[t], 15)}</span>
-      <span class="qr-short-text"><b>${QR_SHORT_LABELS[t]}</b><small>${QR_SHORT_TIPS[t]}</small></span>
+      <span class="qr-short-text"><b>${QR_SHORT_LABELS[t]}</b></span>
       <span class="qr-short-arrow">›</span>
     </button>`;
   }).join('');
