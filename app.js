@@ -8309,32 +8309,36 @@ function renderOverview() {
         <span class="hp-section-title-icon">${icon('zap', 14)}</span>
       </div>
       <div class="hp-quick-grid">
-        <!-- v9354：删除副标题小字；标题改回「记账」「灵感」（user 要求保留 运动/睡眠/记账/灵感） -->
+        <!-- v9355：恢复副标题小字（v9354 误删），主名+副名同一行（横排 flex row），边框改 1px -->
         <button class="hp-quick-btn hp-qb-sport" data-qr="sport">
           <span class="hq-icon hq-sport">${icon('dumbbell', 15)}</span>
           <span class="hq-text">
-            <span class="hq-title">运动</span>
+            <b class="hq-title">运动</b>
+            <small class="hq-sub">和呼吸一起，慢慢动起来</small>
           </span>
           <span class="hq-arrow">›</span>
         </button>
         <button class="hp-quick-btn hp-qb-sleep" data-qr="sleep">
           <span class="hq-icon hq-sleep">${icon('moon', 15)}</span>
           <span class="hq-text">
-            <span class="hq-title">睡眠</span>
+            <b class="hq-title">睡眠</b>
+            <small class="hq-sub">记下昨晚的休息时间</small>
           </span>
           <span class="hq-arrow">›</span>
         </button>
         <button class="hp-quick-btn hp-qb-money" data-qr="money">
           <span class="hq-icon hq-money">${icon('coins', 15)}</span>
           <span class="hq-text">
-            <span class="hq-title">记账</span>
+            <b class="hq-title">记账</b>
+            <small class="hq-sub">随手记一笔收支</small>
           </span>
           <span class="hq-arrow">›</span>
         </button>
         <button class="hp-quick-btn hp-qb-idea" data-qr="idea">
           <span class="hq-icon hq-idea">${icon('bulb', 15)}</span>
           <span class="hq-text">
-            <span class="hq-title">灵感</span>
+            <b class="hq-title">灵感</b>
+            <small class="hq-sub">好想法就赶紧记下</small>
           </span>
           <span class="hq-arrow">›</span>
         </button>
