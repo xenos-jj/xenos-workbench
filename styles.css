@@ -5890,7 +5890,8 @@ select.pf-input {
   margin: 8px 0 10px; text-align: left;
   display: flex; align-items: center;
 }
-.qr-short-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+/* v9352：3 列（过滤当前 tab 后剩 3 个快捷入口，一行排布不分两行） */
+.qr-short-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
 .qr-short {
   background: #fff;
   border: 1px solid var(--border-soft);
@@ -5919,9 +5920,10 @@ select.pf-input {
 .qr-short-gold { background: #FFF4E6; color: var(--gold-deep); }
 .qr-short-pink { background: #FFF0F0; }
 /* v9289：横向排列「记运动」+ 副名；主名小加粗、副名浅色小字一行展示，不再竖排 */
-.qr-short-text { display: flex; flex-direction: row; align-items: baseline; gap: 5px; line-height: 1.2; min-width: 0; flex: 1; }
-.qr-short-text b { font-size: 12px; color: var(--text); font-weight: 700; }
-.qr-short-text small { font-size: 10px; color: var(--text-muted); font-family: var(--font-small); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* v9352：min-width 0 让 flex:1 在 grid 中可压缩 + 主名也加 ellipsis 防御溢出 */
+.qr-short-text { display: flex; flex-direction: row; align-items: baseline; gap: 5px; line-height: 1.2; min-width: 0; flex: 1; overflow: hidden; }
+.qr-short-text b { font-size: 12px; color: var(--text); font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex-shrink: 1; min-width: 0; }
+.qr-short-text small { font-size: 10px; color: var(--text-muted); font-family: var(--font-small); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; flex-shrink: 1; }
 .qr-short-arrow { color: var(--text-muted); font-size: 14px; flex-shrink: 0; }
 
 /* 保存按钮 */

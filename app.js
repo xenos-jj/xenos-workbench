@@ -13562,9 +13562,10 @@ const QR_SHORT_COLORS = { sport: 'qr-short-green', sleep: 'qr-short-blue', money
 function renderQuickShortcuts(current) {
   const grid = document.getElementById('qr-short-grid');
   if (!grid) return;
-  // v9294：恢复 4 张全显示（图2 2×2 排版），加回<b>主名（类别名「运动/睡眠/收支/想法」），保留<small>副名
+  // v9352：过滤掉当前 tab——只显示其他 3 个快捷入口；3 个一行排布
   const order = ['sport', 'sleep', 'money', 'idea'];
-  grid.innerHTML = order.map(t => {
+  const visible = order.filter(t => t !== current);
+  grid.innerHTML = visible.map(t => {
     const sub = QR_SHORT_SUBS[t] || '';
     const subAttr = sub ? ` data-sub="${sub}"` : '';
     return `<button class="qr-short" data-qr="${t}"${subAttr}>
