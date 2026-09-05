@@ -6118,7 +6118,8 @@ select.pf-input {
 }
 .hp-qs-col { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
 .hp-qs-col span { display: flex; align-items: center; gap: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.hp-qs-col b { color: var(--text); font-weight: 700; font-family: var(--font); flex-shrink: 0; }
+/* v9395：积分数字颜色/字重与文字统一（--text-muted / 常规），仅字号 10px 与文字一致 */
+.hp-qs-col b { color: var(--text-muted); font-weight: 400; font-family: var(--font); flex-shrink: 0; }
 .hp-qs-col svg { flex-shrink: 0; opacity: .75; }
 .hp-qs-bar {
   height: 4px; background: rgba(232,159,92,0.14);
@@ -6166,10 +6167,10 @@ select.pf-input {
   display: flex; flex-direction: column; gap: 10px;
 }
 .hmt-list { display: flex; flex-direction: column; gap: 10px; }
-/* v9345：今日主任务卡片背景降低橙色饱和度（与整体柔和 UI 协调），保留暖色温但不再饱和刺眼 */
+/* v9395：去掉渐变底色（仅保留边框/阴影），整体更通透 */
 .hmt-item {
   display: flex; align-items: center; gap: 6px;
-  background: linear-gradient(120deg, #FBF6F0 0%, #F7EFE6 100%);
+  background: transparent;
   border: 1px solid var(--border-soft);
   border-radius: var(--radius-sm);
   padding: 10px 12px;

@@ -8367,7 +8367,7 @@ function renderOverview() {
               </div>
               <div class="hmt-meta-row">
                 <span class="hmt-prog-text">${pct}% · ${actual}/${target} 分钟</span>
-                <button class="hmt-target-edit" data-target-edit="${t.id}" title="编辑目标专注时长">🎯 ${target}分</button>
+                <button class="hmt-target-edit" data-target-edit="${t.id}" title="编辑目标专注时长">${target}分</button>
                 <button class="${focusCls}" data-focus-main="${escapeHTML(t.text)}">${isPaused ? '▶ ' : (isDone ? '✓ ' : '▶ ')}${focusLabel}</button>
               </div>
             </div>
