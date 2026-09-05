@@ -5470,10 +5470,8 @@ function openTimePicker(opts) {
   }));
   numH.addEventListener('click', () => { activeTab = 'hour'; tabs.forEach(x => x.classList.toggle('active', x.dataset.tpTab === 'hour')); update(); });
   numM.addEventListener('click', () => { activeTab = 'min'; tabs.forEach(x => x.classList.toggle('active', x.dataset.tpTab === 'min')); update(); });
-  overlay.querySelector('#tp-clock').addEventListener('click', e => {
-    const cell = e.target.closest('.tp-cell');
-    if (!cell) return;
-    const v = parseInt(cell.dataset.tpV, 10);
+  /* v9366：抽取 applyClockValue(v) 复用——点击 + 拖动都调它 */
+  function applyClockValue(v) {
     if (activeTab === 'hour') {
       /* v9364：12 小时制 hour 选择——v 1-11 直接用，v=0 表示 12 */
       hour = v === 0 ? 12 : v;
@@ -5481,6 +5479,48 @@ function openTimePicker(opts) {
       if (hour >= 24) hour -= 24;
     } else minute = clamp(v, 0, 59);
     update();
+  }
+  const clock = overlay.querySelector('#tp-clock');
+  /* v9366：按住拖动支持——pointerdown 立即响应 + pointermove 跟随手指找到最近 cell */
+  function nearestCell(clientX, clientY) {
+    const rect = clock.getBoundingClientRect();
+    /* 把 client 坐标转成 100×100 viewBox 相对坐标 */
+    const vx = (clientX - rect.left) * 100 / rect.width;
+    const vy = (clientY - rect.top) * 100 / rect.height;
+    let best = null, bestD = Infinity;
+    clock.querySelectorAll('.tp-cell').forEach(c => {
+      const cx = parseFloat(c.style.left);
+      const cy = parseFloat(c.style.top);
+      const dx = vx - cx, dy = vy - cy;
+      const d = dx * dx + dy * dy;
+      if (d < bestD) { bestD = d; best = c; }
+    });
+    return best;
+  }
+  let dragging = false;
+  clock.addEventListener('pointerdown', e => {
+    e.preventDefault();
+    dragging = true;
+    clock.setPointerCapture(e.pointerId);
+    const cell = nearestCell(e.clientX, e.clientY);
+    if (cell) applyClockValue(parseInt(cell.dataset.tpV, 10));
+  });
+  clock.addEventListener('pointermove', e => {
+    if (!dragging) return;
+    const cell = nearestCell(e.clientX, e.clientY);
+    if (cell) applyClockValue(parseInt(cell.dataset.tpV, 10));
+  });
+  clock.addEventListener('pointerup', e => {
+    dragging = false;
+    try { clock.releasePointerCapture(e.pointerId); } catch (_) {}
+  });
+  clock.addEventListener('pointercancel', () => { dragging = false; });
+  /* v9366：保留 click 兜底（鼠标用户也可能 click） */
+  clock.addEventListener('click', e => {
+    if (dragging) return;
+    const cell = e.target.closest('.tp-cell');
+    if (!cell) return;
+    applyClockValue(parseInt(cell.dataset.tpV, 10));
   });
   overlay.querySelector('#tp-set').addEventListener('click', () => { if (opts.onSelect) opts.onSelect(fmt()); close(); });
   const tpClear = overlay.querySelector('#tp-clear');

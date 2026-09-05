@@ -8140,7 +8140,13 @@ select.pf-input {
   /* v9364：aspect-ratio 1.4/1 → 1/1 正方形——之前横向扁圆不好看 */
   position: relative; width: 100%; aspect-ratio: 1 / 1; max-width: 240px; margin: 0 auto 14px;
   background: var(--bg-soft); border-radius: 12px;
+  /* v9366：cursor grab + touch-action none——按住拖动支持（iOS 原生 picker 体验） */
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
 }
+.tp-clock:active { cursor: grabbing; }
 /* v9364：上午/下午切换按钮——横排 pill 形 */
 .tp-am-pm { display: flex; justify-content: center; gap: 6px; margin: 4px 0 10px; }
 .tp-ampm {
