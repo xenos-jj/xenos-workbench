@@ -9821,19 +9821,19 @@ select.pf-input {
 
 /* ============================================================
    v9381/v9385：工作台【全局板块标题间距规则】—— 全部页面统一生效
-   规则：① 页面级板块标题 → 上外边距 16px / 下外边距 8px
-        ② 卡内板块标题   → 下外边距统一 8px（上边距保持原值，避免撑大卡片）
+   规则：① 页面级板块标题 → 上外边距 18px / 下外边距 6px
+        ② 卡内板块标题   → 下外边距统一 6px（上边距保持原值，避免撑大卡片）
         ③ 只改上下外边距，卡片大小/字体/图标/配色/圆角全部保留
    注意：用 margin-top/margin-bottom 单独设置（不用 margin 简写），保留原有左右值
    ============================================================ */
-/* ① 页面级板块标题（在卡片之外，独立分组）：上 16 / 下 8 */
+/* ① 页面级板块标题（在卡片之外，独立分组）：上 18 / 下 6 */
 .hp-section-title,
 .br-section-header {
-  margin-top: 16px !important;
-  margin-bottom: 8px !important;
+  margin-top: 18px !important;
+  margin-bottom: 6px !important;
 }
 
-/* ② 卡内板块标题（在卡片内部顶部）：下外边距统一 8px，上边距不动 */
+/* ② 卡内板块标题（在卡片内部顶部）：下外边距统一 6px，上边距不动 */
 .section-header,
 .insp-section-head,
 .plan-group-title,
@@ -9845,5 +9845,27 @@ select.pf-input {
 .qr-short-title,
 .ing-detail-log-title,
 .meal-group-title {
-  margin-bottom: 8px !important;
+  margin-bottom: 6px !important;
 }
+
+/* ============================================================
+   v9391：首页视觉批改（user 逐项要求）—— 全部 !important 兜底，集中可回滚
+   ① 顶栏主标题 700→600（.brand-title 全站顶栏共用，一改全站生效）
+   ② 副标题「愿你稳步向理想的自己靠近」→ 草莓体
+   ③ 吉祥物纯视觉放大 20px（scale 1.138 ≈ 145→165px），不占布局、不影响其他元素位置
+   ④ 今日积分行 10px + 草莓体（star 图标已在 app.js 删除）
+   ⑤ 环卡：名称 10px/500 · 百分比 12px/600 · 环粗度 4→3（缩小 1/4）
+   ⑥ 主任务卡：主标题 10px/500 · 副标题 9px
+   ⑦ 快速记录：主名 10px/500（副名已 9px）
+   ============================================================ */
+.brand-title { font-weight: 600 !important; }
+.hp-sub { font-family: var(--font) !important; }
+.hp-mascot-img { transform: scale(1.138) !important; }
+.hp-qs-row { font-size: 10px !important; font-family: var(--font) !important; }
+.ov-ring-name { font-size: 10px !important; font-weight: 500 !important; }
+.ov-ring-pct { font-size: 12px !important; font-weight: 600 !important; }
+.ov-ring-circle .mr-bg,
+.ov-ring-circle .mr-fg { stroke-width: 3 !important; }
+.hmt-title { font-size: 10px !important; font-weight: 500 !important; }
+.hmt-sub { font-size: 9px !important; }
+.hp-quick-btn .hq-title { font-size: 10px !important; font-weight: 500 !important; }

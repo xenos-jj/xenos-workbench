@@ -8320,11 +8320,11 @@ function renderOverview() {
     </div>
     </div>
 
-    <!-- v9383：今日积分单列（删除「本周进度」）——下方 CSS 再上移 20px 填补空位 -->
+    <!-- v9391：今日积分单列（v9383 删「本周进度」；v9391 删 star 图标、文字改 10px 草莓体见 CSS） -->
     <div class="hp-quick-stats">
       <div class="hp-qs-row">
         <div class="hp-qs-col">
-          <span>${icon('star', 11)} 今日积分：<b>${todayPts}</b></span>
+          <span>今日积分：<b>${todayPts}</b></span>
         </div>
       </div>
     </div>
