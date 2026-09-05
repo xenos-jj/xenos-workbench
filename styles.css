@@ -8226,7 +8226,8 @@ select.pf-input {
 .insp-diy-btn svg { opacity: .7; }
 /* v9288：洞察页吉祥物 +20px（96→116），用 max-width/right 负偏移自适应内移，不超出页面 */
 .insp-mascot-img {
-  width: 116px; height: 116px; flex-shrink: 0; border-radius: 18px;
+  /* v9375：洞察页吉祥物放大 15px（116 → 131） */
+  width: 131px; height: 131px; flex-shrink: 0; border-radius: 18px;
   background: transparent; position: relative; overflow: hidden;
   display: flex; align-items: center; justify-content: center;
   max-width: 100%;
@@ -8234,7 +8235,8 @@ select.pf-input {
 .insp-mascot-img img { width: 100%; height: 100%; object-fit: contain; display: block; }
 @media (max-width: 480px) {
   /* 窄屏防止溢出：缩小到 80px 并略向左内移 */
-  .insp-mascot-img { width: 80px; height: 80px; transform: translateX(-6px); border-radius: 14px; }
+  /* v9375：窄屏同样放大 15px（80 → 95） */
+  .insp-mascot-img { width: 95px; height: 95px; transform: translateX(-6px); border-radius: 14px; }
 }
 .insp-empty { font-size: 11px; color: var(--text-muted); text-align: center; padding: 18px 10px; line-height: 1.6; }
 
