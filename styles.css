@@ -9804,3 +9804,32 @@ select.pf-input {
   gap: 6px;
 }
 .insp-section-more { font-size: 10px; }
+
+/* ============================================================
+   v9381：工作台【全局板块标题间距规则】—— 全部页面统一生效
+   规则：① 页面级板块标题 → 上外边距 16px / 下外边距 10px
+        ② 卡内板块标题   → 下外边距统一 10px（上边距保持原值，避免撑大卡片）
+        ③ 只改上下外边距，卡片大小/字体/图标/配色/圆角全部保留
+   注意：用 margin-top/margin-bottom 单独设置（不用 margin 简写），保留原有左右值
+   ============================================================ */
+/* ① 页面级板块标题（在卡片之外，独立分组）：上 16 / 下 10 */
+.hp-section-title,
+.br-section-header {
+  margin-top: 16px !important;
+  margin-bottom: 10px !important;
+}
+
+/* ② 卡内板块标题（在卡片内部顶部）：下外边距统一 10px，上边距不动 */
+.section-header,
+.insp-section-head,
+.plan-group-title,
+.soft-card-title,
+.body-card-header,
+.asset-header,
+.swot-title,
+.qr-range-head,
+.qr-short-title,
+.ing-detail-log-title,
+.meal-group-title {
+  margin-bottom: 10px !important;
+}

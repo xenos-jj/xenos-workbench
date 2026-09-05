@@ -2,19 +2,19 @@
 // 提速策略（v9152）：静态资源 cache-first，version.json 网络直连。
 // 版本更新仍由 index.html 内联探针（直连 version.json）保证：探测到新版本即强制刷新，
 // 因此此处缓存 app.js/styles.css/字体/图片 不会造成“看不到新版”的问题。
-const CACHE = 'xenos-cache-v9380';
+const CACHE = 'xenos-cache-v9381';
 const STATIC = [
   './',
   'index.html',
-  'app.js?v=380',
-  'styles.css?v=380',
-  'fonts/zcool-sub.ttf?v=380',
-  'fonts/strawberry-sub.ttf?v=380',
+  'app.js?v=381',
+  'styles.css?v=381',
+  'fonts/zcool-sub.ttf?v=381',
+  'fonts/strawberry-sub.ttf?v=381',
   'assets/mascot.png',
-  'manifest.webmanifest?v=380',
-  'icon-192.png?v=380',
-  'modules/study.js?v=380',
-  'modules/contentlib.js?v=380'
+  'manifest.webmanifest?v=381',
+  'icon-192.png?v=381',
+  'modules/study.js?v=381',
+  'modules/contentlib.js?v=381'
 ];
 
 self.addEventListener('install', (e) => {
