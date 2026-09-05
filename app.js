@@ -5374,13 +5374,18 @@ function openTimePicker(opts) {
   overlay.innerHTML = `
     <div class="datepicker-card tp-card">
       <div class="tp-display">
-        <div class="tp-num" data-tp-hour>${String(hour).padStart(2, '0')}</div>
+        <div class="tp-num" data-tp-hour>${String(hour % 12 === 0 ? 12 : hour % 12).padStart(2, '0')}</div>
         <div class="tp-colon">:</div>
         <div class="tp-num" data-tp-min>${String(minute).padStart(2, '0')}</div>
       </div>
+      <!-- v9364：上午/下午切换（12 小时制） -->
+      <div class="tp-am-pm">
+        <button class="tp-ampm${hour < 12 ? ' active' : ''}" data-tp-ampm="am" type="button">上午</button>
+        <button class="tp-ampm${hour >= 12 ? ' active' : ''}" data-tp-ampm="pm" type="button">下午</button>
+      </div>
       <div class="tp-tabs">
-        <button class="tp-tab active" data-tp-tab="hour" type="button">点</button>
-        <button class="tp-tab" data-tp-tab="min" type="button">分</button>
+        <button class="tp-tab active" data-tp-tab="hour" type="button">小时</button>
+        <button class="tp-tab" data-tp-tab="min" type="button">分钟</button>
       </div>
       <div class="tp-clock" id="tp-clock"></div>
       <div class="datepicker-actions v9272">
@@ -5394,29 +5399,39 @@ function openTimePicker(opts) {
   const numH = overlay.querySelector('[data-tp-hour]');
   const numM = overlay.querySelector('[data-tp-min]');
   const tabs = overlay.querySelectorAll('.tp-tab');
+  /* v9364：上午/下午切换按钮引用 */
+  const ampmBtns = overlay.querySelectorAll('.tp-ampm');
   let activeTab = 'hour';
 
   function paintClock() {
     const isHour = activeTab === 'hour';
-    const total = isHour ? 24 : 60;
+    /* v9364：hour 改 12 小时制（total=12 数字铺整圆，加上午/下午切换） */
+    const total = isHour ? 12 : 60;
     const step = isHour ? 1 : 5; // 跳格显示，避免数字太密
     const radius = 42;
     const cx = 50, cy = 56;
-    const displayVal = isHour ? (hour % 12) + (hour < 12 ? 0 : 0) : minute;
-    const ratio = total === 24 ? (displayVal / 12) : (displayVal / 60);
+    /* v9364：12 小时制 hour 显示值 = hour % 12（0 → 12 转换）；指针角度用 displayVal / 12 ——
+       例如 hour=22 → 22%12=10 → 数字显示「10」→ 指针指 10 位置 → 与数字对齐 */
+    const displayVal = isHour ? (hour % 12 === 0 ? 12 : hour % 12) : minute;
+    const ratio = displayVal / total;
     const angle = ratio * 2 * Math.PI - Math.PI / 2;
     const hx = cx + radius * Math.cos(angle);
     const hy = cy + radius * Math.sin(angle);
 
     // 选区高亮（以当前值为中心 ±step）
     const cells = [];
-    /* v9363：修复 hour 模式 24 数字挤 0-144° 圆弧 bug——按各自 total 均匀铺整圆（hour 0-23 各 15°，min 0-55 各 30°） */
-    const denominator = isHour ? 24 : 60;
+    const denominator = total;
     for (let v = 0; v < total; v += step) {
-      let r = (v / denominator) * 2 * Math.PI - Math.PI / 2;
+      const r = (v / denominator) * 2 * Math.PI - Math.PI / 2;
       const x = cx + radius * Math.cos(r);
       const y = cy + radius * Math.sin(r);
-      let label = isHour ? String(v).padStart(2, '0') : String(v).padStart(2, '0');
+      /* v9364：12 小时制 hour 数字 1-12（v=0 显示「12」，v=1-11 显示 1-11）；min 仍 0-55 跳格 */
+      let label;
+      if (isHour) {
+        label = v === 0 ? '12' : String(v);
+      } else {
+        label = String(v).padStart(2, '0');
+      }
       const active = v === displayVal;
       cells.push(`<div class="tp-cell${active ? ' on' : ''}" data-tp-v="${v}" style="left:${x.toFixed(1)}%;top:${y.toFixed(1)}%">${label}</div>`);
     }
@@ -5425,16 +5440,28 @@ function openTimePicker(opts) {
     overlay.querySelector('#tp-clock').innerHTML = `<svg class="tp-svg" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">${hLine}${dot}</svg>${cells.join('')}`;
   }
   function paintNums() {
-    numH.textContent = String(hour).padStart(2, '0');
+    /* v9364：12 小时制显示——hour 24h 转 12h 显示（0 → 12） */
+    numH.textContent = String(hour % 12 === 0 ? 12 : hour % 12).padStart(2, '0');
     numM.textContent = String(minute).padStart(2, '0');
     numH.classList.toggle('on', activeTab === 'hour');
     numM.classList.toggle('on', activeTab === 'min');
   }
-  function update() { paintNums(); paintClock(); }
+  /* v9364：根据当前 hour < 12 标 am/pm active 态 */
+  function paintAmPm() {
+    ampmBtns.forEach(b => b.classList.toggle('active', b.dataset.tpAmpm === (hour < 12 ? 'am' : 'pm')));
+  }
+  function update() { paintNums(); paintAmPm(); paintClock(); }
 
   tabs.forEach(t => t.addEventListener('click', () => {
     activeTab = t.dataset.tpTab;
     tabs.forEach(x => x.classList.toggle('active', x === t));
+    update();
+  }));
+  /* v9364：上午/下午切换——hour ±12（12 ↔ 0，14 ↔ 2，22 ↔ 10） */
+  ampmBtns.forEach(b => b.addEventListener('click', () => {
+    const isAm = b.dataset.tpAmpm === 'am';
+    if (isAm && hour >= 12) hour -= 12;
+    else if (!isAm && hour < 12) hour += 12;
     update();
   }));
   numH.addEventListener('click', () => { activeTab = 'hour'; tabs.forEach(x => x.classList.toggle('active', x.dataset.tpTab === 'hour')); update(); });
@@ -5443,8 +5470,12 @@ function openTimePicker(opts) {
     const cell = e.target.closest('.tp-cell');
     if (!cell) return;
     const v = parseInt(cell.dataset.tpV, 10);
-    if (activeTab === 'hour') hour = clamp(v, 0, 23);
-    else minute = clamp(v, 0, 59);
+    if (activeTab === 'hour') {
+      /* v9364：12 小时制 hour 选择——v 1-11 直接用，v=0 表示 12 */
+      hour = v === 0 ? 12 : v;
+      if (ampmBtns[1].classList.contains('active')) hour += 12;
+      if (hour >= 24) hour -= 24;
+    } else minute = clamp(v, 0, 59);
     update();
   });
   overlay.querySelector('#tp-set').addEventListener('click', () => { if (opts.onSelect) opts.onSelect(fmt()); close(); });
@@ -5454,6 +5485,8 @@ function openTimePicker(opts) {
   if (tpCancel) tpCancel.addEventListener('click', close);
   overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
 
+  /* v9364：打开时立即 paintClock——避免初次打开空白态（之前依赖用户点 tab 才 update()） */
+  update();
   requestAnimationFrame(() => overlay.classList.add('active'));
   update();
 }
