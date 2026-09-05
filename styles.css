@@ -6089,9 +6089,10 @@ select.pf-input {
 /* 板块标题：默认左对齐（今日概览 / 快速记录文字行 左侧对齐「今日主任务」最左侧） */
 .hp-section-title {
   display: flex; align-items: center; justify-content: flex-start; gap: 6px;
-  font-size: 13px; font-weight: 700; color: var(--text);
-  /* v9376：板块标题上间距统一 16px（原 26px） */
-  margin: 16px 4px 14px;
+  /* v9385：板块标题统一 12px / 500（原 13px / 700） */
+  font-size: 12px; font-weight: 500; color: var(--text);
+  /* v9385：上间距 16 / 下间距 8 */
+  margin: 16px 4px 8px;
 }
 /* v9348：标题 + 右侧操作（今日主任务 + 按钮放屏幕右侧） */
 .hp-title-split { justify-content: space-between; }
@@ -6455,7 +6456,8 @@ select.pf-input {
   /* v9376：板块标题上间距统一 16px（原 20px） */
   margin: 16px 0 10px;
 }
-.br-sec-title { font-size: 12px; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 5px; }
+/* v9385：板块标题统一 12px / 500（原 700） */
+.br-sec-title { font-size: 12px; font-weight: 500; color: var(--text); display: flex; align-items: center; gap: 5px; }
 .br-sec-icon { font-size: 13px; }
 .br-manage { font-size: 10px; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; gap: 2px; }
 
@@ -9797,7 +9799,7 @@ select.pf-input {
 }
 
 /* v9380：洞察页「每周数据变化」「习惯完成热力图」去大卡片框——标题剥离出卡片，
-   字体与首页板块标题（.hp-section-title 13px/700）一致；内容区（折线卡/热力图）保留自身样式 */
+   字体与首页板块标题一致；内容区（折线卡/热力图）保留自身样式 */
 .insp-section {
   background: transparent !important;
   border: none !important;
@@ -9806,30 +9808,31 @@ select.pf-input {
   box-shadow: none !important;
   margin: 16px 0 12px;
 }
-.insp-section-head { margin-bottom: 10px; }
+/* v9385：洞察板块标题统一 12px/500（原 13px/700） */
+.insp-section-head { margin-bottom: 8px; }
 .insp-section-title {
-  font-size: 13px !important;
-  font-weight: 700 !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
   color: var(--text) !important;
   gap: 6px;
 }
 .insp-section-more { font-size: 10px; }
 
 /* ============================================================
-   v9381：工作台【全局板块标题间距规则】—— 全部页面统一生效
-   规则：① 页面级板块标题 → 上外边距 16px / 下外边距 10px
-        ② 卡内板块标题   → 下外边距统一 10px（上边距保持原值，避免撑大卡片）
+   v9381/v9385：工作台【全局板块标题间距规则】—— 全部页面统一生效
+   规则：① 页面级板块标题 → 上外边距 16px / 下外边距 8px
+        ② 卡内板块标题   → 下外边距统一 8px（上边距保持原值，避免撑大卡片）
         ③ 只改上下外边距，卡片大小/字体/图标/配色/圆角全部保留
    注意：用 margin-top/margin-bottom 单独设置（不用 margin 简写），保留原有左右值
    ============================================================ */
-/* ① 页面级板块标题（在卡片之外，独立分组）：上 16 / 下 10 */
+/* ① 页面级板块标题（在卡片之外，独立分组）：上 16 / 下 8 */
 .hp-section-title,
 .br-section-header {
   margin-top: 16px !important;
-  margin-bottom: 10px !important;
+  margin-bottom: 8px !important;
 }
 
-/* ② 卡内板块标题（在卡片内部顶部）：下外边距统一 10px，上边距不动 */
+/* ② 卡内板块标题（在卡片内部顶部）：下外边距统一 8px，上边距不动 */
 .section-header,
 .insp-section-head,
 .plan-group-title,
@@ -9841,5 +9844,5 @@ select.pf-input {
 .qr-short-title,
 .ing-detail-log-title,
 .meal-group-title {
-  margin-bottom: 10px !important;
+  margin-bottom: 8px !important;
 }
