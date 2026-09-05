@@ -9769,3 +9769,16 @@ select.pf-input {
   flex-shrink: 0;
 }
 .tx-row:hover .icon-action.delete { opacity: 1; }
+
+/* v9377：所有页面主标题统一用草莓字体（--font-title = 'Strawberry'）
+   覆盖：首页问候语 / 我的支线 / 本周洞察 / 各领域页 .page-title-main / 顶栏 .page-title / 子页面 .sub-title
+   .hp-greet 与 .br-page-title 原本已声明，此处兜底保证后续被覆写时仍生效 */
+.hp-greet,
+.br-page-title,
+.insp-main-title,
+.page-title-main,
+.page-title,
+.sub-page-head .sub-title,
+.sub-page-head h3 {
+  font-family: var(--font-title) !important;
+}
