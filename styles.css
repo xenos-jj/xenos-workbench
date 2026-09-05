@@ -5994,7 +5994,8 @@ select.pf-input {
 }
 .hp-greet-wrap { flex: 1; min-width: 0; }
 /* v9376：三页主标题统一 20px/700（原 18px/400） */
-.hp-greet { font-size: 20px; font-weight: 700; color: var(--text); margin: 0; letter-spacing: .3px; font-family: var(--font-title); }
+/* v9379：主标题字重统一 500（原 700） */
+.hp-greet { font-size: 20px; font-weight: 500; color: var(--text); margin: 0; letter-spacing: .3px; font-family: var(--font-title); }
 .hp-sub { font-size: 11px; color: var(--text-muted); margin: 6px 0 0; }
 /* v9345：天气组件圆角统一为 var(--radius) + 平衡左右排版（与吉祥物插画并排时文字不挤压） */
 .hp-weather {
@@ -6464,9 +6465,9 @@ select.pf-input {
   min-height: 24px;
 }
 .br-page-title-spacer { flex: 1; }
-/* v9376：三页主标题统一 20px/700（原 24px/500） */
+/* v9379：主标题字重统一 500（原 700） */
 .br-page-title {
-  font-size: 20px; font-weight: 700; color: var(--text);
+  font-size: 20px; font-weight: 500; color: var(--text);
   display: inline-flex; align-items: center; gap: 5px;
   font-family: var(--font-title);
 }
@@ -7878,9 +7879,9 @@ select.pf-input {
   margin-bottom: 10px;
 }
 .insp-top-left { flex: 1; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
-/* v9376：三页主标题统一 20px/700（原 15px/800） */
+/* v9379：主标题字重统一 500（原 700） */
 .insp-main-title {
-  font-size: 20px; font-weight: 700; color: var(--text);
+  font-size: 20px; font-weight: 500; color: var(--text);
   margin: 0 0 3px; letter-spacing: .3px;
 }
 .insp-date-range {
