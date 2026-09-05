@@ -6476,8 +6476,9 @@ select.pf-input {
 
 /* ---- 三条主计划卡片 ---- */
 /* v9376：圆角统一 12px（原 18px）+ 内边距向 12px 14px 靠拢（原 10px 14px 0） */
+/* v9384：支线卡高度优化——保留全部元素，仅压缩内部空白 */
 .br-branch-card {
-  background: var(--card); border-radius: var(--radius); padding: 12px 14px 8px 14px;
+  background: var(--card); border-radius: var(--radius); padding: 12px 14px 4px 14px;
   margin-bottom: 10px; box-shadow: 0 2px 8px rgba(120, 80, 40, 0.03);
   border: 1px solid #E2DCF5;
   display: flex; flex-direction: column;
@@ -6535,29 +6536,35 @@ select.pf-input {
 /* 全局：所有阿拉伯数字 0 与百分号 % 的字重与进度环数字（.mr-num）保持一致（600），不改变其颜色 */
 .zpct { font-weight: 600; }
 
-.br-branch-divider { height: 0; margin: 3px 0 0 0; opacity: 0.35; border-top: 1px dashed; }
+/* v9384：分割线上间距 3 → 2 */
+.br-branch-divider { height: 0; margin: 2px 0 0 0; opacity: 0.35; border-top: 1px dashed; }
 .br-branch-bottom {
   display: flex; align-items: flex-start; gap: 0;
-  flex: 0 0 auto; min-height: 15px; padding: 0; margin-bottom: -3px;
-  /* v9382：min-height 22 → 15（向上缩短 7px） */
+  flex: 0 0 auto; min-height: 15px; padding: 0; margin-bottom: -6px;
+  /* v9384：margin-bottom -3 → -6（再压 3px 给底部趋势/按钮区紧凑） */
 }
-.br-trend { flex: 1; min-width: 0; padding-right: 6px; display: flex; flex-direction: column; justify-content: flex-end; min-height: 22px; }
-.br-trend-label { font-size: 8px; font-family: var(--font-small); color: var(--text-muted); margin-bottom: 0; margin-top: 3px; }
+/* v9384：趋势区 min-height 22 → 18（-4px） */
+.br-trend { flex: 1; min-width: 0; padding-right: 6px; display: flex; flex-direction: column; justify-content: flex-end; min-height: 18px; }
+/* v9384：标签上间距 3 → 1 */
+.br-trend-label { font-size: 8px; font-family: var(--font-small); color: var(--text-muted); margin-bottom: 0; margin-top: 1px; }
 .br-trend .spark-chart { width: 100%; height: auto; aspect-ratio: 260 / 52; display: block; margin-top: 0; margin-bottom: 2px; transform: translateY(-2px); }
 .br-trend .chart-empty { padding: 0; margin: 0; font-size: 10px; }
 /* v9382：竖线缩短 7px——align-self stretch 默认拉满，height 22-7=15 + margin-top 7 让竖线从下往上缩短 */
 .br-branch-vline { width: 0; flex-shrink: 0; opacity: 0.35; align-self: stretch; border-left: 1px dashed; margin-top: 7px; height: 15px; }
+/* v9384：下一步区 min-height 22 → 18（-4px） */
 .br-next-wrap {
   display: flex; flex-direction: column; justify-content: flex-start;
-  padding-left: 6px; flex-shrink: 0; min-width: 118px; min-height: 22px;
+  padding-left: 6px; flex-shrink: 0; min-width: 118px; min-height: 18px;
 }
-.br-next-wrap .br-next-label { font-size: 8px; font-family: var(--font-small); color: var(--text-muted); margin-bottom: 0; margin-top: 3px; }
+/* v9384：标签上间距 3 → 1 */
+.br-next-wrap .br-next-label { font-size: 8px; font-family: var(--font-small); color: var(--text-muted); margin-bottom: 0; margin-top: 1px; }
 .br-next-btn {
   display: inline-flex; align-items: center; justify-content: space-between; gap: 5px;
   border: none; border-radius: 999px; padding: 2px 10px;
   font-size: 10px; cursor: pointer; width: 100%;
   box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-  margin-top: 8px;
+  /* v9384：margin-top 8 → 4（-4px） */
+  margin-top: 4px;
 }
 .br-next-btn.btn-purple { background: #8978c3; color: #fff; }
 .br-next-btn.btn-green { background: #a0bb7a; color: #fff; }
