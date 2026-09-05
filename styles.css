@@ -6011,8 +6011,9 @@ select.pf-input {
 /* 首页吉祥物 */
 .hp-mascot {
   flex-shrink: 0;
-  width: 135px;
-  height: 135px;
+  /* v9367：吉祥物再放大 10px（135→145），仍可在内（不溢出） */
+  width: 145px;
+  height: 145px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -6235,6 +6236,8 @@ select.pf-input {
 .hp-qb-sleep { border-color: #B8AAD8; }
 .hp-qb-sleep .hq-icon { background: #F0EBF8; color: #7C6DA8; }
 .hp-qb-money { border-color: #F4B75B; }
+/* v9367：记账图标下移 2px——只移内部 SVG，圆形底色不动 */
+.hp-qb-money .hq-icon svg { transform: translateY(2px); }
 .hp-qb-money .hq-icon { background: #FFF6E6; color: #C88F2A; }
 /* v9351：白底——移除浅金底色 #FFFDF5 */
 .hp-qb-idea { border-color: #E6C95B; }

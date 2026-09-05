@@ -634,10 +634,8 @@ const DOMAIN_CONFIG = {
     key: 'health', icon: 'health', subtitle: '身体是所有事情的地基',
     tags: [],
     tools: [],
-    tasks: [
-      { text: '喝水 1500ml', points: 2 },
-      { text: '12点前睡觉', points: 5 }
-    ]
+    /* v9367：user 反馈「喝水 1500ml」「12 点前睡觉」删除——这两个任务与工具入口重复 */
+    tasks: []
   },
   '外貌': {
     key: 'looks', icon: 'sparkles', subtitle: '把自己当作长期作品来打磨',
@@ -5827,7 +5825,7 @@ function renderHealthPage() {
           <span class="tb-arrow">${icon('chevronLeft', 12)}</span>
         </button>
         <button class="tool-btn" data-route="健身">
-          <span class="tb-icon">${icon('dumbbell', 18)}</span>
+          <span class="tb-icon">${icon('running', 18)}</span>
           <span><b>运动</b><span class="tb-sub">运动训练</span></span>
           <span class="tb-arrow">${icon('chevronLeft', 12)}</span>
         </button>
