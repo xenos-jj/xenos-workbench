@@ -197,7 +197,8 @@ const INSIGHT_MODULES = [
   {
     id: 'learning',
     name: '学习',
-    icon: 'bookOpen',
+    /* v9370：bookOpen 不存在（fallback 到 file 方形）→ 改用 book 翻开书（user 要"书本的样子"） */
+    icon: 'book',
     color: '#A99BD6',
     bg: '#F3F0FA',
     metricName: '累计时长',
@@ -8300,7 +8301,8 @@ function renderOverview() {
   const sportIcon = `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M6 7v10M3 9v6M18 7v10M21 9v6M6 12h12"/></svg>`;
   const sleepIcon = `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`;
   const langIcon = `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><path d="M8 7h8"/></svg>`;
-  const habitIcon = `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+/* v9370：每日计划环卡图标从「对勾」改为「本周洞察计划卡」同款 clipboard 清单（review icon path） */
+  const habitIcon = `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M9 12h6M9 16h4"/></svg>`;
 
   page.innerHTML = `
     <div class="hp-top-block">
@@ -11484,7 +11486,8 @@ function branchIconLeaf(color = '#a0bb7a') {
 
 function branchIconMoney(color = '#f7ba61') {
   // 原生 24x24 viewBox + 描边 1.6，与工作台 icon() 及兄弟支线图标保持一致（去除内层 scale 导致的偏细）
-  return `<svg class="br-icon-svg" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" stroke-linecap="round" stroke-linejoin="round" fill="none" stroke="${color}">
+  // v9370：图标视觉偏上，内联 translateY(2px) 下移（只移 svg，卡背景/圆形底色不动）
+  return `<svg class="br-icon-svg" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" stroke-linecap="round" stroke-linejoin="round" fill="none" stroke="${color}" style="transform:translateY(2px)">
     <circle cx="12" cy="12" r="9" stroke-width="1"/>
     <circle cx="12" cy="12" r="6.3" stroke-width="1"/>
     <path d="M12 7.6v9" stroke-width="1"/>
