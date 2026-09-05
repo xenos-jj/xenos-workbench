@@ -6192,10 +6192,10 @@ select.pf-input {
 .hp-quick { min-width: 0; }
 /* v9349：参考支线页 .br-slow-list-clean 两列网格布局——4 个快速记录按钮 2×2 排布，每个按钮内 icon+文字 横排不换行 */
 .hp-quick-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-/* v9355：边框 1.5px → 1px；文字区横排（主名+副名同行 + · 分隔） */
+/* v9360：边框 1px → 0.75px——更细更优雅（保留描边但不抢眼） */
 .hp-quick-btn {
   background: #fff;
-  border: 1px solid var(--border-soft);
+  border: 0.75px solid var(--border-soft);
   border-radius: var(--radius);
   padding: 12px 14px;
   display: flex;
@@ -6597,7 +6597,8 @@ select.pf-input {
 }
 .phase-picker-title { font-size: 14px; font-weight: 700; text-align: center; margin-bottom: 4px; }
 .phase-picker-sub { font-size: 11px; color: var(--text-muted); text-align: center; margin-bottom: 12px; }
-.phase-options { max-height: 240px; overflow-y: auto; margin-bottom: 12px; }
+/* v9360：阶段选择器列表加 gap: 8px（之前没有间距）——标签之间间距与工作台其他模块一致 */
+.phase-options { max-height: 240px; overflow-y: auto; margin-bottom: 12px; display: flex; flex-direction: column; gap: 8px; }
 .slow-pool-list { max-height: 320px; overflow-y: auto; margin-bottom: 12px; display: flex; flex-direction: column; gap: 8px; }
 .slow-pool-item {
   display: flex; align-items: center; gap: 10px;
