@@ -6512,7 +6512,8 @@ select.pf-input {
 .br-branch-meta { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .br-lv-tag { border-radius: 999px; padding: 1px 7px; font-size: 9px; font-family: var(--font-small); font-weight: 500; }
 .br-freq-tag { font-size: 8px; font-family: var(--font-small); color: var(--text-muted); }
-.br-branch-ring { flex-shrink: 0; margin-right: 4px; }
+/* v9382：进度环上移 2px（user 调整支线卡下半部分布局） */
+.br-branch-ring { flex-shrink: 0; margin-right: 4px; transform: translateY(-2px); }
 .br-branch-ring .mini-ring { width: 44px; height: 44px; }
 .br-branch-ring .mini-ring svg { width: 44px; height: 44px; }
 .br-branch-ring .mini-ring .mr-bg { stroke-width: 4; }
@@ -6536,14 +6537,15 @@ select.pf-input {
 .br-branch-divider { height: 0; margin: 3px 0 0 0; opacity: 0.35; border-top: 1px dashed; }
 .br-branch-bottom {
   display: flex; align-items: flex-start; gap: 0;
-  flex: 0 0 auto; min-height: 22px; padding: 0; margin-bottom: -3px;
-  /* flex: 0 0 auto：按内容高度自适应，不再拉满容器剩余空间——避免 v9188 后底部大块空白 */
+  flex: 0 0 auto; min-height: 15px; padding: 0; margin-bottom: -3px;
+  /* v9382：min-height 22 → 15（向上缩短 7px） */
 }
 .br-trend { flex: 1; min-width: 0; padding-right: 6px; display: flex; flex-direction: column; justify-content: flex-end; min-height: 22px; }
 .br-trend-label { font-size: 8px; font-family: var(--font-small); color: var(--text-muted); margin-bottom: 0; margin-top: 3px; }
 .br-trend .spark-chart { width: 100%; height: auto; aspect-ratio: 260 / 52; display: block; margin-top: 0; margin-bottom: 2px; transform: translateY(-2px); }
 .br-trend .chart-empty { padding: 0; margin: 0; font-size: 10px; }
-.br-branch-vline { width: 0; flex-shrink: 0; opacity: 0.35; align-self: stretch; border-left: 1px dashed; margin-top: 0; }
+/* v9382：竖线缩短 7px——align-self stretch 默认拉满，height 22-7=15 + margin-top 7 让竖线从下往上缩短 */
+.br-branch-vline { width: 0; flex-shrink: 0; opacity: 0.35; align-self: stretch; border-left: 1px dashed; margin-top: 7px; height: 15px; }
 .br-next-wrap {
   display: flex; flex-direction: column; justify-content: flex-start;
   padding-left: 6px; flex-shrink: 0; min-width: 118px; min-height: 22px;
