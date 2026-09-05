@@ -9687,28 +9687,29 @@ select.pf-input {
 }
 
 /* v9361：当日明细（money-detail）列表——清晰分层卡片，符合工作台 0.75px 描边 + 8px 间距标准 */
+/* v9362：卡片高度从 52px → 38px（与下方 input 卡片一致）；字号缩小 + 金额不粗 */
 .tx-list { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
 .tx-row {
   display: flex; align-items: center; gap: 10px;
-  padding: 10px 14px;
+  padding: 6px 14px;
   background: #fff;
   border: 0.75px solid var(--border-soft);
   border-radius: var(--radius-sm);
-  font-size: 12px;
+  font-size: 11px;
   transition: background .12s ease;
 }
 .tx-row:hover { background: var(--bg-soft); }
 .tx-icon {
-  width: 32px; height: 32px; border-radius: 50%;
+  width: 26px; height: 26px; border-radius: 50%;
   background: var(--bg-soft); color: var(--text);
   display: flex; align-items: center; justify-content: center;
-  font-size: 14px; flex-shrink: 0;
+  font-size: 12px; flex-shrink: 0;
 }
-.tx-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
-.tx-cat { font-size: 12px; font-weight: 600; color: var(--text); line-height: 1.3; }
-.tx-note { font-size: 10px; color: var(--text-muted); font-family: var(--font-small); line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tx-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.tx-cat { font-size: 11.5px; font-weight: 600; color: var(--text); line-height: 1.3; }
+.tx-note { font-size: 9px; color: var(--text-muted); font-family: var(--font-small); line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .tx-amt {
-  flex-shrink: 0; font-size: 13px; font-weight: 700;
+  flex-shrink: 0; font-size: 12px; font-weight: 600;
   font-family: var(--font-small);
 }
 .tx-amt.expense { color: var(--expense, #C8503E); }
