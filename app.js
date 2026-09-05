@@ -8320,14 +8320,11 @@ function renderOverview() {
     </div>
     </div>
 
-    <!-- v9345：今日积分/本周进度 移到「今日概览」上方独立一行（独立块，不再嵌入 hp-top-block 或 section-title 内） -->
+    <!-- v9383：今日积分单列（删除「本周进度」）——下方 CSS 再上移 20px 填补空位 -->
     <div class="hp-quick-stats">
       <div class="hp-qs-row">
         <div class="hp-qs-col">
           <span>${icon('star', 11)} 今日积分：<b>${todayPts}</b></span>
-        </div>
-        <div class="hp-qs-col">
-          <span>${icon('chart', 11)} 本周进度：<b>${weekPct}%</b></span>
         </div>
       </div>
     </div>
@@ -13377,7 +13374,7 @@ function renderInsightPage() {
 
     + '<div class="insp-cards-grid" id="insp-cards-grid">' + cardsHTML() + '</div>'
 
-    + '<div class="insp-section"><div class="insp-section-head"><span class="insp-section-title"><span class="insp-sec-spark">' + icon('sparkle', 14) + '</span> 每周数据变化</span><span class="insp-section-more">相对趋势 · 可同时勾选多个</span></div>'
+    + '<div class="insp-section"><div class="insp-section-head"><span class="insp-section-title"><span class="insp-sec-spark">' + icon('sparkle', 14) + '</span> 每周数据变化</span></div>'
     + '<div class="insp-line-card combined-line-card"><div class="insp-line-wrap" id="insp-line-wrap"></div><div class="insp-line-legend" id="insp-line-legend">' + allStats.map(legendItemHTML).join('') + '</div></div></div>'
 
     + '<div class="insp-section"><div class="insp-section-head"><span class="insp-section-title"><span class="insp-sec-heart">' + icon('heart', 14) + '</span> 习惯完成热力图</span><span class="insp-heat-legend"><i class="ht-low"></i><i class="ht-mid"></i><i class="ht-high"></i>完成度 低 → 高</span></div>'
