@@ -9785,3 +9785,22 @@ select.pf-input {
 .sub-page-head h3 {
   font-family: var(--font-title) !important;
 }
+
+/* v9380：洞察页「每周数据变化」「习惯完成热力图」去大卡片框——标题剥离出卡片，
+   字体与首页板块标题（.hp-section-title 13px/700）一致；内容区（折线卡/热力图）保留自身样式 */
+.insp-section {
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+  margin: 16px 0 12px;
+}
+.insp-section-head { margin-bottom: 10px; }
+.insp-section-title {
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  color: var(--text) !important;
+  gap: 6px;
+}
+.insp-section-more { font-size: 10px; }
