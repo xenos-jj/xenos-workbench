@@ -5409,7 +5409,8 @@ function openTimePicker(opts) {
     const total = isHour ? 12 : 60;
     const step = isHour ? 1 : 5; // 跳格显示，避免数字太密
     const radius = 42;
-    const cx = 50, cy = 56;
+    /* v9365：cy 56 → 50，时钟盘垂直居中（之前偏下） */
+    const cx = 50, cy = 50;
     /* v9364：12 小时制 hour 显示值 = hour % 12（0 → 12 转换）；指针角度用 displayVal / 12 ——
        例如 hour=22 → 22%12=10 → 数字显示「10」→ 指针指 10 位置 → 与数字对齐 */
     const displayVal = isHour ? (hour % 12 === 0 ? 12 : hour % 12) : minute;
@@ -5432,7 +5433,10 @@ function openTimePicker(opts) {
       } else {
         label = String(v).padStart(2, '0');
       }
-      const active = v === displayVal;
+      /* v9365：active 判断修复——v=0（显示「12」）时若 displayVal=12 也算 active（之前 v=0 vs displayVal=12 永远不相等导致 12 圆圈不显示/偏小） */
+      const active = isHour
+        ? (v === displayVal || (displayVal === 12 && v === 0))
+        : (v === displayVal);
       cells.push(`<div class="tp-cell${active ? ' on' : ''}" data-tp-v="${v}" style="left:${x.toFixed(1)}%;top:${y.toFixed(1)}%">${label}</div>`);
     }
     const hLine = `<line x1="${cx}" y1="${cy}" x2="${hx.toFixed(1)}" y2="${hy.toFixed(1)}" stroke="var(--primary)" stroke-width="2"/>`;
