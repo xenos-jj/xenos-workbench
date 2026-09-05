@@ -6009,8 +6009,9 @@ select.pf-input {
 .hp-weather-bunny { display: block; width: 100%; height: 100%; }
 
 /* v9372：洞察页模块卡图标微调——记账 coins 下移 2px（视觉偏上），外貌 sparkles 左移 1px（视觉偏右）；圆形底色 .insp-cat-ic 不动 */
+/* v9374：洞察页外貌图标再左移 0.5px（累计 -1.5px） */
 .insp-cat-card[data-cat="money"] .insp-cat-ic svg { transform: translateY(2px); }
-.insp-cat-card[data-cat="looks"] .insp-cat-ic svg { transform: translateX(-1px); }
+.insp-cat-card[data-cat="looks"] .insp-cat-ic svg { transform: translateX(-1.5px); }
 
 /* 首页吉祥物 */
 .hp-mascot {
