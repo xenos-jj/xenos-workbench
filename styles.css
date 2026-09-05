@@ -6034,7 +6034,9 @@ select.pf-input {
 .hp-mascot-img {
   width: 100%;
   height: 100%;
-  transform: scale(1.138);
+  /* v9394：再放大 10px（145→175 = scale 1.207）+ 往内往左偏移防装饰被 hero overflow:hidden 裁切
+     容器占位 145×145 不变（不影响其他内容位置），仅 img 自身 transform */
+  transform: translate(-6px, 8px) scale(1.207);
   object-fit: contain;
   display: block;
   filter: drop-shadow(0 2px 4px rgba(0,0,0,0.08));
