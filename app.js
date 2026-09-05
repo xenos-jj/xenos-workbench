@@ -11486,9 +11486,8 @@ function branchIconLeaf(color = '#a0bb7a') {
 
 function branchIconMoney(color = '#f7ba61') {
   // 原生 24x24 viewBox + 描边 1.6，与工作台 icon() 及兄弟支线图标保持一致（去除内层 scale 导致的偏细）
-  // v9370：图标视觉偏上，内联 translateY(2px) 下移（只移 svg，卡背景/圆形底色不动）
-  // v9371：v9370 下移 2px 仍偏上，再下移 2px（累计 4px）
-  return `<svg class="br-icon-svg" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" stroke-linecap="round" stroke-linejoin="round" fill="none" stroke="${color}" style="transform:translateY(4px)">
+  // v9372：user 澄清要移动的是洞察页的记账图标——支线页图标撤销 v9370/v9371 下移，回到原位
+  return `<svg class="br-icon-svg" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" stroke-linecap="round" stroke-linejoin="round" fill="none" stroke="${color}">
     <circle cx="12" cy="12" r="9" stroke-width="1"/>
     <circle cx="12" cy="12" r="6.3" stroke-width="1"/>
     <path d="M12 7.6v9" stroke-width="1"/>
@@ -11500,8 +11499,8 @@ function branchIconMoney(color = '#f7ba61') {
 
 // 外貌类支线图标：与标签语义相关，使用标签主色
 function branchIconSkincare(color = '#B07A9E') {
-  /* v9371：外貌图标视觉靠右，向左移 1px */
-  return `<svg class="br-icon-svg" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" stroke-linecap="round" stroke-linejoin="round" style="transform:translateX(-1px)">
+  /* v9372：user 澄清要移动的是洞察页的外貌图标——支线页图标撤销 v9371 左移，回到原位 */
+  return `<svg class="br-icon-svg" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" stroke-linecap="round" stroke-linejoin="round">
     <path d="M12 2c-3 3-6 6-6 10 0 3.3 2.7 6 6 6s6-2.7 6-6c0-4-3-7-6-10z" fill="${color}" fill-opacity="0.15" stroke="${color}" stroke-width="1"/>
     <path d="M12 14v4" stroke="${color}" stroke-width="1"/>
   </svg>`;
