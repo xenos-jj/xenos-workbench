@@ -7,10 +7,12 @@
   font-display: swap;
 }
 
-/* 本地自托管字体：草莓字体（用户本地卡通字体，用于顶部大标题） */
+/* 本地自托管字体：草莓字体（用户本地卡通字体，用于顶部大标题）
+   v9378：原 strawberry-sub.ttf 只有 1.8KB（子集化失败，几乎不含汉字）→ 中文全部 fallback 到站酷。
+   现重新生成子集（GB2312 全量 6763 汉字 + ASCII + 标点 + 项目用字，共 6903 字符，437KB）*/
 @font-face {
   font-family: 'Strawberry';
-  src: url('fonts/strawberry-sub.ttf?v=209') format('truetype');
+  src: url('fonts/strawberry-sub.ttf?v=378') format('truetype');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
