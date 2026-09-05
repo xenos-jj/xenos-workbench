@@ -1394,6 +1394,8 @@ svg text { font-family: var(--font-small) !important; }
   max-height: 55vh;
   overflow-y: auto;
   padding: 8px 14px;
+  /* v9361：弹窗选项列表加 gap 8px——与工作台其他列表（phase-options/br-slow-list 等）一致，避免标签贴在一起 */
+  display: flex; flex-direction: column; gap: 8px;
 }
 
 .xn-picker-item {
@@ -9683,3 +9685,40 @@ select.pf-input {
 .xn-picker-item {
   border: 1px solid var(--border-soft);
 }
+
+/* v9361：当日明细（money-detail）列表——清晰分层卡片，符合工作台 0.75px 描边 + 8px 间距标准 */
+.tx-list { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+.tx-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 14px;
+  background: #fff;
+  border: 0.75px solid var(--border-soft);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  transition: background .12s ease;
+}
+.tx-row:hover { background: var(--bg-soft); }
+.tx-icon {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--bg-soft); color: var(--text);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; flex-shrink: 0;
+}
+.tx-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.tx-cat { font-size: 12px; font-weight: 600; color: var(--text); line-height: 1.3; }
+.tx-note { font-size: 10px; color: var(--text-muted); font-family: var(--font-small); line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tx-amt {
+  flex-shrink: 0; font-size: 13px; font-weight: 700;
+  font-family: var(--font-small);
+}
+.tx-amt.expense { color: var(--expense, #C8503E); }
+.tx-amt.income { color: var(--income, #2E8B57); }
+.tx-row .icon-action.delete {
+  width: 22px; height: 22px; border-radius: 50%;
+  background: transparent; color: var(--text-muted);
+  border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; transition: opacity .15s;
+  flex-shrink: 0;
+}
+.tx-row:hover .icon-action.delete { opacity: 1; }

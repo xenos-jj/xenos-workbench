@@ -823,13 +823,17 @@ const DEFAULT_BUDGET = 0;
 
 const DEFAULT_TRANSACTIONS = [];
 
+/* v9361：user 指定支出分类顺序：交通出行 → 餐饮 → 零食蔬果 → 购物 → 电费 → 房租 → APP会员 → 娱乐 → 成长 → 医疗 → 其他 */
 const DEFAULT_EXPENSE_CATEGORIES = [
-  { name: '房租', icon: 'home' },
-  { name: '餐饮', icon: 'food' },
-  { name: 'APP会员', icon: 'card' },
   { name: '交通出行', icon: 'train' },
+  { name: '餐饮', icon: 'food' },
+  { name: '零食蔬果', icon: 'apple' },
   { name: '购物', icon: 'shopping' },
+  { name: '电费', icon: 'zap' },
+  { name: '房租', icon: 'home' },
+  { name: 'APP会员', icon: 'card' },
   { name: '娱乐', icon: 'film' },
+  { name: '成长', icon: 'book' },
   { name: '医疗', icon: 'pill' },
   { name: '其他', icon: 'box' }
 ];
