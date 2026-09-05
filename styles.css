@@ -6088,10 +6088,10 @@ select.pf-input {
 .hp-quote-flowers { display: block; width: 100%; height: 100%; }
 
 /* 板块标题：默认左对齐（今日概览 / 快速记录文字行 左侧对齐「今日主任务」最左侧） */
-/* v9387：板块标题统一 12px / 600（原 500） */
+/* v9389：板块标题统一 12px / 550（原 600） */
 .hp-section-title {
   display: flex; align-items: center; justify-content: flex-start; gap: 6px;
-  font-size: 12px; font-weight: 600; color: var(--text);
+  font-size: 12px; font-weight: 550; color: var(--text);
   /* v9385：上间距 16 / 下间距 8 */
   margin: 16px 4px 8px;
 }
@@ -6457,8 +6457,8 @@ select.pf-input {
   /* v9376：板块标题上间距统一 16px（原 20px） */
   margin: 16px 0 10px;
 }
-/* v9387：板块标题统一 12px / 600（原 500） */
-.br-sec-title { font-size: 12px; font-weight: 600; color: var(--text); display: flex; align-items: center; gap: 5px; }
+/* v9389：板块标题统一 12px / 550（原 600） */
+.br-sec-title { font-size: 12px; font-weight: 550; color: var(--text); display: flex; align-items: center; gap: 5px; }
 .br-sec-icon { font-size: 13px; }
 .br-manage { font-size: 10px; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; gap: 2px; }
 
@@ -9809,11 +9809,11 @@ select.pf-input {
   box-shadow: none !important;
   margin: 16px 0 12px;
 }
-/* v9387：洞察板块标题统一 12px/600（原 500） */
+/* v9389：洞察板块标题统一 12px/550（原 600） */
 .insp-section-head { margin-bottom: 8px; }
 .insp-section-title {
   font-size: 12px !important;
-  font-weight: 600 !important;
+  font-weight: 550 !important;
   color: var(--text) !important;
   gap: 6px;
 }
