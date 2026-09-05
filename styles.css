@@ -5996,7 +5996,8 @@ select.pf-input {
 /* v9376：三页主标题统一 20px/700（原 18px/400） */
 /* v9379：主标题字重统一 500（原 700） */
 .hp-greet { font-size: 20px; font-weight: 500; color: var(--text); margin: 0; letter-spacing: .3px; font-family: var(--font-title); }
-.hp-sub { font-size: 11px; color: var(--text-muted); margin: 6px 0 0; }
+/* v9386：副标题「愿你稳步向理想的自己靠近」+ 右侧图标上移 4px（margin-top 6→2）、字号 11→10px */
+.hp-sub { font-size: 10px; color: var(--text-muted); margin: 2px 0 0; }
 /* v9345：天气组件圆角统一为 var(--radius) + 平衡左右排版（与吉祥物插画并排时文字不挤压） */
 .hp-weather {
   display: inline-flex; align-items: center; gap: 6px;
