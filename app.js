@@ -13577,17 +13577,24 @@ function sportTabHTML() {
 }
 
 function sleepTabHTML() {
+  /* v9368：读 localStorage 上次保存的 bed/wake 替代 hardcoded 默认——重新打开 modal 时显示一致 */
+  let savedBed = '22:30', savedWake = '06:30';
+  try {
+    const note = JSON.parse(localStorage.getItem('xenos-sleep-note') || '{}');
+    if (note.bed) savedBed = note.bed;
+    if (note.wake) savedWake = note.wake;
+  } catch (_) {}
   return `<div class="qr-time-row">
       <div class="qr-time-card" id="qr-bed-card">
         <span class="qr-time-label"><span class="qr-time-ico">${icon('moon', 14)}</span>睡觉时间</span>
-        <span class="qr-time-val" id="qr-bed-val">22:30</span>
-        <input type="time" id="qr-bed" value="22:30" class="qr-time-input">
+        <span class="qr-time-val" id="qr-bed-val">${savedBed}</span>
+        <input type="time" id="qr-bed" value="${savedBed}" class="qr-time-input">
       </div>
       <div class="qr-time-sep">›</div>
       <div class="qr-time-card" id="qr-wake-card">
         <span class="qr-time-label"><span class="qr-time-ico">${icon('sunrise', 14)}</span>起床时间</span>
-        <span class="qr-time-val" id="qr-wake-val">06:30</span>
-        <input type="time" id="qr-wake" value="06:30" class="qr-time-input">
+        <span class="qr-time-val" id="qr-wake-val">${savedWake}</span>
+        <input type="time" id="qr-wake" value="${savedWake}" class="qr-time-input">
       </div>
     </div>
     <div class="qr-field qr-range-field">
@@ -13797,8 +13804,9 @@ async function saveQuickRecord() {
     state.exerciseLogs[todayKey].push({ id: uid('ex'), name: note || sportType, duration: minutes, calories: estimateExerciseCalories(sportType, minutes), done: true });
     saveExerciseLogs();
   } else if (tab === 'sleep') {
-    const bed = (modal.querySelector('#qr-bed') || {}).value || '';
-    const wake = (modal.querySelector('#qr-wake') || {}).value || '';
+    /* v9368：保存 bed/wake 改读 span textContent——因为 input 是 hidden（v9365）+ openTimePicker 只更新 span 文字，input.value 仍是 hardcoded 默认 */
+    const bed = (modal.querySelector('#qr-bed-val') || {}).textContent || '';
+    const wake = (modal.querySelector('#qr-wake-val') || {}).textContent || '';
     const quality = parseInt((modal.querySelector('#qr-quality') || {}).value) || 70;
     const stateChip = modal.querySelector('#qr-sleep-chips .qr-chip.active');
     const sleepState = stateChip ? stateChip.dataset.s : '一般';
