@@ -5410,8 +5410,10 @@ function openTimePicker(opts) {
 
     // 选区高亮（以当前值为中心 ±step）
     const cells = [];
+    /* v9363：修复 hour 模式 24 数字挤 0-144° 圆弧 bug——按各自 total 均匀铺整圆（hour 0-23 各 15°，min 0-55 各 30°） */
+    const denominator = isHour ? 24 : 60;
     for (let v = 0; v < total; v += step) {
-      let r = (v / 60) * 2 * Math.PI - Math.PI / 2;
+      let r = (v / denominator) * 2 * Math.PI - Math.PI / 2;
       const x = cx + radius * Math.cos(r);
       const y = cy + radius * Math.sin(r);
       let label = isHour ? String(v).padStart(2, '0') : String(v).padStart(2, '0');
