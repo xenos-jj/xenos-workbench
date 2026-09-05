@@ -6091,7 +6091,7 @@ select.pf-input {
 /* v9389：板块标题统一 12px / 550（原 600） */
 .hp-section-title {
   display: flex; align-items: center; justify-content: flex-start; gap: 6px;
-  font-size: 12px; font-weight: 550; color: var(--text);
+  font-size: 12px; font-weight: 575; color: var(--text);
   /* v9385：上间距 16 / 下间距 8 */
   margin: 16px 4px 8px;
 }
@@ -6457,8 +6457,8 @@ select.pf-input {
   /* v9376：板块标题上间距统一 16px（原 20px） */
   margin: 16px 0 10px;
 }
-/* v9389：板块标题统一 12px / 550（原 600） */
-.br-sec-title { font-size: 12px; font-weight: 550; color: var(--text); display: flex; align-items: center; gap: 5px; }
+/* v9390：板块标题统一 12px / 575（550 偏细、600 偏粗，取中） */
+.br-sec-title { font-size: 12px; font-weight: 575; color: var(--text); display: flex; align-items: center; gap: 5px; }
 .br-sec-icon { font-size: 13px; }
 .br-manage { font-size: 10px; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; gap: 2px; }
 
@@ -9809,11 +9809,11 @@ select.pf-input {
   box-shadow: none !important;
   margin: 16px 0 12px;
 }
-/* v9389：洞察板块标题统一 12px/550（原 600） */
+/* v9390：洞察板块标题统一 12px/575（550 偏细、600 偏粗，取中） */
 .insp-section-head { margin-bottom: 8px; }
 .insp-section-title {
   font-size: 12px !important;
-  font-weight: 550 !important;
+  font-weight: 575 !important;
   color: var(--text) !important;
   gap: 6px;
 }
