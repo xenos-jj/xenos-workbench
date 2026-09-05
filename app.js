@@ -11499,8 +11499,8 @@ function branchIconMoney(color = '#f7ba61') {
 
 // 外貌类支线图标：与标签语义相关，使用标签主色
 function branchIconSkincare(color = '#B07A9E') {
-  /* v9372：user 澄清要移动的是洞察页的外貌图标——支线页图标撤销 v9371 左移，回到原位 */
-  return `<svg class="br-icon-svg" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" stroke-linecap="round" stroke-linejoin="round">
+  /* v9373：支线护肤水滴图标右移 1px（user 指定回归原位的数值） */
+  return `<svg class="br-icon-svg" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" stroke-linecap="round" stroke-linejoin="round" style="transform:translateX(1px)">
     <path d="M12 2c-3 3-6 6-6 10 0 3.3 2.7 6 6 6s6-2.7 6-6c0-4-3-7-6-10z" fill="${color}" fill-opacity="0.15" stroke="${color}" stroke-width="1"/>
     <path d="M12 14v4" stroke="${color}" stroke-width="1"/>
   </svg>`;
