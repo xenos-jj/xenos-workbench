@@ -6017,6 +6017,8 @@ select.pf-input {
 /* v9372：洞察页模块卡图标微调——记账 coins 下移 2px（视觉偏上），外貌 sparkles 左移 1px（视觉偏右）；圆形底色 .insp-cat-ic 不动 */
 /* v9374：洞察页外貌图标再左移 0.5px（累计 -1.5px） */
 .insp-cat-card[data-cat="money"] .insp-cat-ic svg { transform: translateY(2px); }
+/* v9420：专注（心电图）图标下移 2px */
+.insp-cat-card[data-cat="focus"] .insp-cat-ic svg { transform: translateY(2px); }
 .insp-cat-card[data-cat="looks"] .insp-cat-ic svg { transform: translateX(-1.5px); }
 
 /* 首页吉祥物 */
@@ -8297,18 +8299,18 @@ select.pf-input {
 .insp-cat-card:active { transform: scale(.985); }
 .insp-cat-head { display: flex; align-items: center; gap: 6px; margin-bottom: 5px; }
 .insp-cat-ic { width: 24px; height: 24px; border-radius: 7px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-/* v9418：洞察卡主名 10px/500，颜色与卡片主描边（左侧彩条 --c）一致 */
-.insp-cat-name { font-size: 10px; font-weight: 500; color: var(--c, var(--text)); flex: 1; }
+/* v9418/v9420：洞察卡主名 12px/575，颜色与卡片主描边（左侧彩条 --c）一致 */
+.insp-cat-name { font-size: 12px; font-weight: 575; color: var(--c, var(--text)); flex: 1; }
 .insp-cat-go { color: var(--text-muted); font-size: 15px; }
 /* v9419：数据行上下收紧 4→2 */
 .insp-cat-metrics { display: flex; justify-content: space-between; gap: 6px; align-items: center; padding: 2px 0 0; }
 .insp-cm { flex: 1; min-width: 0; text-align: center; }
 /* v9376：三页主数值统一（原 16px → 15px/800） */
-/* v9418：洞察三栏数字 9px/500 站酷体（数字自动包裹机制；孤立单个 0 例外走草莓） */
-.insp-cm-val { font-size: 9px; font-weight: 500; color: var(--text); line-height: 1.2; font-family: var(--font-small); }
+/* v9418/v9420：洞察三栏数字 10px/500 站酷体 */
+.insp-cm-val { font-size: 10px; font-weight: 500; color: var(--text); line-height: 1.2; font-family: var(--font-small); }
 /* v9314：删除 .insp-cm-label 文字标签后保留对齐+粗体数字+单位 */
-/* v9418：单位 9px 常规字重 */
-.insp-cm-val .insp-cm-unit { font-size: 9px; font-weight: 400; color: var(--text-muted); margin-left: 1px; font-family: var(--font-small); }
+/* v9418/v9420：单位 10px/500 */
+.insp-cm-val .insp-cm-unit { font-size: 10px; font-weight: 500; color: var(--text-muted); margin-left: 1px; font-family: var(--font-small); }
 /* v9418：.insp-cm-label 文字已删（v9314），样式一并移除 */
 .insp-delta { font-size: 8px; font-family: var(--font-small); font-weight: 700; }
 .insp-delta.up { color: var(--green); }
