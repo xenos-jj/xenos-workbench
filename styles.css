@@ -9821,8 +9821,13 @@ select.pf-input {
    给 body 加 .home-bg，仅首页生效；背景抬到 body 层，星星 5px 两层错位
    ============================================================ */
 body.home-bg {
-  /* v9409：纯白底 */
+  /* v9410：恢复图案层（v9407 小方块 3px / 间距 8px / #E5F3FC）+ 纯白底 */
   background-color: #FFFFFF;
+  background-image:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><rect x='8.7' y='8.7' width='6.6' height='6.6' fill='%23E5F3FC' opacity='0.8'/></svg>");
+  background-size: 11px 11px;
+  background-position: 0 0;
+  background-repeat: repeat;
 }
 /* 首页时 main/content/topbar 底变透明，露出 body 背景（铺满无边框限制） */
 body.home-bg .main,
