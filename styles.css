@@ -9821,8 +9821,8 @@ select.pf-input {
    给 body 加 .home-bg，仅首页生效；背景抬到 body 层，星星 5px 两层错位
    ============================================================ */
 body.home-bg {
-  /* v9408：先去掉图案层看纯底色 #F5FCFF */
-  background-color: #F5FCFF;
+  /* v9409：纯白底 */
+  background-color: #FFFFFF;
 }
 /* 首页时 main/content/topbar 底变透明，露出 body 背景（铺满无边框限制） */
 body.home-bg .main,
