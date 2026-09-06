@@ -8287,20 +8287,21 @@ select.pf-input {
 .insp-empty { font-size: 11px; color: var(--text-muted); text-align: center; padding: 18px 10px; line-height: 1.6; }
 
 .insp-cards-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 10px; }
+/* v9419：卡内文字改小后整体空旷——padding 10/12/10→7/12/8 让卡片紧凑 */
 .insp-cat-card {
   background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-sm);
-  /* v9376：内边距向 12px 14px 靠拢（原 9px 10px 8px；2 列网格取 10/12 不挤） */
-  padding: 10px 12px 10px; box-shadow: var(--shadow); cursor: pointer;
+  padding: 7px 12px 8px; box-shadow: var(--shadow); cursor: pointer;
   transition: transform .12s ease, box-shadow .12s ease;
   border-left: 3px solid var(--c, var(--primary));
 }
 .insp-cat-card:active { transform: scale(.985); }
-.insp-cat-head { display: flex; align-items: center; gap: 6px; margin-bottom: 7px; }
+.insp-cat-head { display: flex; align-items: center; gap: 6px; margin-bottom: 5px; }
 .insp-cat-ic { width: 24px; height: 24px; border-radius: 7px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 /* v9418：洞察卡主名 10px/500，颜色与卡片主描边（左侧彩条 --c）一致 */
 .insp-cat-name { font-size: 10px; font-weight: 500; color: var(--c, var(--text)); flex: 1; }
 .insp-cat-go { color: var(--text-muted); font-size: 15px; }
-.insp-cat-metrics { display: flex; justify-content: space-between; gap: 6px; align-items: center; padding: 4px 0; }
+/* v9419：数据行上下收紧 4→2 */
+.insp-cat-metrics { display: flex; justify-content: space-between; gap: 6px; align-items: center; padding: 2px 0 0; }
 .insp-cm { flex: 1; min-width: 0; text-align: center; }
 /* v9376：三页主数值统一（原 16px → 15px/800） */
 /* v9418：洞察三栏数字 9px/500 站酷体（数字自动包裹机制；孤立单个 0 例外走草莓） */
