@@ -9821,14 +9821,12 @@ select.pf-input {
    给 body 加 .home-bg，仅首页生效；背景抬到 body 层，星星 5px 两层错位
    ============================================================ */
 body.home-bg {
-  background-color: #F0F6FB;
+  background-color: #F5FCFF;
   background-image:
-    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='-70 -70 164 164'><path d='M12 2l2.9 6.7 7.1.6-5.4 4.7 1.8 7-6.4-3.7-6.4 3.7 1.8-7L2 9.3l7.1-.6z' fill='%23CFDDEC' opacity='0.85'/></svg>"),
-    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='-41 -41 106 106'><path d='M12 2l2.9 6.7 7.1.6-5.4 4.7 1.8 7-6.4-3.7-6.4 3.7 1.8-7L2 9.3l7.1-.6z' fill='%23E6EEF6' opacity='0.9'/></svg>"),
-    linear-gradient(180deg, #F5FAFD 0%, #EEF4FB 55%, #E7EFF7 100%);
-  background-size: 34px 34px, 22px 22px, 100% 100%;
-  background-position: 6px 14px, 11px 7px, 0 0;
-  background-repeat: repeat, repeat, no-repeat;
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='-8 -8 40 40'><path d='M12 2l2.9 6.7 7.1.6-5.4 4.7 1.8 7-6.4-3.7-6.4 3.7 1.8-7L2 9.3l7.1-.6z' fill='%23E5F3FC' opacity='0.95'/></svg>");
+  background-size: 10px 10px;
+  background-position: 0 0;
+  background-repeat: repeat;
 }
 /* 首页时 main/content/topbar 底变透明，露出 body 背景（铺满无边框限制） */
 body.home-bg .main,
