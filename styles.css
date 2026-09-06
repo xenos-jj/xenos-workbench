@@ -6253,16 +6253,17 @@ select.pf-input {
 .hp-quick-btn .hq-label { font-size: 11.5px; font-weight: 600; color: var(--text); line-height: 1.2; }
 .hp-quick-btn .hq-arrow { font-size: 16px; color: var(--text-muted); flex-shrink: 0; line-height: 1; font-weight: 400; }
 /* 各按钮按 v9351 调色板（绿/紫/橙/金）—— 各色描边 + 圆形浅底 icon */
-.hp-qb-sport { border-color: #9ACB86; }
+/* v9402：按钮阴影颜色吸取各自边框色（低透明度柔和投影） */
+.hp-qb-sport { border-color: #9ACB86; box-shadow: 0 3px 10px rgba(154, 203, 134, 0.20); }
 .hp-qb-sport .hq-icon { background: #E8F5E4; color: #5A8A4A; }
-.hp-qb-sleep { border-color: #B8AAD8; }
+.hp-qb-sleep { border-color: #B8AAD8; box-shadow: 0 3px 10px rgba(184, 170, 216, 0.20); }
 .hp-qb-sleep .hq-icon { background: #F0EBF8; color: #7C6DA8; }
-.hp-qb-money { border-color: #F4B75B; }
+.hp-qb-money { border-color: #F4B75B; box-shadow: 0 3px 10px rgba(244, 183, 91, 0.20); }
 /* v9367：记账图标下移 2px——只移内部 SVG，圆形底色不动 */
 .hp-qb-money .hq-icon svg { transform: translateY(2px); }
 .hp-qb-money .hq-icon { background: #FFF6E6; color: #C88F2A; }
 /* v9351：白底——移除浅金底色 #FFFDF5 */
-.hp-qb-idea { border-color: #E6C95B; }
+.hp-qb-idea { border-color: #E6C95B; box-shadow: 0 3px 10px rgba(230, 201, 91, 0.20); }
 .hp-qb-idea .hq-icon { background: #FCF6DD; color: #A8942D; }
 
 /* 主任务 / 支线 选择弹窗 */
