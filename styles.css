@@ -6415,6 +6415,8 @@ select.pf-input {
 .br-streak-clean {
   display: flex; align-items: center; gap: 5px;
   font-size: 10px; font-weight: 450; color: var(--text-muted);
+  /* v9403：页面头部右侧「持续推进 X 天」文字上移 4px（transform 视觉位移不影响布局） */
+  transform: translateY(-4px);
 }
 .br-streak-clean b { color: var(--primary-dark); font-size: 12px; font-weight: 550; }
 
@@ -6527,7 +6529,8 @@ select.pf-input {
 /* 支线卡片图标统一用 currentColor，所有图标与文字中心对齐 */
 .br-branch-info { flex: 1; min-width: 0; }
 .br-branch-title { font-size: 12px; font-weight: 575; color: var(--text); margin: 0; font-family: var(--font-title); }
-.br-branch-sub { font-size: 9px; font-family: var(--font-small); color: var(--text-muted); margin: 0 0 2px; }
+/* v9403：支线卡副名（如「每天进步一点点，未来更自由」）9px → 8px */
+.br-branch-sub { font-size: 8px; font-family: var(--font-small); color: var(--text-muted); margin: 0 0 2px; }
 .br-branch-meta { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .br-lv-tag { border-radius: 999px; padding: 1px 7px; font-size: 9px; font-family: var(--font-small); font-weight: 500; }
 .br-freq-tag { font-size: 8px; font-family: var(--font-small); color: var(--text-muted); }
