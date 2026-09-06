@@ -2878,7 +2878,7 @@ svg text { font-family: var(--font-small) !important; }
   padding: 10px; margin-bottom: 10px;
 }
 .diet-analysis-card .da-chart-title {
-  font-size: 10px; color: var(--text-muted); margin-bottom: 8px;
+  font-size: 10px; color: var(--text-muted); margin-bottom: 6px;
 }
 .diet-analysis-card .da-insight {
   display: flex; align-items: flex-start; gap: 6px;
@@ -6084,7 +6084,7 @@ select.pf-input {
   gap: 12px;
 }
 .hp-quote-left { flex: 1; min-width: 0; }
-.hp-quote-label { font-size: 12px; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 5px; margin-bottom: 10px; }
+.hp-quote-label { font-size: 12px; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 5px; margin-bottom: 6px; }
 .hp-quote-star { font-size: 11px; }
 .hp-quote .quote-text { font-size: 13px; font-weight: 500; color: var(--text); margin: 0 0 10px; line-height: 1.55; }
 .hp-quote .quote-author { font-size: 10px; color: var(--text-muted); text-align: right; }
@@ -7961,7 +7961,7 @@ select.pf-input {
 /* v9380：洞察「每周数据变化/习惯完成热力图」去大卡片框——标题剥离为页面级 section head */
 .insp-section {
   background: transparent; border: none; border-radius: 0; padding: 0;
-  box-shadow: none; margin: 16px 0 12px;
+  box-shadow: none; margin: 18px 0 6px;
 }
 .insp-section-head {
   display: flex; align-items: center; justify-content: space-between;
@@ -9488,14 +9488,14 @@ select.pf-input {
 /* 7. 每周食材统计（嵌在 dwa 内，平铺，无独立卡片） */
 .diet-flat-wi { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border-soft); }
 .diet-flat-wi-head {
-  display: flex; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 700; color: var(--text); margin-bottom: 10px;
+  display: flex; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 700; color: var(--text); margin-bottom: 6px;
 }
 .diet-flat-wi-head svg { color: var(--primary); }
 .diet-flat-wi-head .diet-head-meta { margin-left: auto; }
 .diet-flat-wi-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
 .diet-flat-wi-block { }
 .diet-flat-wi-block-head {
-  font-size: 10.5px; font-weight: 600; color: var(--text-muted); margin-bottom: 8px;
+  font-size: 10.5px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px;
   font-family: var(--font-small); letter-spacing: 0.2px;
 }
 .diet-flat-wi-row {
