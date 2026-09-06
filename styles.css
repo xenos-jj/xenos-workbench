@@ -6417,8 +6417,10 @@ select.pf-input {
 .br-streak-clean {
   display: flex; align-items: center; gap: 5px;
   font-size: 10px; font-weight: 450; color: var(--text-muted);
-  /* v9403/v9416：「持续推进 X 天」累计上移 8px（transform 视觉位移不影响布局） */
+  /* v9403/v9416/v9421：「持续推进 X 天」累计上移 8px（位置不动）+ z-index 提升防顶部被其他层遮住上半文字 */
   transform: translateY(-8px);
+  position: relative;
+  z-index: 100;
 }
 .br-streak-clean b { color: var(--primary-dark); font-size: 12px; font-weight: 550; }
 
@@ -6538,8 +6540,9 @@ select.pf-input {
 .br-freq-tag { font-size: 8px; font-family: var(--font-small); color: var(--text-muted); }
 /* v9382：进度环上移 2px（user 调整支线卡下半部分布局） */
 .br-branch-ring { flex-shrink: 0; margin-right: 4px; transform: translateY(-2px); }
-.br-branch-ring .mini-ring { width: 44px; height: 44px; }
-.br-branch-ring .mini-ring svg { width: 44px; height: 44px; }
+/* v9421：支线环 44 → 56px（viewBox 64 等比放大，stroke 视觉随比例 2.75→3.5px） */
+.br-branch-ring .mini-ring { width: 56px; height: 56px; }
+.br-branch-ring .mini-ring svg { width: 56px; height: 56px; }
 .br-branch-ring .mini-ring .mr-bg { stroke-width: 4; }
 .br-branch-ring .mini-ring.ring-purple .mr-bg { stroke: #F3F1F4; }
 .br-branch-ring .mini-ring.ring-green .mr-bg { stroke: #F4F5E5; }
