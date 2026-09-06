@@ -6546,9 +6546,7 @@ select.pf-input {
 .br-branch-ring .mini-ring.ring-purple .mr-fg { stroke: #8978c3; }
 .br-branch-ring .mini-ring.ring-green .mr-fg { stroke: #a0bb7a; }
 .br-branch-ring .mini-ring.ring-peach .mr-fg { stroke: #f4b75b; }
-.br-branch-ring .mini-ring.ring-purple .mr-num { color: #8978c3; }
-.br-branch-ring .mini-ring.ring-green .mr-num { color: #a0bb7a; }
-.br-branch-ring .mini-ring.ring-peach .mr-num { color: #f4b75b; }
+/* v9417：环内数字颜色统一工作台中性色 var(--text)（不再跟随卡片彩环色）——user 选 B */
 /* v9376：三页主数值统一（原 13px/585 → 14px/800） */
 .br-branch-ring .mini-ring .mr-num { font-size: 12px; font-weight: 600; color: var(--text); white-space: nowrap; }
 .br-branch-ring .mini-ring .mr-num small { font-size: 8px; font-family: var(--font-small); color: var(--text-muted); }
