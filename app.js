@@ -4018,6 +4018,9 @@ function boldZeroPct(root) {
 function renderContent() {
   content.innerHTML = '';
 
+  // v9405：首页背景铺满视口（body.home-bg 控制）——每次切页同步，离开首页自动移除
+  document.body.classList.toggle('home-bg', state.activeItem === '工作台首页');
+
   const route = PAGE_ROUTES[state.activeItem];
   if (route) {
     route();
