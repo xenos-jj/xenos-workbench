@@ -6415,8 +6415,8 @@ select.pf-input {
 .br-streak-clean {
   display: flex; align-items: center; gap: 5px;
   font-size: 10px; font-weight: 450; color: var(--text-muted);
-  /* v9403：页面头部右侧「持续推进 X 天」文字上移 4px（transform 视觉位移不影响布局） */
-  transform: translateY(-4px);
+  /* v9403/v9416：「持续推进 X 天」累计上移 8px（transform 视觉位移不影响布局） */
+  transform: translateY(-8px);
 }
 .br-streak-clean b { color: var(--primary-dark); font-size: 12px; font-weight: 550; }
 
