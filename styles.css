@@ -6497,7 +6497,7 @@ select.pf-input {
 /* v9376：圆角统一 12px（原 18px）+ 内边距向 12px 14px 靠拢（原 10px 14px 0） */
 /* v9384：支线卡高度优化——保留全部元素，仅压缩内部空白 */
 .br-branch-card {
-  background: var(--card); border-radius: var(--radius); padding: 11px 14px 1px 14px;
+  background: var(--card); border-radius: var(--radius); padding: 10px 14px 1px 14px;
   margin-bottom: 10px; box-shadow: 0 2px 8px rgba(120, 80, 40, 0.03);
   border: 1px solid #E2DCF5;
   display: flex; flex-direction: column;
@@ -6570,12 +6570,14 @@ select.pf-input {
 .br-trend .spark-chart { width: 100%; height: auto; aspect-ratio: 260 / 52; display: block; margin-top: 0; margin-bottom: 2px; transform: translateY(-2px); }
 .br-trend .chart-empty { padding: 0; margin: 0; font-size: 10px; }
 /* v9382：竖线缩短 7px——align-self stretch 默认拉满，height 22-7=15 + margin-top 7 让竖线从下往上缩短 */
-.br-branch-vline { width: 0; flex-shrink: 0; opacity: 0.35; align-self: stretch; border-left: 1px dashed; margin-top: 7px; height: 15px; }
-/* v9384 + v9414：下一步区下移 3px（与折线对齐调整）；min-height 22 → 18 */
+/* v9415：竖线下方延伸 5px（伪元素定位，不改高度、不撑开布局） */
+.br-branch-vline { width: 0; flex-shrink: 0; opacity: 0.35; align-self: stretch; border-left: 1px dashed; margin-top: 7px; height: 15px; position: relative; }
+.br-branch-vline::after { content: ''; position: absolute; left: 0; top: 100%; width: 0; height: 5px; border-left: 1px dashed #d8cfc4; opacity: 0.35; }
+/* v9384 + v9414 + v9415：下一步区下移 4px（累计） */
 .br-next-wrap {
   display: flex; flex-direction: column; justify-content: flex-start;
   padding-left: 6px; flex-shrink: 0; min-width: 118px; min-height: 18px;
-  margin-top: 3px;
+  margin-top: 4px;
 }
 /* v9384：标签上间距 3 → 1 */
 .br-next-wrap .br-next-label { font-size: 8px; font-family: var(--font-small); color: var(--text-muted); margin-bottom: 0; margin-top: 2px; }
