@@ -238,7 +238,8 @@ svg text { font-family: var(--font-small) !important; }
 
 .brand-title {
   font-size: 12px;
-  font-weight: 600;
+  /* v9397：顶栏主标题字重 600 → 550（与板块标题 .hp-section-title 字重统一） */
+  font-weight: 550;
   color: var(--primary);
   margin: 0 0 2px;
   line-height: 1.3;
