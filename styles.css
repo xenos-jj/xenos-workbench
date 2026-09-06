@@ -6525,8 +6525,8 @@ select.pf-input {
 .br-branch-icon .br-icon-leaf { transform: none; }
 /* 支线卡片图标统一用 currentColor，所有图标与文字中心对齐 */
 .br-branch-info { flex: 1; min-width: 0; }
-.br-branch-title { font-size: 14px; font-weight: 600; color: var(--text); margin: 0; font-family: var(--font-title); }
-.br-branch-sub { font-size: 7px; font-family: var(--font-small); color: var(--text-muted); margin: 0 0 2px; }
+.br-branch-title { font-size: 12px; font-weight: 575; color: var(--text); margin: 0; font-family: var(--font-title); }
+.br-branch-sub { font-size: 9px; font-family: var(--font-small); color: var(--text-muted); margin: 0 0 2px; }
 .br-branch-meta { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .br-lv-tag { border-radius: 999px; padding: 1px 7px; font-size: 9px; font-family: var(--font-small); font-weight: 500; }
 .br-freq-tag { font-size: 8px; font-family: var(--font-small); color: var(--text-muted); }
@@ -6546,7 +6546,7 @@ select.pf-input {
 .br-branch-ring .mini-ring.ring-green .mr-num { color: #a0bb7a; }
 .br-branch-ring .mini-ring.ring-peach .mr-num { color: #f4b75b; }
 /* v9376：三页主数值统一（原 13px/585 → 14px/800） */
-.br-branch-ring .mini-ring .mr-num { font-size: 14px; font-weight: 800; color: var(--text); white-space: nowrap; }
+.br-branch-ring .mini-ring .mr-num { font-size: 12px; font-weight: 600; color: var(--text); white-space: nowrap; }
 .br-branch-ring .mini-ring .mr-num small { font-size: 8px; font-family: var(--font-small); color: var(--text-muted); }
 .br-branch-ring .mini-ring .mr-num .zpct { font-weight: 585; }
 /* 全局：所有阿拉伯数字 0 与百分号 % 的字重与进度环数字（.mr-num）保持一致（600），不改变其颜色 */
@@ -7167,7 +7167,7 @@ select.pf-input {
   transition: transform .14s ease, box-shadow .14s ease;
 }
 .br-branch:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
-.br-branch-title { font-size: 12px; font-weight: 700; }
+.br-branch-title { font-size: 12px; font-weight: 575; }
 .br-keep-card, .me-card, .me-milestone, .proj-slot {
   background: var(--card);
   border: 1px solid var(--border);
@@ -7419,7 +7419,7 @@ select.pf-input {
   border-radius: var(--radius);
   box-shadow: var(--shadow-lg);
 }
-.modal-title { font-size: 13px; font-weight: 700; color: var(--text); }
+.modal-title { font-size: 16px; font-weight: 400; color: var(--text); }
 .modal-input, .qr-input, .qr-field input, .qr-field textarea, .qr-field select {
   border-radius: var(--radius-xs);
   border: 1px solid var(--border);
@@ -7598,7 +7598,7 @@ select.pf-input {
   transition: transform .14s ease, box-shadow .14s ease;
 }
 .br-branch:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
-.br-branch-title { font-size: 12px; font-weight: 700; }
+.br-branch-title { font-size: 12px; font-weight: 575; }
 .br-keep-card, .me-card, .me-milestone, .proj-slot {
   background: var(--card);
   border: 1px solid var(--border);
@@ -7850,7 +7850,7 @@ select.pf-input {
   border-radius: var(--radius);
   box-shadow: var(--shadow-lg);
 }
-.modal-title { font-size: 13px; font-weight: 700; color: var(--text); }
+.modal-title { font-size: 16px; font-weight: 400; color: var(--text); }
 .modal-input, .qr-input, .qr-field input, .qr-field textarea, .qr-field select {
   border-radius: var(--radius-xs);
   border: 1px solid var(--border);
@@ -7953,8 +7953,8 @@ select.pf-input {
 .bg-orange { background: #FCEFDD; }
 .bg-purple { background: #F1EDF8; }
 .insp-stat-main { display: flex; align-items: baseline; gap: 2px; color: var(--text); }
-.insp-stat-main b { font-size: 15px; font-weight: 800; }
-.insp-stat-main span { font-size: 10px; color: var(--text-muted); }
+.insp-stat-main b { font-size: 12px; font-weight: 600; }
+.insp-stat-main span { font-size: 9px; font-family: var(--font-small); color: var(--text-muted); }
 .insp-stat-label { font-size: 10px; color: var(--text-muted); font-weight: 500; }
 .insp-stat-change { font-size: 8px; font-family: var(--font-small); color: var(--green); font-weight: 600; }
 
