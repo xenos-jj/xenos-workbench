@@ -6204,10 +6204,13 @@ select.pf-input {
 .hmt-target-edit { flex-shrink: 0; background: #fff; border: 1px solid var(--border); border-radius: 999px; padding: 1px 6px; font-size: 9px; font-family: var(--font-small); color: var(--text-muted); cursor: pointer; transition: background .12s ease, transform .12s ease; }
 .hmt-target-edit:hover { background: var(--bg-soft); }
 .hmt-target-edit:active { transform: scale(0.95); }
-.hmt-focus { flex-shrink: 0; border: 1px solid var(--primary); background: #fff; color: var(--primary-dark); border-radius: 999px; padding: 3px 8px; font-size: 9px; font-family: var(--font-small); font-weight: 600; cursor: pointer; transition: transform .12s ease, background .12s ease; }
-.hmt-focus:hover { background: var(--primary-light); }
+/* v9396：专注按钮与页面统一——描边 var(--primary) → var(--border)、文字 var(--primary-dark) → var(--text)
+   与相邻「30分钟」标签(hmt-target-edit)同体系，不再用橙强调色，融入中性暖棕页面 */
+.hmt-focus { flex-shrink: 0; border: 1px solid var(--border); background: #fff; color: var(--text); border-radius: 999px; padding: 3px 8px; font-size: 9px; font-family: var(--font-small); font-weight: 600; cursor: pointer; transition: transform .12s ease, background .12s ease; }
+.hmt-focus:hover { background: var(--bg-soft); }
 .hmt-focus:active { transform: scale(0.95); }
-.hmt-focus-done { border-color: #C8C8C8; background: #F5F5F5; color: #999; }
+/* v9396：已专注态同步改浅灰棕系（弱化状态），保留区分度 */
+.hmt-focus-done { border-color: var(--border-soft); background: #FAF7F2; color: var(--text-muted); }
 .hmt-bunny { width: 84px; height: 76px; flex-shrink: 0; }
 .hp-bunny-reading { display: block; width: 100%; height: 100%; }
 
