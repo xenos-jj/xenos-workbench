@@ -6506,8 +6506,8 @@ select.pf-input {
   border: 1px solid #E2DCF5;
   display: flex; flex-direction: column;
   cursor: pointer;
-  /* v9422：整卡上移 2px（transform 视觉位移不影响布局、不影响兄弟卡 margin） */
-  transform: translateY(-2px);
+  /* v9423：整卡从 v9422 上移 2px 改为上移 1px（即相对之前下移 1px） */
+  transform: translateY(-1px);
   /* 不设 min-height：v9188 后顶部+底部均已紧凑，min-height 会让 flex:1 的底部拉满出大块空白；改为按内容自适应 */
 }
 .br-branch-card.c-purple { background: #EDE9F7; border: 1px solid #a99adc; box-shadow: 0 3px 12px rgba(137, 120, 195, 0.12), 0 1px 4px rgba(137, 120, 195, 0.06); }
