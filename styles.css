@@ -6548,9 +6548,10 @@ select.pf-input {
 .br-branch-ring .mini-ring.ring-peach .mr-fg { stroke: #f4b75b; }
 /* v9417：环内数字颜色统一工作台中性色 var(--text)（不再跟随卡片彩环色）——user 选 B */
 /* v9376：三页主数值统一（原 13px/585 → 14px/800） */
-.br-branch-ring .mini-ring .mr-num { font-size: 12px; font-weight: 600; color: var(--text); white-space: nowrap; }
+/* v9417/v9418：支线环数字 10px/500（工作台中性色 var(--text)） */
+.br-branch-ring .mini-ring .mr-num { font-size: 10px; font-weight: 500; color: var(--text); white-space: nowrap; }
 .br-branch-ring .mini-ring .mr-num small { font-size: 8px; font-family: var(--font-small); color: var(--text-muted); }
-.br-branch-ring .mini-ring .mr-num .zpct { font-weight: 585; }
+.br-branch-ring .mini-ring .mr-num .zpct { font-weight: 500; }
 /* 全局：所有阿拉伯数字 0 与百分号 % 的字重与进度环数字（.mr-num）保持一致（600），不改变其颜色 */
 .zpct { font-weight: 600; }
 
@@ -8296,15 +8297,18 @@ select.pf-input {
 .insp-cat-card:active { transform: scale(.985); }
 .insp-cat-head { display: flex; align-items: center; gap: 6px; margin-bottom: 7px; }
 .insp-cat-ic { width: 24px; height: 24px; border-radius: 7px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.insp-cat-name { font-size: 11.5px; font-weight: 700; color: var(--text); flex: 1; }
+/* v9418：洞察卡主名 10px/500，颜色与卡片主描边（左侧彩条 --c）一致 */
+.insp-cat-name { font-size: 10px; font-weight: 500; color: var(--c, var(--text)); flex: 1; }
 .insp-cat-go { color: var(--text-muted); font-size: 15px; }
 .insp-cat-metrics { display: flex; justify-content: space-between; gap: 6px; align-items: center; padding: 4px 0; }
 .insp-cm { flex: 1; min-width: 0; text-align: center; }
 /* v9376：三页主数值统一（原 16px → 15px/800） */
-.insp-cm-val { font-size: 15px; font-weight: 800; color: var(--text); line-height: 1.1; }
+/* v9418：洞察三栏数字 9px/500 站酷体（数字自动包裹机制；孤立单个 0 例外走草莓） */
+.insp-cm-val { font-size: 9px; font-weight: 500; color: var(--text); line-height: 1.2; font-family: var(--font-small); }
 /* v9314：删除 .insp-cm-label 文字标签后保留对齐+粗体数字+单位 */
-.insp-cm-val .insp-cm-unit { font-size: 9px; font-weight: 600; color: var(--text-muted); margin-left: 1px; font-family: var(--font-small); }
-.insp-cm-label { font-size: 8.5px; color: var(--text-muted); margin-top: 1px; display: flex; align-items: center; gap: 2px; flex-wrap: wrap; font-family: var(--font-small); }
+/* v9418：单位 9px 常规字重 */
+.insp-cm-val .insp-cm-unit { font-size: 9px; font-weight: 400; color: var(--text-muted); margin-left: 1px; font-family: var(--font-small); }
+/* v9418：.insp-cm-label 文字已删（v9314），样式一并移除 */
 .insp-delta { font-size: 8px; font-family: var(--font-small); font-weight: 700; }
 .insp-delta.up { color: var(--green); }
 .insp-delta.down { color: #D98A8A; }
