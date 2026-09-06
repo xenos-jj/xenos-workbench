@@ -9815,3 +9815,20 @@ select.pf-input {
 .sub-page-head h3 {
   font-family: var(--font-title) !important;
 }
+
+/* ============================================================
+   v9404：首页整页背景 —— 浅蓝白渐变 + 零星小星（纯 CSS data-uri，零图片）
+   星星两层错位平铺（大星疏/小星密）营造「零星散落」感
+   ============================================================ */
+.page.home-page {
+  min-height: 100vh;
+  background-color: #F2F7FB;
+  background-image:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 2l2.9 6.7 7.1.6-5.4 4.7 1.8 7-6.4-3.7-6.4 3.7 1.8-7L2 9.3l7.1-.6z' fill='%23D9E6F2' opacity='0.9'/></svg>"),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 2l2.9 6.7 7.1.6-5.4 4.7 1.8 7-6.4-3.7-6.4 3.7 1.8-7L2 9.3l7.1-.6z' fill='%23EDF3F9' opacity='0.9'/></svg>"),
+    linear-gradient(180deg, #F7FBFE 0%, #EFF5FB 55%, #E9F1F8 100%);
+  background-size: 190px 190px, 95px 95px, 100% 100%;
+  background-position: 24px 40px, 96px 130px, 0 0;
+  background-repeat: repeat, repeat, no-repeat;
+  background-attachment: local, local, scroll;
+}
