@@ -9823,8 +9823,8 @@ select.pf-input {
 body.home-bg {
   background-color: #F5FCFF;
   background-image:
-    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='-8 -8 40 40'><path d='M12 2l2.9 6.7 7.1.6-5.4 4.7 1.8 7-6.4-3.7-6.4 3.7 1.8-7L2 9.3l7.1-.6z' fill='%23E5F3FC' opacity='0.95'/></svg>");
-  background-size: 10px 10px;
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><rect x='8.7' y='8.7' width='6.6' height='6.6' fill='%23E5F3FC' opacity='0.8'/></svg>");
+  background-size: 11px 11px;
   background-position: 0 0;
   background-repeat: repeat;
 }
