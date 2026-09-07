@@ -9925,3 +9925,23 @@ body.home-bg .topbar {
 
 /* ============ v9439 护肤日常页：标题与下方卡片距离 20px ============ */
 .skincare-page .domain-hero { padding: 0 0 20px !important; margin: 0 !important; }
+
+/* ============ v9440 护肤日常页：加步骤行 / 今日皮肤状态 / 本周护肤统计 ============ */
+/* 距离遵循 v9400 板块规则（上 18 / 下 6）—— 板块标题 12/575 */
+.skincare-page .sk-add-row { display: flex; align-items: center; gap: 8px; margin: 8px 0 0; }
+.skincare-page .sk-add-row .lk-input { flex: 1; }
+.skincare-page .sk-section { margin-top: 18px; }
+.skincare-page .sk-section-head { font-size: 12px; font-weight: 575; color: var(--text); display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+.skincare-page .sk-status-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.skincare-page .sk-status-tag { font-size: 9.5px; font-family: var(--font-small); padding: 4px 10px; border: 1px solid var(--border); border-radius: 999px; background: var(--bg); color: var(--text-muted); cursor: pointer; transition: all .15s ease; }
+.skincare-page .sk-status-tag.on { background: var(--primary); border-color: var(--primary); color: #fff; }
+.skincare-page .sk-week-stats { display: flex; align-items: center; gap: 8px; font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+.skincare-page .sk-week-stats .sk-week-icon { color: var(--primary); }
+.skincare-page .sk-week-stats .sk-week-meta b { color: var(--text); font-weight: 700; }
+.skincare-page .sk-week-dots { display: flex; gap: 6px; margin-top: 8px; }
+.skincare-page .sk-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border-soft); display: inline-block; }
+.skincare-page .sk-dot.today { background: var(--primary-light); }
+.skincare-page .sk-dot.has { background: var(--primary); }
+.skincare-page .sk-week-points { font-size: 10px; color: var(--text-muted); margin-top: 8px; }
+.skincare-page .sk-week-points b { color: var(--text); font-weight: 700; }
+.skincare-page .sk-note-card { margin-top: 18px; }

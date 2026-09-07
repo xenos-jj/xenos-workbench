@@ -12914,6 +12914,9 @@ function renderSkincarePage() {
   const today = getTodayKey();
   if (!sc.log) sc.log = {};
   if (!sc.log[today]) sc.log[today] = { done: 0, total: 0 };
+  if (!sc.skinStatus) sc.skinStatus = {};
+  if (!sc.skinStatus) sc.skinStatus = {};
+  if (!sc.skinStatus) sc.skinStatus = {};
   const page = document.createElement('div');
   page.className = 'page skincare-page';
 
@@ -12958,7 +12961,44 @@ function renderSkincarePage() {
 
     ${routineHTML}
 
-    <div class="soft-card" style="margin-top:12px;">
+    <div class="sk-add-row">
+      <input class="lk-input" id="sk-quick-add" placeholder="加一个早间步骤...">
+      <button class="lk-mini-btn" id="sk-quick-add-btn" aria-label="添加">${icon('plus', 12)}</button>
+    </div>
+
+    <div class="sk-section" data-sk-section="status">
+      <div class="sk-section-head">${icon('heart', 14)} <span>今日皮肤状态</span></div>
+      <div class="sk-status-tags" id="sk-status-tags">
+        ${['稳定','干燥','出油','敏感','长痘'].map(t => `<button class="sk-status-tag ${sc.skinStatus && sc.skinStatus[today] === t ? 'on' : ''}" data-sk-tag="${t}">${t}</button>`).join('')}
+      </div>
+    </div>
+
+    <div class="sk-section" data-sk-section="week">
+      <div class="sk-section-head">${icon('chart', 14)} <span>本周护肤统计</span></div>
+      ${(() => {
+        const ws = getWeekStart();
+        const weekDates = [];
+        for (let i = 0; i < 7; i++) {
+          const d2 = new Date(ws); d2.setDate(d2.getDate() + i);
+          weekDates.push(d2.toISOString().slice(0,10));
+        }
+        const weekDone = weekDates.reduce((s, dk) => s + ((sc.log[dk] && sc.log[dk].done) || 0), 0);
+        const weekTotal = sc.routine.reduce((a, g) => a + g.items.length, 0) * 7;
+        const pct = weekTotal ? Math.round(weekDone / weekTotal * 100) : 0;
+        const todayIdx = weekDates.indexOf(today);
+        const dots = weekDates.map((dk, i) => `<span class="sk-dot ${i < todayIdx ? 'past' : ''} ${i === todayIdx ? 'today' : ''} ${((sc.log[dk] && sc.log[dk].done) || 0) > 0 ? 'has' : ''}"></span>`).join('');
+        return `
+          <div class="sk-week-stats">
+            <div class="sk-week-icon">${icon('check', 14)}</div>
+            <div class="sk-week-meta">天打卡 · 完成率 <b>${pct}%</b></div>
+          </div>
+          <div class="sk-week-dots">${dots}</div>
+          <div class="sk-week-points">累计 <b>+${weekDone}</b> 分</div>
+        `;
+      })()}
+    </div>
+
+    <div class="soft-card sk-note-card">
       <div class="soft-card-title">${icon('edit', 16)} 护肤小记</div>
       <textarea class="swot-area" id="sk-notes" placeholder="记下今天皮肤状态、想试的新品，或偷懒的那天也没关系～">${escapeHTML(sc.notes || '')}</textarea>
     </div>
@@ -12983,6 +13023,34 @@ function renderSkincarePage() {
   page.querySelector('#sk-notes').addEventListener('change', (e) => {
     sc.notes = e.target.value;
     saveSkincare();
+  });
+
+  // v9440：快速加步骤（添加到早间组）
+  const qa = page.querySelector('#sk-quick-add');
+  const qaBtn = page.querySelector('#sk-quick-add-btn');
+  if (qaBtn) qaBtn.addEventListener('click', () => {
+    const text = (qa.value || '').trim();
+    if (!text) return;
+    sc.routine = sc.routine || [];
+    const am = sc.routine.find(g => g.id === 'sk-am') || sc.routine[0];
+    if (!am) return;
+    am.items.push({ id: 'sk-am-' + Date.now().toString(36), text, done: false });
+    saveSkincare();
+    qa.value = '';
+    renderSkincarePage();
+  });
+  if (qa) qa.addEventListener('keydown', (e) => { if (e.key === 'Enter') qaBtn && qaBtn.click(); });
+
+  // v9440：皮肤状态 tag 单选（再点取消）
+  page.querySelectorAll('.sk-status-tag').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (!sc.skinStatus) sc.skinStatus = {};
+      const t = btn.dataset.skTag;
+      if (sc.skinStatus[today] === t) delete sc.skinStatus[today];
+      else sc.skinStatus[today] = t;
+      saveSkincare();
+      renderSkincarePage();
+    });
   });
 }
 
