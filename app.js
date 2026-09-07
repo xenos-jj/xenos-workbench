@@ -12922,10 +12922,11 @@ function renderSkincarePage() {
 
   const routineHTML = sc.routine.map(group => {
     const done = group.items.filter(it => it.done).length;
+    const allDone = group.items.length > 0 && done >= group.items.length;
     return `<div class="module-card" data-group="${escapeHTML(group.id)}">
       <div class="module-card-head">
         <span class="module-card-title">${escapeHTML(group.name)}</span>
-        <span class="module-card-meta">${done}/${group.items.length}</span>
+        <span class="sk-pending ${allDone ? 'ok' : ''}">${allDone ? '已完成' : '待完成'}</span>
       </div>
       <div class="module-list">
         ${group.items.map(it => `<div class="module-list-item ${it.done ? 'done' : ''}" data-item="${escapeHTML(it.id)}" data-group="${escapeHTML(group.id)}">
@@ -12954,9 +12955,9 @@ function renderSkincarePage() {
       <span class="mrb-text">早晚各花几分钟就好，状态不好可以只做最基础的清洁 + 保湿，不强迫完整流程。</span>
     </div>
 
-    <div class="module-stats-grid">
-      <div class="module-stat"><b>${sc.log[today].done}</b><span>今日完成</span></div>
-      <div class="module-stat"><b>${sc.routine.reduce((a, g) => a + g.items.length, 0)}</b><span>护理步骤</span></div>
+    <div class="sk-day-head">
+      <span class="sk-day-title">${icon('check', 14)} 今日护肤打卡</span>
+      <span class="sk-day-pts">+${sc.log[today].done} 分</span>
     </div>
 
     ${routineHTML}
