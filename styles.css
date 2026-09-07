@@ -9902,3 +9902,11 @@ body.home-bg .topbar {
 .skincare-page .module-list-item { padding: 7px 10px; min-height: 32px; }
 /* 文字 10px / 400（草莓，≥10px 不落站酷规则） */
 .skincare-page .module-list-item .mli-text { font-size: 10px; font-weight: 400; font-family: var(--font); }
+
+/* ============ v9436 护肤日常页标题（仅本页） ============ */
+/* 「护肤日常」靠左 + 16px/500；leaf 图标保持在标题右侧 */
+.skincare-page .domain-hero { text-align: left; }
+.skincare-page .domain-head { justify-content: flex-start; text-align: left; }
+.skincare-page .domain-head > div:first-child { flex: none; }
+.skincare-page .domain-head .domain-title { font-size: 16px !important; font-weight: 500 !important; margin: 0; color: var(--text); }
+.skincare-page .domain-head .domain-icon { order: 2; flex-shrink: 0; }
