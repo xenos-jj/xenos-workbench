@@ -9863,6 +9863,8 @@ body.home-bg .topbar {
 .mini-ring .mr-num { font-size: 12px !important; font-weight: 575 !important; }
 /* 支线环数字规格覆盖（v9418：10px/500）在统一规则之后仍生效 */
 .br-branch-ring .mini-ring .mr-num { font-size: 10px !important; font-weight: 500 !important; }
+/* v9426：记账页总资产金额例外——16px/500 */
+.money-total-card .mt-value { font-size: 16px !important; font-weight: 500 !important; }
 
 /* 2) 行卡高度统一 40px */
 .module-list-item, .exercise-row, .task-row, .tx-row, .ing-row, .diet-flat-meal { min-height: 40px; }
