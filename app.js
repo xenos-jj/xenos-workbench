@@ -12974,6 +12974,11 @@ function renderSkincarePage() {
       </div>
     </div>
 
+    <div class="soft-card sk-note-card">
+      <div class="soft-card-title">${icon('edit', 16)} 护肤小记</div>
+      <textarea class="swot-area" id="sk-notes" placeholder="记下今天皮肤状态、想试的新品，或偷懒的那天也没关系～">${escapeHTML(sc.notes || '')}</textarea>
+    </div>
+
     <div class="sk-section" data-sk-section="week">
       <div class="sk-section-head">${icon('chart', 14)} <span>本周护肤统计</span></div>
       ${(() => {
@@ -12997,11 +13002,6 @@ function renderSkincarePage() {
           <div class="sk-week-points">累计 <b>+${weekDone}</b> 分</div>
         `;
       })()}
-    </div>
-
-    <div class="soft-card sk-note-card">
-      <div class="soft-card-title">${icon('edit', 16)} 护肤小记</div>
-      <textarea class="swot-area" id="sk-notes" placeholder="记下今天皮肤状态、想试的新品，或偷懒的那天也没关系～">${escapeHTML(sc.notes || '')}</textarea>
     </div>
   `;
   content.appendChild(page);

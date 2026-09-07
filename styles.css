@@ -9957,3 +9957,13 @@ body.home-bg .topbar {
 .skincare-page .sk-pending.ok { background: var(--bg-soft); color: var(--text-muted); border-color: var(--border-soft); }
 /* 日头与早间 module 之间：v9400 板块间距 18/6 */
 .skincare-page .module-card { margin-top: 6px; }
+
+/* ============ v9442 护肤四板块标题统一 ============ */
+/* 今日护肤打卡 / 今日皮肤状态 / 护肤小记 / 本周护肤统计：全部 12/575；标题行上18下6；左图标同一 X；图标色=护肤小记图标色（var(--text) currentColor） */
+.skincare-page .sk-day-head { padding: 0; margin: 18px 0 6px; }
+.skincare-page .sk-day-title { font-size: 12px !important; font-weight: 575 !important; color: var(--text); display: inline-flex; align-items: center; gap: 6px; }
+.skincare-page .sk-day-title svg { color: var(--text); }
+.skincare-page .sk-section-head svg { color: var(--text); }
+.skincare-page .sk-note-card { margin-top: 18px; }
+.skincare-page .sk-note-card .soft-card-title { font-size: 12px !important; font-weight: 575 !important; margin-bottom: 6px; }
+.skincare-page .sk-note-card .soft-card-title svg { color: var(--text); }
