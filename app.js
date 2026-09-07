@@ -12907,6 +12907,8 @@ function renderSocialPage() {
 
 // ============ 护肤日常（低精力版） ============
 function renderSkincarePage() {
+  // v9434：内部重绘前必须先清空 content，否则每次点击都会叠加一份新页面（旧状态滞留视口，刷新才看到结果）
+  content.innerHTML = '';
   const sc = state.skincare;
   if (greetLine) greetLine.textContent = '护肤日常';
   const today = getTodayKey();
