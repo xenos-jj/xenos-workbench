@@ -12938,10 +12938,10 @@ function renderSkincarePage() {
   page.innerHTML = `
     <div class="domain-hero">
       <div class="domain-head">
-        <div class="domain-icon">${icon('leaf', 24)}</div>
         <div>
           <h3 class="domain-title">护肤日常</h3>
         </div>
+        <div class="domain-icon">${icon('leaf', 24)}</div>
       </div>
     </div>
 

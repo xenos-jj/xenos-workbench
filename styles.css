@@ -9866,6 +9866,12 @@ body.home-bg .topbar {
 /* v9426：记账页总资产金额例外——16px/500 */
 .money-total-card .mt-value { font-size: 16px !important; font-weight: 500 !important; }
 
+/* v9427：领域页主标题统一 12px/575（含护肤/运动/睡眠/身体/饮食/...） */
+.domain-title { font-size: 12px !important; font-weight: 575 !important; }
+/* v9427：护肤页 leaf 图标挪到标题右边——通过 reverse flex order 不影响其它页 */
+.domain-head { flex-direction: row; }
+.skincare-page .domain-head { flex-direction: row-reverse; }
+
 /* 2) 行卡高度统一 40px */
 .module-list-item, .exercise-row, .task-row, .tx-row, .ing-row, .diet-flat-meal { min-height: 40px; }
 
