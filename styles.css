@@ -9848,3 +9848,43 @@ body.home-bg .content,
 body.home-bg .topbar {
   background: transparent;
 }
+
+
+/* ================= v9425 八页统一调整 ================= */
+/* 生活秩序/记账/记账明细/运动/饮食/运动详情/身体状况/睡眠 */
+
+/* 1) 主数字统一 12px / 575 */
+.mt-value, .mc-val, .mt-col-val,
+.stb-val,
+.diet-flat-stat-val, .diet-flat-stat-val small,
+.diet-flat-cost-val,
+.diet-flat-dwa-stat span,
+.body-val,
+.mini-ring .mr-num { font-size: 12px !important; font-weight: 575 !important; }
+/* 支线环数字规格覆盖（v9418：10px/500）在统一规则之后仍生效 */
+.br-branch-ring .mini-ring .mr-num { font-size: 10px !important; font-weight: 500 !important; }
+
+/* 2) 行卡高度统一 40px */
+.module-list-item, .exercise-row, .task-row, .tx-row, .ing-row, .diet-flat-meal { min-height: 40px; }
+
+/* 3) tag / 切换选中态：选中=橙底白字，未选中=白底 */
+.tx-type-toggle .txt-btn { background: #fff; border: 1px solid var(--border-soft); color: var(--text-muted); }
+.txt-btn.active { background: var(--primary); border-color: var(--primary); color: #fff; }
+.chip { background: #fff; border-color: var(--border); color: var(--text); }
+.chip.active { background: var(--primary); border-color: var(--primary); color: #fff; }
+
+/* 4) 运动详情「新增」按钮满宽橙底 pill */
+.fitness-card .exercise-add-row { flex-wrap: wrap; }
+.fitness-card .exercise-add-row .btn.btn-primary { width: 100%; }
+
+/* 5) 卡片投影：仅数据卡有投影，列表行卡无投影 */
+.money-total-card, .mini-card { box-shadow: var(--shadow); }
+.module-list-item, .exercise-row, .task-row, .tx-row, .ing-row, .diet-flat-meal, .body-cell,
+.diet-flat-stats > div { box-shadow: none !important; }
+
+/* 6) 积分文字统一：10px / 500 / 站酷 / primary-dark / 行尾右对齐 */
+.mli-points, .task-points, .ex-points, .plan-points, .lk-pts, .mtk-pts, .eng-task-points {
+  font-size: 10px !important; font-weight: 500 !important;
+  font-family: var(--font-small) !important; color: var(--primary-dark) !important;
+  margin-left: auto; flex-shrink: 0; text-align: right; line-height: 1;
+}

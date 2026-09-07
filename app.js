@@ -5848,7 +5848,7 @@ function renderHealthPage() {
 
     <!-- 每日打卡：饮食记录已移除 -->
     <div class="soft-card">
-      <div class="soft-card-title">${icon('check', 16)} 每日打卡${isToday ? `<span class="stitle-meta">今日 +${domain.log[viewKey] || 0} 分</span>` : ` · ${viewKey}（只读）`}</div>
+      <div class="soft-card-title">${icon('check', 16)} 每日打卡${isToday ? `<span class="stitle-meta">今日 +${domain.log[viewKey] || 0}</span>` : ` · ${viewKey}（只读）`}</div>
       <div class="task-list" id="health-tasks"></div>
       ${isToday ? `<div class="review-datebar" style="margin-top:12px;">
         <input type="text" class="pf-input" id="health-new-task" placeholder="添加一个每日任务...">
@@ -6275,7 +6275,7 @@ function renderFitness() {
         <span class="ex-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
         <span class="ex-name">${plan.text}</span>
         <span class="ex-duration">${duration} 分钟</span>
-        <span class="ex-points">+3 分</span>
+        <span class="ex-points">+3</span>
         <button class="item-delete" data-del-type="plan" data-id="${plan.id}" aria-label="删除"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
       `;
       list.appendChild(row);
@@ -6289,7 +6289,7 @@ function renderFitness() {
         <span class="ex-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
         <span class="ex-name">${ex.name}</span>
         <span class="ex-duration">${ex.duration} 分钟</span>
-        <span class="ex-points">+3 分</span>
+        <span class="ex-points">+3</span>
         <button class="item-delete" data-del-type="exercise" data-idx="${idx}" aria-label="删除"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
       `;
       list.appendChild(row);
@@ -9486,7 +9486,7 @@ function renderDomainPage(name) {
     `}
 
     <div class="soft-card">
-      <div class="soft-card-title">${icon('check', 16)} 每日打卡${readOnly ? ` · ${viewKey}（只读）` : `<span class="stitle-meta">今日 +${domain.log[todayKey] || 0} 分</span>`}</div>
+      <div class="soft-card-title">${icon('check', 16)} 每日打卡${readOnly ? ` · ${viewKey}（只读）` : `<span class="stitle-meta">今日 +${domain.log[todayKey] || 0}</span>`}</div>
       <div class="task-list" id="domain-tasks"></div>
       ${readOnly ? '<p class="section-note">历史日期为只读快照，切换回今天可继续打卡。</p>' : `<div class="review-datebar" style="margin-top:12px;">
         <input type="text" class="pf-input" id="domain-new-task" placeholder="添加一个每日任务...">
