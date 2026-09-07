@@ -12915,7 +12915,7 @@ function renderSkincarePage() {
   if (!sc.log) sc.log = {};
   if (!sc.log[today]) sc.log[today] = { done: 0, total: 0 };
   const page = document.createElement('div');
-  page.className = 'page';
+  page.className = 'page skincare-page';
 
   const routineHTML = sc.routine.map(group => {
     const done = group.items.filter(it => it.done).length;
