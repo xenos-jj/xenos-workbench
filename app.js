@@ -12943,7 +12943,6 @@ function renderSkincarePage() {
         <div>
           <h3 class="domain-title">护肤日常</h3>
         </div>
-        <div class="domain-icon">${icon('leaf', 24)}</div>
       </div>
     </div>
 

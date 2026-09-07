@@ -9918,3 +9918,7 @@ body.home-bg .topbar {
 .skincare-page .domain-head > div:first-child { display: inline-flex; align-items: center; flex: 0 0 auto; }
 .skincare-page .domain-head .domain-icon { order: 2; margin-left: 0; flex-shrink: 0; }
 .skincare-page .domain-head .domain-title { font-size: 16px !important; font-weight: 500 !important; margin: 0 !important; }
+
+/* ============ v9438 护肤日常页：移除 icon 后标题纯左对齐 ============ */
+.skincare-page .domain-head > div:first-child { display: flex; align-items: center; width: 100%; text-align: left; }
+.skincare-page .domain-title { margin-left: 0; }
