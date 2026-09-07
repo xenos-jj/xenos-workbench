@@ -9922,3 +9922,6 @@ body.home-bg .topbar {
 /* ============ v9438 护肤日常页：移除 icon 后标题纯左对齐 ============ */
 .skincare-page .domain-head > div:first-child { display: flex; align-items: center; width: 100%; text-align: left; }
 .skincare-page .domain-title { margin-left: 0; }
+
+/* ============ v9439 护肤日常页：标题与下方卡片距离 20px ============ */
+.skincare-page .domain-hero { padding: 0 0 20px !important; margin: 0 !important; }
