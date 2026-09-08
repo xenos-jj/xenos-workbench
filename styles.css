@@ -9988,3 +9988,13 @@ body.home-bg .topbar {
 .skincare-page .sk-add-inline .lk-input::placeholder { color: var(--text-muted); }
 .skincare-page .sk-add-inline .lk-mini-btn { flex-shrink: 0; border: none; background: transparent; color: var(--text-muted); padding: 6px 10px; margin-right: -6px; }
 .skincare-page .sk-add-inline .lk-mini-btn:hover { color: var(--text); }
+
+/* ============ v9446 护肤三板块版式对齐护肤小记 ============ */
+/* 护肤小记(.soft-card) 左右 padding 14px；今日护肤打卡/今日皮肤状态/本周护肤统计 三块整体同左右内缩 → 标题+内容全部与护肤小记同列 */
+.skincare-page .sk-day-head,
+.skincare-page .sk-section { padding-left: 14px; padding-right: 14px; }
+.skincare-page .sk-section-head,
+.skincare-page .sk-status-tags,
+.skincare-page .sk-week-stats,
+.skincare-page .sk-week-dots,
+.skincare-page .sk-week-points { max-width: 100%; box-sizing: border-box; }
