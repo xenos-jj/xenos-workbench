@@ -9998,3 +9998,12 @@ body.home-bg .topbar {
 .skincare-page .sk-week-stats,
 .skincare-page .sk-week-dots,
 .skincare-page .sk-week-points { max-width: 100%; box-sizing: border-box; }
+
+/* ============ v9447 护肤模块间距统一：上 18 / 下 6 ============ */
+.skincare-page .sk-day-head { margin: 18px 0 6px; padding-left: 14px; padding-right: 14px; }
+/* 早/晚间卡之间 6px（修正“晚间上方很远”），其余零散 margin 收起 */
+.skincare-page .module-card { margin-top: 6px !important; margin-bottom: 0 !important; }
+.skincare-page .module-card:first-of-type { margin-top: 0 !important; }
+/* 今日皮肤状态 / 护肤小记 / 本周护肤统计：距上一模块 18px */
+.skincare-page .sk-section { margin-top: 18px !important; margin-bottom: 0 !important; padding-left: 14px; padding-right: 14px; }
+.skincare-page .sk-note-card { margin-top: 18px !important; margin-bottom: 0 !important; }
