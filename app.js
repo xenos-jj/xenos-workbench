@@ -1017,16 +1017,21 @@ const DEFAULT_SKINCARE = {
   enabled: true,
   routine: [
     { id: 'sk-am', name: '早间护肤', items: [
-      { id: 'sk-am-1', text: '温水洗脸', done: false },
-      { id: 'sk-am-2', text: '爽肤水', done: false },
-      { id: 'sk-am-3', text: '保湿乳 / 面霜', done: false },
-      { id: 'sk-am-4', text: '防晒', done: false }
+      { id: 'sk-am-1', text: '洁面', done: false, points: 1 },
+      { id: 'sk-am-2', text: '水乳', done: false, points: 1 },
+      { id: 'sk-am-3', text: '防晒', done: false, points: 2 }
     ]},
     { id: 'sk-pm', name: '晚间护肤', items: [
-      { id: 'sk-pm-1', text: '卸妆 / 洁面', done: false },
-      { id: 'sk-pm-2', text: '爽肤水', done: false },
-      { id: 'sk-pm-3', text: '精华', done: false },
-      { id: 'sk-pm-4', text: '面霜', done: false }
+      { id: 'sk-pm-1', text: '洁面', done: false, points: 1 },
+      { id: 'sk-pm-2', text: '面膜', done: false, points: 2 },
+      { id: 'sk-pm-3', text: '水乳', done: false, points: 1 }
+    ]},
+    { id: 'sk-oth', name: '其他护理', items: [
+      { id: 'sk-oth-1', text: '刷牙', done: false, points: 1 },
+      { id: 'sk-oth-2', text: '磨砂膏', done: false, points: 1 },
+      { id: 'sk-oth-3', text: '身体乳', done: false, points: 2 },
+      { id: 'sk-oth-4', text: '药膏', done: false, points: 1 },
+      { id: 'sk-oth-5', text: '米诺地尔', done: false, points: 1 }
     ]}
   ],
   notes: ''
@@ -12915,15 +12920,23 @@ function renderSkincarePage() {
   if (!sc.log) sc.log = {};
   if (!sc.log[today]) sc.log[today] = { done: 0, total: 0 };
   if (!sc.skinStatus) sc.skinStatus = {};
-  if (!sc.skinStatus) sc.skinStatus = {};
-  if (!sc.skinStatus) sc.skinStatus = {};
+  // v9459：默认打卡内容改版（早间洁面/水乳/防晒、晚间洁面/面膜/水乳、其他护理）——
+  // 旧默认（含「温水洗脸」等旧条目）或缺「其他护理」组 → 整体替换为新的默认 routine（保留 notes/skinStatus/log）
+  const hasOth = sc.routine && sc.routine.some(g => g.id === 'sk-oth');
+  const hasOld = sc.routine && sc.routine.some(g => (g.items || []).some(it => it.text === '温水洗脸' || it.text === '卸妆 / 洁面'));
+  if (!Array.isArray(sc.routine) || sc.routine.length === 0 || !hasOth || hasOld) {
+    sc.routine = JSON.parse(JSON.stringify(DEFAULT_SKINCARE.routine));
+    saveSkincare();
+  }
+  // v9459：今日已勾步骤的积分合计（防晒/面膜/身体乳 = 2，其余 1）
+  const todayPts = sc.routine.reduce((a, g) => a + (g.items || []).filter(it => it.done).reduce((x, it) => x + (it.points || 1), 0), 0);
   const page = document.createElement('div');
   page.className = 'page skincare-page';
 
   const routineHTML = sc.routine.map(group => {
     const done = group.items.filter(it => it.done).length;
     const allDone = group.items.length > 0 && done >= group.items.length;
-    const prefix = group.name.indexOf('晚') >= 0 ? '晚间' : '早间';
+    const prefix = group.id === 'sk-pm' ? '晚间' : (group.id === 'sk-oth' ? '其他' : '早间');
     return `<div class="module-card" data-group="${escapeHTML(group.id)}">
       <div class="module-card-head">
         <span class="module-card-title">${escapeHTML(group.name)}</span>
@@ -12962,7 +12975,7 @@ function renderSkincarePage() {
 
     <div class="sk-day-head">
       <span class="sk-day-title">${icon('check', 14)} 今日护肤打卡</span>
-      <span class="sk-day-pts">+${sc.log[today].done} 分</span>
+      <span class="sk-day-pts">+${todayPts} 分</span>
     </div>
 
     ${routineHTML}
