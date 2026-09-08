@@ -10029,3 +10029,9 @@ body.home-bg .topbar {
 .skincare-page .module-card:first-of-type { margin-top: 0 !important; }
 .skincare-page .sk-section { margin-top: 16px !important; margin-bottom: 0 !important; }
 .skincare-page .sk-note-card { margin-top: 16px !important; margin-bottom: 0 !important; }
+
+/* ============ v9451 今日护肤打卡与早间护肤同模块，间距固定 6px ============ */
+/* head 下 6 + 首卡 padding-top 收 0 → 早间标题与日头正好 6px */
+.skincare-page .module-card { padding: 0 14px 2px !important; }
+.skincare-page .sk-day-head { margin: 18px 0 6px !important; }
+.skincare-page .module-card:first-of-type { margin-top: 0 !important; }
