@@ -12923,6 +12923,7 @@ function renderSkincarePage() {
   const routineHTML = sc.routine.map(group => {
     const done = group.items.filter(it => it.done).length;
     const allDone = group.items.length > 0 && done >= group.items.length;
+    const prefix = group.name.indexOf('晚') >= 0 ? '晚间' : '早间';
     return `<div class="module-card" data-group="${escapeHTML(group.id)}">
       <div class="module-card-head">
         <span class="module-card-title">${escapeHTML(group.name)}</span>
@@ -12937,6 +12938,10 @@ function renderSkincarePage() {
             <button class="module-act-btn module-del-btn" data-del-type="skincare-item" data-del-id="${escapeHTML(it.id)}" data-group="${escapeHTML(group.id)}" title="删除">${icon('delete', 11)}</button>
           </div>
         </div>`).join('')}
+        <div class="sk-add-inline" data-quick-group="${escapeHTML(group.id)}">
+          <input class="lk-input" data-quick-input placeholder="加一个${prefix}步骤...">
+          <button class="lk-mini-btn" data-quick-btn aria-label="添加">${icon('plus', 12)}</button>
+        </div>
       </div>
     </div>`;
   }).join('');
@@ -12962,10 +12967,6 @@ function renderSkincarePage() {
 
     ${routineHTML}
 
-    <div class="sk-add-row">
-      <input class="lk-input" id="sk-quick-add" placeholder="加一个早间步骤...">
-      <button class="lk-mini-btn" id="sk-quick-add-btn" aria-label="添加">${icon('plus', 12)}</button>
-    </div>
 
     <div class="sk-section" data-sk-section="status">
       <div class="sk-section-head">${icon('heart', 14)} <span>今日皮肤状态</span></div>
@@ -13026,21 +13027,21 @@ function renderSkincarePage() {
     saveSkincare();
   });
 
-  // v9440：快速加步骤（添加到早间组）
-  const qa = page.querySelector('#sk-quick-add');
-  const qaBtn = page.querySelector('#sk-quick-add-btn');
-  if (qaBtn) qaBtn.addEventListener('click', () => {
-    const text = (qa.value || '').trim();
-    if (!text) return;
-    sc.routine = sc.routine || [];
-    const am = sc.routine.find(g => g.id === 'sk-am') || sc.routine[0];
-    if (!am) return;
-    am.items.push({ id: 'sk-am-' + Date.now().toString(36), text, done: false });
-    saveSkincare();
-    qa.value = '';
-    renderSkincarePage();
+  // v9444.1：卡片内快速加步骤（早间/晚间各自独立）
+  page.querySelectorAll('.sk-add-inline').forEach(row => {
+    const inp = row.querySelector('[data-quick-input]');
+    const btn = row.querySelector('[data-quick-btn]');
+    const g = sc.routine.find(x => x.id === row.dataset.quickGroup);
+    const doAdd = () => {
+      const text = (inp.value || '').trim();
+      if (!text || !g) return;
+      g.items.push({ id: g.id + '-' + Date.now().toString(36), text, done: false });
+      saveSkincare();
+      renderSkincarePage();
+    };
+    if (btn) btn.addEventListener('click', doAdd);
+    if (inp) inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') doAdd(); });
   });
-  if (qa) qa.addEventListener('keydown', (e) => { if (e.key === 'Enter') qaBtn && qaBtn.click(); });
 
   // v9440：皮肤状态 tag 单选（再点取消）
   page.querySelectorAll('.sk-status-tag').forEach(btn => {
