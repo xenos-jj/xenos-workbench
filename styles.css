@@ -10072,3 +10072,9 @@ body.home-bg .topbar {
 /* 复用洞察 .ih-row/.ih-dot/.insp-heatmap-grid/.insp-heat-legend（已完成度 lvl0-3 色阶）；此处收窄图标列让 7 圆点在护肤窄容器内完整显示 */
 .skincare-page .insp-heatmap-grid .ih-row { grid-template-columns: 18px 44px repeat(7, 1fr); }
 .skincare-page .sk-week-points { margin-top: 8px; }
+
+/* ============ v9460 护肤区块间距统一净空 ≈18px（消除 soft-card 上下 14 隐形留白） ============ */
+.skincare-page .module-card { padding: 0 14px 0 !important; }
+.skincare-page .sk-section { margin-top: 18px !important; margin-bottom: 0 !important; }
+.skincare-page .sk-note-card { padding: 0 14px 0 !important; margin-top: 18px !important; margin-bottom: 0 !important; }
+.skincare-page .sk-notes { padding-bottom: 0; }
