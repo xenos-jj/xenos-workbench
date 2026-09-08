@@ -11813,7 +11813,7 @@ function renderBranchesPage() {
       }).join('')}
 
       <div class="br-section-header">
-        <div class="br-sec-title"><span class="br-sec-icon">${icon('leaf', 14)}</span> 保持中的支线</div>
+        <div class="br-sec-title">保持中的支线</div>
       </div>
       <div class="br-slow-list-clean">
         ${keepList.map(k => {
