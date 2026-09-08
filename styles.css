@@ -10015,3 +10015,9 @@ body.home-bg .topbar {
 .skincare-page .sk-add-inline .lk-input:focus { border-color: var(--primary); background: #fff; }
 .skincare-page .sk-add-inline .lk-mini-btn { flex-shrink: 0; border: 1px solid var(--border-soft); border-radius: 8px; background: var(--bg); color: var(--text-muted); padding: 6px 12px; box-shadow: none; }
 .skincare-page .sk-add-inline .lk-mini-btn:hover { border-color: var(--primary); color: var(--text); background: var(--primary-light); }
+
+/* ============ v9449 护肤添加行内缩 10px，与任务行文字区正好同位 ============ */
+/* 行 outer 仍=任务行宽；内部 input 左缘对齐任务行文字(10px)、➕ 右缘落在任务行内边距内 → 左右均不超出 */
+.skincare-page .sk-add-inline { padding: 0 10px !important; width: 100%; box-sizing: border-box; }
+.skincare-page .sk-add-inline .lk-input { flex: 1 1 auto; max-width: none; }
+.skincare-page .sk-add-inline .lk-mini-btn { margin-right: 0; }
