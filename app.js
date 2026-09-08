@@ -13007,6 +13007,23 @@ function renderSkincarePage() {
   `;
   content.appendChild(page);
 
+  // v9454：护肤步骤长按删除按钮（.module-del-btn 需页面局部绑定，此前漏绑导致点了没反应）
+  page.querySelectorAll('.module-del-btn[data-del-type="skincare-item"]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault(); e.stopPropagation();
+      const g = sc.routine.find(x => x.id === btn.dataset.group);
+      if (!g) return;
+      const it = g.items.find(x => x.id === btn.dataset.delId);
+      if (it && it.done) {
+        sc.log[today] = sc.log[today] || { done: 0, total: 0 };
+        sc.log[today].done = Math.max(0, (sc.log[today].done || 0) - 1);
+      }
+      g.items = g.items.filter(x => x.id !== btn.dataset.delId);
+      saveSkincare();
+      renderSkincarePage();
+    });
+  });
+
   page.querySelectorAll('.module-list-item').forEach(el => {
     el.addEventListener('click', () => {
       if (el.classList.contains('show-delete')) return;
