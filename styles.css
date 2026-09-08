@@ -10067,3 +10067,8 @@ body.home-bg .topbar {
 .skincare-page .sk-notes { font-size: 11.5px; line-height: 1.7; color: var(--text); font-family: var(--font); white-space: pre-wrap; word-break: break-word; min-height: 0; outline: none; cursor: text; }
 .skincare-page .sk-notes:empty::before { content: attr(data-placeholder); color: var(--text-muted); }
 .skincare-page .sk-note-card .swot-area { min-height: 0; }
+
+/* ============ v9458 护肤本周统计 → 洞察式习惯热力图 ============ */
+/* 复用洞察 .ih-row/.ih-dot/.insp-heatmap-grid/.insp-heat-legend（已完成度 lvl0-3 色阶）；此处收窄图标列让 7 圆点在护肤窄容器内完整显示 */
+.skincare-page .insp-heatmap-grid .ih-row { grid-template-columns: 18px 44px repeat(7, 1fr); }
+.skincare-page .sk-week-points { margin-top: 8px; }

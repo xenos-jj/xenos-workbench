@@ -12990,16 +12990,29 @@ function renderSkincarePage() {
           weekDates.push(d2.toISOString().slice(0,10));
         }
         const weekDone = weekDates.reduce((s, dk) => s + ((sc.log[dk] && sc.log[dk].done) || 0), 0);
-        const weekTotal = sc.routine.reduce((a, g) => a + g.items.length, 0) * 7;
+        const totalSteps = sc.routine.reduce((a, g) => a + g.items.length, 0);
+        const weekTotal = totalSteps * 7;
         const pct = weekTotal ? Math.round(weekDone / weekTotal * 100) : 0;
-        const todayIdx = weekDates.indexOf(today);
-        const dots = weekDates.map((dk, i) => `<span class="sk-dot ${i < todayIdx ? 'past' : ''} ${i === todayIdx ? 'today' : ''} ${((sc.log[dk] && sc.log[dk].done) || 0) > 0 ? 'has' : ''}"></span>`).join('');
+        // v9458：参照洞察「习惯完成热力图」——圆点按完成度 lvl0-3 显示本周 7 天护肤打卡
+        const heatDots = weekDates.map((dk) => {
+          const doneD = (sc.log[dk] && sc.log[dk].done) || 0;
+          let lvl = 0;
+          if (totalSteps && doneD > 0) {
+            const r = doneD / totalSteps;
+            lvl = r >= 1 ? 3 : (r >= 0.5 ? 2 : 1);
+          }
+          return `<span class="ih-dot lvl${lvl}"></span>`;
+        }).join('');
         return `
           <div class="sk-week-stats">
             <div class="sk-week-icon">${icon('check', 14)}</div>
             <div class="sk-week-meta">天打卡 · 完成率 <b>${pct}%</b></div>
           </div>
-          <div class="sk-week-dots">${dots}</div>
+          <div class="insp-heat-legend" style="margin:6px 0 2px;"><i class="ht-low"></i><i class="ht-mid"></i><i class="ht-high"></i>完成度 低 → 高</div>
+          <div class="insp-heatmap-grid">
+            <div class="ih-row ih-header-row"><span></span><span></span>${weekdayLabels.map(l => `<span class="ih-day">${l}</span>`).join('')}</div>
+            <div class="ih-row"><span class="ih-icon" style="color:#E8B4A8">${icon('heart', 12)}</span><span class="ih-name">护肤打卡</span>${heatDots}</div>
+          </div>
           <div class="sk-week-points">累计 <b>+${weekDone}</b> 分</div>
         `;
       })()}
