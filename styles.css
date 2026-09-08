@@ -10048,3 +10048,8 @@ body.home-bg .topbar {
 .skincare-page .sk-add-inline .lk-input:focus { border-color: var(--primary); }
 .skincare-page .sk-add-inline .lk-mini-btn { flex: 0 0 40px; width: 40px; height: 32px; padding: 0; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--border-soft); border-radius: 8px; background: var(--bg); color: var(--text-muted); }
 .skincare-page .sk-add-inline .lk-mini-btn:hover { border-color: var(--primary); color: var(--text); background: var(--primary-light); }
+
+/* ============ v9455 首页左侧对齐：四标题/文字与 hero 两行文字同一垂直线 ============ */
+/* hero 文字左 0；今日积分(hp-quick-stats)与 hp-section-title(今日概览/今日主任务/快速记录) 原 margin-left 4px → 0 */
+.hp-quick-stats { margin-left: 0 !important; }
+.hp-section-title { margin-left: 0 !important; }
