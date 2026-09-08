@@ -12977,7 +12977,7 @@ function renderSkincarePage() {
 
     <div class="soft-card sk-note-card">
       <div class="soft-card-title">${icon('edit', 16)} 护肤小记</div>
-      <textarea class="swot-area" id="sk-notes" placeholder="记下今天皮肤状态、想试的新品，或偷懒的那天也没关系～">${escapeHTML(sc.notes || '')}</textarea>
+      <div class="sk-notes" id="sk-notes" contenteditable="true" data-placeholder="记下今天皮肤状态、想试的新品，或偷懒的那天也没关系～">${escapeHTML(sc.notes || '')}</div>
     </div>
 
     <div class="sk-section" data-sk-section="week">
@@ -13039,8 +13039,9 @@ function renderSkincarePage() {
     });
   });
 
-  page.querySelector('#sk-notes').addEventListener('change', (e) => {
-    sc.notes = e.target.value;
+  // v9457：护肤小记改为 contenteditable 笔记——input 实时保存 innerText
+  page.querySelector('#sk-notes').addEventListener('input', (e) => {
+    sc.notes = (e.target.innerText || '').replace(/\n+$/, '');
     saveSkincare();
   });
 

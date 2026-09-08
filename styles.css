@@ -10061,3 +10061,9 @@ body.home-bg .topbar {
 .skincare-page .sk-add-inline .lk-mini-btn { height: 28px; }
 /* ③ 「加一个…」输入框边框高度 32px（padding 归零由固定高度撑行高） */
 .skincare-page .sk-add-inline .lk-input { height: 32px; padding-top: 0; padding-bottom: 0; }
+
+/* ============ v9457 护肤小记 → 无框自适应笔记 ============ */
+/* 去掉输入框外观/固定高/滚动，内容随文本撑开；文字规格沿用原 textarea（11.5/1.7/草莓） */
+.skincare-page .sk-notes { font-size: 11.5px; line-height: 1.7; color: var(--text); font-family: var(--font); white-space: pre-wrap; word-break: break-word; min-height: 0; outline: none; cursor: text; }
+.skincare-page .sk-notes:empty::before { content: attr(data-placeholder); color: var(--text-muted); }
+.skincare-page .sk-note-card .swot-area { min-height: 0; }
