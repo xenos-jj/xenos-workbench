@@ -10021,3 +10021,11 @@ body.home-bg .topbar {
 .skincare-page .sk-add-inline { padding: 0 10px !important; width: 100%; box-sizing: border-box; }
 .skincare-page .sk-add-inline .lk-input { flex: 1 1 auto; max-width: none; }
 .skincare-page .sk-add-inline .lk-mini-btn { margin-right: 0; }
+
+/* ============ v9450 护肤间距收敛到首页观感 ============ */
+/* 差距来源：早/晚卡透明但 padding-bottom 14 + 后续标题 mt 18 → 视觉 32px；首页为 18。
+   方案：卡底部留白 2px、卡间(早-晚)通过 mt10 保持 12px、板块标题前 16px → 观感 ≈ 首页 18/6 */
+.skincare-page .module-card { padding: 14px 14px 2px !important; margin-top: 10px !important; margin-bottom: 0 !important; }
+.skincare-page .module-card:first-of-type { margin-top: 0 !important; }
+.skincare-page .sk-section { margin-top: 16px !important; margin-bottom: 0 !important; }
+.skincare-page .sk-note-card { margin-top: 16px !important; margin-bottom: 0 !important; }
