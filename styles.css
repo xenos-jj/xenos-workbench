@@ -10053,3 +10053,11 @@ body.home-bg .topbar {
 /* hero 文字左 0；今日积分(hp-quick-stats)与 hp-section-title(今日概览/今日主任务/快速记录) 原 margin-left 4px → 0 */
 .hp-quick-stats { margin-left: 0 !important; }
 .hp-section-title { margin-left: 0 !important; }
+
+/* ============ v9456 护肤三处微调 ============ */
+/* ① 今日皮肤状态内容 → 护肤小记：18px（v9450 曾 16） */
+.skincare-page .sk-note-card { margin-top: 18px !important; }
+/* ② ➕ 按钮边框高度 28px */
+.skincare-page .sk-add-inline .lk-mini-btn { height: 28px; }
+/* ③ 「加一个…」输入框边框高度 32px（padding 归零由固定高度撑行高） */
+.skincare-page .sk-add-inline .lk-input { height: 32px; padding-top: 0; padding-bottom: 0; }
