@@ -10035,3 +10035,16 @@ body.home-bg .topbar {
 .skincare-page .module-card { padding: 0 14px 2px !important; }
 .skincare-page .sk-day-head { margin: 18px 0 6px !important; }
 .skincare-page .module-card:first-of-type { margin-top: 0 !important; }
+
+/* ============ v9452 护肤添加行最终对齐（5 条规格） ============ */
+/* ① 整行是 .module-list 直接子级 → outer 与 .module-list-item 严格同位（无缩进/超出）
+   ② input flex 占大 + ➕ 固定宽 40 紧贴（gap 8）
+   ③ 垂直间距自动继承 module-list gap 7（与卡片组一致）
+   ④ 仅布局改动，input/btn 沿用既有 1px border-soft + 圆角 8
+   ⑤ 条目数量无关 */
+.skincare-page .sk-add-inline { display: flex; align-items: center; gap: 8px; padding: 0 !important; margin: 0 !important; width: 100% !important; min-height: 32px; }
+.skincare-page .sk-add-inline .lk-input { flex: 1 1 auto; width: auto; min-width: 0; border: 1px solid var(--border-soft); border-radius: 8px; background: #fff; padding: 6px 10px; font-size: 11px; color: var(--text); font-family: var(--font); outline: none; }
+.skincare-page .sk-add-inline .lk-input::placeholder { color: var(--text-muted); }
+.skincare-page .sk-add-inline .lk-input:focus { border-color: var(--primary); }
+.skincare-page .sk-add-inline .lk-mini-btn { flex: 0 0 40px; width: 40px; height: 32px; padding: 0; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--border-soft); border-radius: 8px; background: var(--bg); color: var(--text-muted); }
+.skincare-page .sk-add-inline .lk-mini-btn:hover { border-color: var(--primary); color: var(--text); background: var(--primary-light); }
