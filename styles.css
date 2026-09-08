@@ -10007,3 +10007,11 @@ body.home-bg .topbar {
 /* 今日皮肤状态 / 护肤小记 / 本周护肤统计：距上一模块 18px */
 .skincare-page .sk-section { margin-top: 18px !important; margin-bottom: 0 !important; padding-left: 14px; padding-right: 14px; }
 .skincare-page .sk-note-card { margin-top: 18px !important; margin-bottom: 0 !important; }
+
+/* ============ v9448 护肤早晚间添加行：输入框与 ➕ 各自细边框（参考外貌页护肤 lk-add-row） ============ */
+.skincare-page .sk-add-inline { display: flex; align-items: center; gap: 6px; padding: 0; margin-top: 2px; min-height: 32px; box-sizing: border-box; }
+.skincare-page .sk-add-inline .lk-input { flex: 1; min-width: 0; width: auto; max-width: none; border: 1px solid var(--border-soft); border-radius: 8px; background: #fff; padding: 6px 10px; box-shadow: none; font-size: 11px; color: var(--text); font-family: var(--font); outline: none; }
+.skincare-page .sk-add-inline .lk-input::placeholder { color: var(--text-muted); }
+.skincare-page .sk-add-inline .lk-input:focus { border-color: var(--primary); background: #fff; }
+.skincare-page .sk-add-inline .lk-mini-btn { flex-shrink: 0; border: 1px solid var(--border-soft); border-radius: 8px; background: var(--bg); color: var(--text-muted); padding: 6px 12px; box-shadow: none; }
+.skincare-page .sk-add-inline .lk-mini-btn:hover { border-color: var(--primary); color: var(--text); background: var(--primary-light); }
