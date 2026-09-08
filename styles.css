@@ -9967,3 +9967,9 @@ body.home-bg .topbar {
 .skincare-page .sk-note-card { margin-top: 18px; }
 .skincare-page .sk-note-card .soft-card-title { font-size: 12px !important; font-weight: 575 !important; margin-bottom: 6px; }
 .skincare-page .sk-note-card .soft-card-title svg { color: var(--text); }
+
+/* ============ v9443 护肤加步骤行对齐 ============ */
+/* 与上方 .module-list-item 文字区同位（左右各 10px），输入框适当缩短 ~70%，加号紧贴输入框右 */
+.skincare-page .sk-add-row { display: flex; align-items: center; gap: 6px; padding: 0 10px; margin: 8px 0 0; }
+.skincare-page .sk-add-row .lk-input { flex: 1 1 auto; width: auto; max-width: 78%; }
+.skincare-page .sk-add-row .lk-mini-btn { flex-shrink: 0; padding: 6px 8px; }
