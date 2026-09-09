@@ -13009,7 +13009,7 @@ function renderSkincarePage() {
     </div>
 
     <div class="sk-section" data-sk-section="week">
-      <div class="sk-section-head">${icon('chart', 14)} <span>本周护肤统计</span></div>
+      <div class="sk-section-head">${icon('chart', 14)} <span>本周护肤统计</span><div class="insp-heat-legend sk-week-legend"><i class="ht-low"></i><i class="ht-mid"></i><i class="ht-high"></i>完成度 低 → 高</div></div>
       ${(() => {
         const ws = getWeekStart();
         const weekDates = [];
@@ -13017,7 +13017,6 @@ function renderSkincarePage() {
           const d2 = new Date(ws); d2.setDate(d2.getDate() + i);
           weekDates.push(d2.toISOString().slice(0,10));
         }
-        const weekDone = weekDates.reduce((s, dk) => s + ((sc.log[dk] && sc.log[dk].done) || 0), 0);
         const totalSteps = sc.routine.reduce((a, g) => a + g.items.length, 0);
         // v9467：移除顶部「√ 天打卡 · 完成率 X%」文字（完成率行删除）
         // v9458：参照洞察「习惯完成热力图」——圆点按完成度 lvl0-3 显示本周 7 天护肤打卡
@@ -13031,12 +13030,10 @@ function renderSkincarePage() {
           return `<span class="ih-dot lvl${lvl}"></span>`;
         }).join('');
         return `
-          <div class="insp-heat-legend sk-week-legend"><i class="ht-low"></i><i class="ht-mid"></i><i class="ht-high"></i>完成度 低 → 高</div>
           <div class="insp-heatmap-grid">
-            <div class="ih-row ih-header-row"><span></span><span></span>${['周一', '周二', '周三', '周四', '周五', '周六', '周日'].map(l => `<span class="ih-day">${l}</span>`).join('')}</div>
-            <div class="ih-row"><span class="ih-icon" style="color:#E8B4A8">${icon('heart', 12)}</span><span class="ih-name">护肤打卡</span>${heatDots}</div>
+            <div class="ih-row ih-header-row"><span></span>${['周一', '周二', '周三', '周四', '周五', '周六', '周日'].map(l => `<span class="ih-day">${l}</span>`).join('')}</div>
+            <div class="ih-row"><span class="ih-icon" style="color:#E8B4A8">${icon('heart', 12)}</span>${heatDots}</div>
           </div>
-          <div class="sk-week-points">累计 <b>+${weekDone}</b> 分</div>
         `;
       })()}
     </div>
