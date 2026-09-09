@@ -10094,3 +10094,7 @@ body.home-bg .topbar {
 
 /* ============ v9464 护肤周统计：完成率与「完成度 低→高」图例同一排，图例靠右 ============ */
 .skincare-page .sk-week-legend { margin: 0 0 6px; padding: 0; font-size: 9px; }
+
+/* ============ v9468 完成率 chip：去边框/底色，仅文字，颜色同占位符（--text-muted） ============ */
+.skincare-page .sk-pending { background: transparent !important; border: none !important; box-shadow: none !important; padding: 0 !important; color: var(--text-muted) !important; }
+.skincare-page .sk-pending.ok { background: transparent !important; border: none !important; color: var(--text-muted) !important; }
