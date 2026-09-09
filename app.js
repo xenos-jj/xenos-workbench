@@ -12911,6 +12911,8 @@ function renderSocialPage() {
 }
 
 // ============ 护肤日常（低精力版） ============
+// v9474：护肤日常支持任意历史日期回看（历史只读；如需改历史由助手指令操作）
+let skViewDate = null;
 function renderSkincarePage() {
   // v9434：内部重绘前必须先清空 content，否则每次点击都会叠加一份新页面（旧状态滞留视口，刷新才看到结果）
   content.innerHTML = '';
@@ -12919,6 +12921,9 @@ function renderSkincarePage() {
   const today = getTodayKey();
   if (!sc.log) sc.log = {};
   if (!sc.log[today]) sc.log[today] = { done: 0, total: 0 };
+  // v9474：视图日期（默认今天；左/右箭头或点日期可切任意历史，未来禁入）
+  const view = skViewDate || today;
+  const isToday = view === today;
   if (!sc.skinStatus) sc.skinStatus = {};
   // v9463：自定义皮肤状态池（默认 5 项；缺失/为空时回默认）
   if (!Array.isArray(sc.skinOpts) || sc.skinOpts.length === 0) {
@@ -12933,14 +12938,34 @@ function renderSkincarePage() {
     sc.routine = JSON.parse(JSON.stringify(DEFAULT_SKINCARE.routine));
     saveSkincare();
   }
+  // v9474：逐步骤明细按日期存 id 集合；今日渲染时同步，保证日后可回看
+  if (isToday) {
+    sc.dayIds = sc.dayIds || {};
+    const todayIds = {};
+    sc.routine.forEach(g => (g.items || []).forEach(it => { if (it.done) todayIds[it.id] = true; }));
+    if (JSON.stringify(sc.dayIds[today] || {}) !== JSON.stringify(todayIds)) { sc.dayIds[today] = todayIds; saveSkincare(); }
+  }
+  const histIds = (!isToday && sc.dayIds && sc.dayIds[view]) ? sc.dayIds[view] : null;
   // v9459：今日已勾步骤的积分合计（防晒/面膜/身体乳 = 2，其余 1）
   const todayPts = sc.routine.reduce((a, g) => a + (g.items || []).filter(it => it.done).reduce((x, it) => x + (it.points || 1), 0), 0);
+  // v9474：视图积分——历史=当日明细求和；旧日期无明细则回退步骤总数并提示
+  let viewPts = todayPts, histLegacy = false;
+  if (!isToday) {
+    viewPts = 0;
+    if (histIds) {
+      sc.routine.forEach(g => (g.items || []).forEach(it => { if (histIds[it.id]) viewPts += it.points || 1; }));
+    } else {
+      histLegacy = true;
+      viewPts = (sc.log[view] && sc.log[view].done) || 0;
+    }
+  }
   const page = document.createElement('div');
   page.className = 'page skincare-page';
 
   const routineHTML = sc.routine.map(group => {
-    const done = group.items.filter(it => it.done).length;
     const total = group.items.length;
+    // v9474：视图态完成数（今天=item.done；历史=当日 dayIds）
+    const done = group.items.filter(it => isToday ? it.done : !!(histIds && histIds[it.id])).length;
     // v9466：头部 chip 由「待完成/已完成」改为「完成率 X%」（该组完成占比）
     const pct = total ? Math.round(done / total * 100) : 0;
     const allDone = total > 0 && pct >= 100;
@@ -12951,19 +12976,19 @@ function renderSkincarePage() {
         <span class="sk-pending ${allDone ? 'ok' : ''}">完成率 ${pct}%</span>
       </div>
       <div class="module-list">
-        ${group.items.map(it => `<div class="module-list-item ${it.done ? 'done' : ''}" data-item="${escapeHTML(it.id)}" data-group="${escapeHTML(group.id)}">
-          <span class="mli-check">${it.done ? icon('check', 12) : ''}</span>
+        ${group.items.map(it => { const itDone = isToday ? it.done : !!(histIds && histIds[it.id]); return `<div class="module-list-item ${itDone ? 'done' : ''}" data-item="${escapeHTML(it.id)}" data-group="${escapeHTML(group.id)}">
+          <span class="mli-check">${itDone ? icon('check', 12) : ''}</span>
           <span class="mli-text">${escapeHTML(it.text)}</span>
           <span class="mli-pts">+${it.points || 1}</span>
-          <div class="module-item-actions">
+          ${isToday ? `<div class="module-item-actions">
             <button class="module-act-btn module-edit-btn" data-edit-type="skincare-item" data-edit-id="${escapeHTML(it.id)}" data-group="${escapeHTML(group.id)}" title="编辑">${icon('edit', 11)}</button>
             <button class="module-act-btn module-del-btn" data-del-type="skincare-item" data-del-id="${escapeHTML(it.id)}" data-group="${escapeHTML(group.id)}" title="删除">${icon('delete', 11)}</button>
-          </div>
-        </div>`).join('')}
-        <div class="sk-add-inline" data-quick-group="${escapeHTML(group.id)}">
+          </div>` : ''}
+        </div>`; }).join('')}
+        ${isToday ? `<div class="sk-add-inline" data-quick-group="${escapeHTML(group.id)}">
           <input class="lk-input" data-quick-input placeholder="加一个${prefix}步骤...">
           <button class="lk-mini-btn" data-quick-btn aria-label="添加">${icon('plus', 12)}</button>
-        </div>
+        </div>` : ''}
       </div>
     </div>`;
   }).join('');
@@ -12977,15 +13002,17 @@ function renderSkincarePage() {
       </div>
     </div>
 
-    <div class="module-rule-banner">
+    <div class="sk-date-wrap">${dateBarHTML(view)}</div>
+    ${isToday ? `<div class="module-rule-banner">
       <span class="mrb-icon">${icon('info', 12)}</span>
       <span class="mrb-text">早晚各花几分钟就好，状态不好可以只做最基础的清洁 + 保湿，不强迫完整流程。</span>
-    </div>
+    </div>` : `<div class="sk-hist-tip">${icon('info', 12)} 正在查看历史记录 · 只读不可更改（如需修改请告知）</div>`}
 
     <div class="sk-day-head">
-      <span class="sk-day-title">${icon('check', 14)} 今日护肤打卡</span>
-      <span class="sk-day-pts">+${todayPts} 分</span>
+      <span class="sk-day-title">${icon('check', 14)} ${isToday ? '今日护肤打卡' : '该日护肤打卡'}</span>
+      <span class="sk-day-pts">+${viewPts} 分</span>
     </div>
+    ${histLegacy ? `<div class="sk-hist-hint">旧版记录仅保存步骤总数，无法回看当日分步明细</div>` : ''}
 
     ${routineHTML}
 
@@ -12994,19 +13021,19 @@ function renderSkincarePage() {
       <div class="sk-section-head">${icon('heart', 14)} <span>今日皮肤状态</span></div>
       <div class="sk-status-tags" id="sk-status-tags">
         ${sc.skinOpts.map(t => `<span class="sk-tag-cell">
-          <button class="sk-status-tag ${sc.skinStatus && sc.skinStatus[today] === t ? 'on' : ''}" data-sk-tag="${escapeHTML(t)}">${escapeHTML(t)}</button>
-          <span class="sk-tag-acts">
+          <button class="sk-status-tag ${sc.skinStatus && sc.skinStatus[view] === t ? 'on' : ''}" data-sk-tag="${escapeHTML(t)}">${escapeHTML(t)}</button>
+          ${isToday ? `<span class="sk-tag-acts">
             <button class="sk-tag-act sk-tag-edit" data-edit="${escapeHTML(t)}" title="编辑">${icon('edit', 10)}</button>
             <button class="sk-tag-act sk-tag-del" data-del="${escapeHTML(t)}" title="删除">${icon('delete', 10)}</button>
-          </span>
+          </span>` : ''}
         </span>`).join('')}
       </div>
     </div>
 
-    <div class="soft-card sk-note-card">
+    ${isToday ? `<div class="soft-card sk-note-card">
       <div class="soft-card-title">${icon('edit', 16)} 护肤小记</div>
       <div class="sk-notes" id="sk-notes" contenteditable="true" data-placeholder="记下今天皮肤状态、想试的新品，或偷懒的那天也没关系～">${escapeHTML(sc.notes || '')}</div>
-    </div>
+    </div>` : ''}
 
     <div class="sk-section" data-sk-section="week">
       <div class="sk-section-head">${icon('chart', 14)} <span>本周护肤统计</span><div class="insp-heat-legend sk-week-legend"><i class="ht-low"></i><i class="ht-mid"></i><i class="ht-high"></i>完成度 低 → 高</div></div>
@@ -13059,6 +13086,7 @@ function renderSkincarePage() {
 
   page.querySelectorAll('.module-list-item').forEach(el => {
     el.addEventListener('click', () => {
+      if (!isToday) return;   // v9474：历史日期只读
       if (el.classList.contains('show-delete')) return;
       const g = sc.routine.find(x => x.id === el.dataset.group);
       if (!g) return;
@@ -13072,8 +13100,9 @@ function renderSkincarePage() {
     });
   });
 
-  // v9457：护肤小记改为 contenteditable 笔记——input 实时保存 innerText
-  page.querySelector('#sk-notes').addEventListener('input', (e) => {
+  // v9457：护肤小记 contenteditable 笔记——input 实时保存 innerText（仅今日渲染）
+  const noteEl = page.querySelector('#sk-notes');
+  if (noteEl) noteEl.addEventListener('input', (e) => {
     sc.notes = (e.target.innerText || '').replace(/\n+$/, '');
     saveSkincare();
   });
@@ -13100,6 +13129,7 @@ function renderSkincarePage() {
   page.querySelectorAll('.sk-tag-cell').forEach(cell => {
     const btn = cell.querySelector('.sk-status-tag');
     const startLp = (e) => {
+      if (!isToday) return;   // v9474：历史日期只读
       if (e.target.closest('.sk-tag-acts')) return;
       const p = e.touches ? e.touches[0] : e;
       skLpX = p.clientX; skLpY = p.clientY;
@@ -13124,6 +13154,7 @@ function renderSkincarePage() {
     cell.addEventListener('pointercancel', clearLp);
     cell.addEventListener('contextmenu', (e) => e.preventDefault());
     if (btn) btn.addEventListener('click', () => {
+      if (!isToday) return;   // v9474：历史日期只读
       if (cell.classList.contains('manage')) {
         // 长按释放后紧跟的 click 忽略（保证操作条可点）；下次点击收起
         if (cell._skLp && Date.now() - cell._skLp < 700) return;
@@ -13166,6 +13197,21 @@ function renderSkincarePage() {
     if (sc.skinStatus && sc.skinStatus[today] === t) delete sc.skinStatus[today];
     saveSkincare(); renderSkincarePage();
   }));
+
+  // v9474：日期条（复用全局日期组件外观）——任意历史可看，未来禁入；非今日即只读
+  bindDateBar(page, {
+    max: today,
+    onShift: (delta) => {
+      const t = new Date(view + 'T00:00:00');
+      t.setDate(t.getDate() + delta);
+      let k = t.toISOString().slice(0, 10);
+      if (k > today) k = today;
+      skViewDate = k;
+      renderSkincarePage();
+    },
+    onPick: (k) => { skViewDate = k > today ? today : k; renderSkincarePage(); },
+    onToday: () => { skViewDate = null; renderSkincarePage(); }
+  });
 }
 
 // ============ 我的 / 设置（Screenshot 4） ============
