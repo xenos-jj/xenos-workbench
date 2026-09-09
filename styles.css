@@ -10093,5 +10093,4 @@ body.home-bg .topbar {
 .skincare-page .sk-tag-act.sk-tag-del:hover { background: #FDF0ED; color: #D9766B; }
 
 /* ============ v9464 护肤周统计：完成率与「完成度 低→高」图例同一排，图例靠右 ============ */
-.skincare-page .sk-week-stats .sk-week-legend { margin: 0 0 0 auto; padding: 0; font-size: 9px; }
-.skincare-page .sk-week-stats { margin-bottom: 6px; }
+.skincare-page .sk-week-legend { margin: 0 0 6px; padding: 0; font-size: 9px; }

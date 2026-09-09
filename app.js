@@ -13018,8 +13018,7 @@ function renderSkincarePage() {
         }
         const weekDone = weekDates.reduce((s, dk) => s + ((sc.log[dk] && sc.log[dk].done) || 0), 0);
         const totalSteps = sc.routine.reduce((a, g) => a + g.items.length, 0);
-        const weekTotal = totalSteps * 7;
-        const pct = weekTotal ? Math.round(weekDone / weekTotal * 100) : 0;
+        // v9467：移除顶部「√ 天打卡 · 完成率 X%」文字（完成率行删除）
         // v9458：参照洞察「习惯完成热力图」——圆点按完成度 lvl0-3 显示本周 7 天护肤打卡
         const heatDots = weekDates.map((dk) => {
           const doneD = (sc.log[dk] && sc.log[dk].done) || 0;
@@ -13031,11 +13030,7 @@ function renderSkincarePage() {
           return `<span class="ih-dot lvl${lvl}"></span>`;
         }).join('');
         return `
-          <div class="sk-week-stats">
-            <div class="sk-week-icon">${icon('check', 14)}</div>
-            <div class="sk-week-meta">天打卡 · 完成率 <b>${pct}%</b></div>
-            <div class="insp-heat-legend sk-week-legend"><i class="ht-low"></i><i class="ht-mid"></i><i class="ht-high"></i>完成度 低 → 高</div>
-          </div>
+          <div class="insp-heat-legend sk-week-legend"><i class="ht-low"></i><i class="ht-mid"></i><i class="ht-high"></i>完成度 低 → 高</div>
           <div class="insp-heatmap-grid">
             <div class="ih-row ih-header-row"><span></span><span></span>${['周一', '周二', '周三', '周四', '周五', '周六', '周日'].map(l => `<span class="ih-day">${l}</span>`).join('')}</div>
             <div class="ih-row"><span class="ih-icon" style="color:#E8B4A8">${icon('heart', 12)}</span><span class="ih-name">护肤打卡</span>${heatDots}</div>
