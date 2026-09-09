@@ -10101,3 +10101,6 @@ body.home-bg .topbar {
 
 /* ============ v9470 护肤打卡行右侧积分（每步分值，12px） ============ */
 .skincare-page .module-list-item .mli-pts { font-size: 9px; font-weight: 400; color: var(--primary-dark); font-family: var(--font-small); }
+
+/* ============ v9472 护肤模块标题：下 6 / 上 10（卡间 mt10 不变） ============ */
+.skincare-page .module-card-head { margin-bottom: 6px; }
