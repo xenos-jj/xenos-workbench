@@ -13035,8 +13035,8 @@ function renderSkincarePage() {
           <div class="sk-week-stats">
             <div class="sk-week-icon">${icon('check', 14)}</div>
             <div class="sk-week-meta">天打卡 · 完成率 <b>${pct}%</b></div>
+            <div class="insp-heat-legend sk-week-legend"><i class="ht-low"></i><i class="ht-mid"></i><i class="ht-high"></i>完成度 低 → 高</div>
           </div>
-          <div class="insp-heat-legend" style="margin:6px 0 2px;"><i class="ht-low"></i><i class="ht-mid"></i><i class="ht-high"></i>完成度 低 → 高</div>
           <div class="insp-heatmap-grid">
             <div class="ih-row ih-header-row"><span></span><span></span>${['周一', '周二', '周三', '周四', '周五', '周六', '周日'].map(l => `<span class="ih-day">${l}</span>`).join('')}</div>
             <div class="ih-row"><span class="ih-icon" style="color:#E8B4A8">${icon('heart', 12)}</span><span class="ih-name">护肤打卡</span>${heatDots}</div>
