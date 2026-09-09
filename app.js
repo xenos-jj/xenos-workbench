@@ -12913,6 +12913,16 @@ function renderSocialPage() {
 // ============ 护肤日常（低精力版） ============
 // v9474：护肤日常支持任意历史日期回看（历史只读；如需改历史由助手指令操作）
 let skViewDate = null;
+// v9476：迷你日期（洞察式小字号，仅占左行，右侧留空给插图）
+function skMiniDateHTML(key) {
+  const p = (key || '').split('-');
+  const label = p.length === 3 ? (Number(p[1]) + '月' + Number(p[2]) + '日') : key;
+  return `
+    <button class="sk-md-arrow" type="button" data-nav="-1" aria-label="前一天">${icon('chevronLeft', 13)}</button>
+    <button class="sk-md-pill" type="button" data-date="${key}" title="选择日期">${label}</button>
+    <button class="sk-md-arrow" type="button" data-nav="1" aria-label="后一天">${icon('chevronRight', 13)}</button>
+    <button class="sk-md-today" type="button" data-nav="today">回今天</button>`;
+}
 function renderSkincarePage() {
   // v9434：内部重绘前必须先清空 content，否则每次点击都会叠加一份新页面（旧状态滞留视口，刷新才看到结果）
   content.innerHTML = '';
@@ -13002,7 +13012,7 @@ function renderSkincarePage() {
       </div>
     </div>
 
-    <div class="sk-date-wrap">${dateBarHTML(view)}</div>
+    <div class="sk-mini-date">${skMiniDateHTML(view)}</div>
     ${isToday ? `<div class="module-rule-banner">
       <span class="mrb-icon">${icon('info', 12)}</span>
       <span class="mrb-text">早晚各花几分钟就好，状态不好可以只做最基础的清洁 + 保湿，不强迫完整流程。</span>
@@ -13198,20 +13208,27 @@ function renderSkincarePage() {
     saveSkincare(); renderSkincarePage();
   }));
 
-  // v9474：日期条（复用全局日期组件外观）——任意历史可看，未来禁入；非今日即只读
-  bindDateBar(page, {
-    max: today,
-    onShift: (delta) => {
-      const t = new Date(view + 'T00:00:00');
-      t.setDate(t.getDate() + delta);
-      let k = t.toISOString().slice(0, 10);
-      if (k > today) k = today;
-      skViewDate = k;
-      renderSkincarePage();
-    },
-    onPick: (k) => { skViewDate = k > today ? today : k; renderSkincarePage(); },
-    onToday: () => { skViewDate = null; renderSkincarePage(); }
-  });
+  // v9476：迷你日期绑定（洞察式小字号）——任意历史可看，未来禁入；非今日即只读
+  const md = page.querySelector('.sk-mini-date');
+  const mdShift = (delta) => {
+    const t = new Date(view + 'T00:00:00');
+    t.setDate(t.getDate() + delta);
+    let k = t.toISOString().slice(0, 10);
+    if (k > today) k = today;
+    skViewDate = k;
+    renderSkincarePage();
+  };
+  if (md) {
+    md.querySelectorAll('[data-nav]').forEach(b => b.addEventListener('click', () => {
+      const nav = b.dataset.nav;
+      if (nav === 'today') { skViewDate = null; renderSkincarePage(); }
+      else mdShift(Number(nav));
+    }));
+    const pill = md.querySelector('.sk-md-pill');
+    if (pill) pill.addEventListener('click', () => {
+      openDatePicker({ initial: view, max: today, onSelect: (k) => { skViewDate = k > today ? today : k; renderSkincarePage(); } });
+    });
+  }
 }
 
 // ============ 我的 / 设置（Screenshot 4） ============
