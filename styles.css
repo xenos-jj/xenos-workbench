@@ -10078,3 +10078,8 @@ body.home-bg .topbar {
 .skincare-page .sk-section { margin-top: 18px !important; margin-bottom: 0 !important; }
 .skincare-page .sk-note-card { padding: 0 14px 0 !important; margin-top: 18px !important; margin-bottom: 0 !important; }
 .skincare-page .sk-notes { padding-bottom: 0; }
+
+/* ============ v9462 护肤日常：积分/待完成 chip 尺寸同步外貌页 + 待完成移行尾 ============ */
+/* 外貌页基准：积分 .lk-meta = 9.5px/600/站酷/gold；chip .lk-period-state = 9.5px 站酷 + padding 2 8 */
+.skincare-page .sk-day-pts { font-size: 9.5px !important; }
+.skincare-page .sk-pending { font-size: 9.5px !important; padding: 2px 8px !important; margin-left: auto !important; }
