@@ -12940,12 +12940,15 @@ function renderSkincarePage() {
 
   const routineHTML = sc.routine.map(group => {
     const done = group.items.filter(it => it.done).length;
-    const allDone = group.items.length > 0 && done >= group.items.length;
+    const total = group.items.length;
+    // v9466：头部 chip 由「待完成/已完成」改为「完成率 X%」（该组完成占比）
+    const pct = total ? Math.round(done / total * 100) : 0;
+    const allDone = total > 0 && pct >= 100;
     const prefix = group.id === 'sk-pm' ? '晚间' : (group.id === 'sk-oth' ? '其他' : '早间');
     return `<div class="module-card" data-group="${escapeHTML(group.id)}">
       <div class="module-card-head">
         <span class="module-card-title">${escapeHTML(group.name)}</span>
-        <span class="sk-pending ${allDone ? 'ok' : ''}">${allDone ? '已完成' : '待完成'}</span>
+        <span class="sk-pending ${allDone ? 'ok' : ''}">完成率 ${pct}%</span>
       </div>
       <div class="module-list">
         ${group.items.map(it => `<div class="module-list-item ${it.done ? 'done' : ''}" data-item="${escapeHTML(it.id)}" data-group="${escapeHTML(group.id)}">
