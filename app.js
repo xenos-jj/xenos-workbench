@@ -12997,10 +12997,6 @@ function renderSkincarePage() {
           </span>
         </span>`).join('')}
       </div>
-      <div class="sk-add-inline" data-sk-opt-row>
-        <input class="lk-input" data-sk-opt-input placeholder="加一个皮肤状态...">
-        <button class="lk-mini-btn" data-sk-opt-btn aria-label="添加">${icon('plus', 12)}</button>
-      </div>
     </div>
 
     <div class="soft-card sk-note-card">
@@ -13174,21 +13170,6 @@ function renderSkincarePage() {
     if (sc.skinStatus && sc.skinStatus[today] === t) delete sc.skinStatus[today];
     saveSkincare(); renderSkincarePage();
   }));
-  // 新增状态（输入框 + ➕ / Enter）
-  const optRow = page.querySelector('[data-sk-opt-row]');
-  if (optRow) {
-    const inp = optRow.querySelector('[data-sk-opt-input]');
-    const addBtn = optRow.querySelector('[data-sk-opt-btn]');
-    const doAdd = () => {
-      const v = (inp.value || '').trim();
-      if (!v) return;
-      if (sc.skinOpts.includes(v)) { toast('该状态已存在'); inp.value = ''; return; }
-      sc.skinOpts.push(v);
-      saveSkincare(); renderSkincarePage();
-    };
-    if (addBtn) addBtn.addEventListener('click', doAdd);
-    if (inp) inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') doAdd(); });
-  }
 }
 
 // ============ 我的 / 设置（Screenshot 4） ============
