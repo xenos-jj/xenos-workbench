@@ -10117,3 +10117,6 @@ body.home-bg .topbar {
 .skincare-page .sk-mini-date .sk-md-pill:hover { color: var(--primary-dark); }
 .skincare-page .sk-mini-date .sk-md-today { border: 1px solid var(--border-soft); background: var(--bg); color: var(--text-muted); font-size: 9px; font-family: var(--font-small); border-radius: 999px; padding: 2px 8px; cursor: pointer; }
 .skincare-page .sk-mini-date .sk-md-today:hover { color: var(--primary-dark); border-color: var(--primary); }
+
+/* ============ v9478 护肤图标 ❤️ → ★（摄影审美同款星形，颜色同护肤图标 var(--text)） ============ */
+.skincare-page .insp-heatmap-grid .ih-icon { color: var(--text); }

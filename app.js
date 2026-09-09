@@ -13026,7 +13026,7 @@ function renderSkincarePage() {
 
 
     <div class="sk-section" data-sk-section="status">
-      <div class="sk-section-head">${icon('heart', 14)} <span>今日皮肤状态</span></div>
+      <div class="sk-section-head">${icon('star', 14)} <span>今日皮肤状态</span></div>
       <div class="sk-status-tags" id="sk-status-tags">
         ${sc.skinOpts.map(t => `<span class="sk-tag-cell">
           <button class="sk-status-tag ${sc.skinStatus && sc.skinStatus[view] === t ? 'on' : ''}" data-sk-tag="${escapeHTML(t)}">${escapeHTML(t)}</button>
@@ -13067,7 +13067,7 @@ function renderSkincarePage() {
         return `
           <div class="insp-heatmap-grid">
             <div class="ih-row ih-header-row"><span></span>${['周一', '周二', '周三', '周四', '周五', '周六', '周日'].map(l => `<span class="ih-day">${l}</span>`).join('')}</div>
-            <div class="ih-row"><span class="ih-icon" style="color:#E8B4A8">${icon('heart', 12)}</span>${heatDots}</div>
+            <div class="ih-row"><span class="ih-icon">${icon('star', 12)}</span>${heatDots}</div>
           </div>
         `;
       })()}
