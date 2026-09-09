@@ -10110,9 +10110,9 @@ body.home-bg .topbar {
 .skincare-page .sk-hist-hint { font-size: 9px; color: var(--text-muted); font-family: var(--font-small); margin: -2px 0 8px; }
 
 /* ============ v9476 护肤迷你日期（洞察式小字号；右侧留空放图） ============ */
-.skincare-page .sk-mini-date { display: inline-flex; align-items: center; gap: 6px; margin: 12px 0 6px; font-family: var(--font-small); color: var(--text-muted); }
-.skincare-page .sk-mini-date .sk-md-arrow { border: none; background: none; color: var(--text-muted); padding: 2px; display: inline-flex; align-items: center; cursor: pointer; }
-.skincare-page .sk-mini-date .sk-md-arrow:hover { color: var(--text); }
+.skincare-page .domain-hero { padding: 4px 0 0 !important; margin-bottom: 0 !important; }
+.skincare-page .domain-title { margin-bottom: 0 !important; }
+.skincare-page .sk-mini-date { display: inline-flex; align-items: center; gap: 10px; margin: 18px 0 18px; font-family: var(--font-small); color: var(--text-muted); }
 .skincare-page .sk-mini-date .sk-md-pill { border: none; background: none; color: var(--text); font-size: 11px; font-weight: 600; padding: 0 2px; cursor: pointer; font-family: var(--font); }
 .skincare-page .sk-mini-date .sk-md-pill:hover { color: var(--primary-dark); }
 .skincare-page .sk-mini-date .sk-md-today { border: 1px solid var(--border-soft); background: var(--bg); color: var(--text-muted); font-size: 9px; font-family: var(--font-small); border-radius: 999px; padding: 2px 8px; cursor: pointer; }

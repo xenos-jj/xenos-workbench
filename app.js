@@ -12918,9 +12918,7 @@ function skMiniDateHTML(key) {
   const p = (key || '').split('-');
   const label = p.length === 3 ? (Number(p[1]) + '月' + Number(p[2]) + '日') : key;
   return `
-    <button class="sk-md-arrow" type="button" data-nav="-1" aria-label="前一天">${icon('chevronLeft', 13)}</button>
     <button class="sk-md-pill" type="button" data-date="${key}" title="选择日期">${label}</button>
-    <button class="sk-md-arrow" type="button" data-nav="1" aria-label="后一天">${icon('chevronRight', 13)}</button>
     <button class="sk-md-today" type="button" data-nav="today">回今天</button>`;
 }
 function renderSkincarePage() {
@@ -13210,20 +13208,9 @@ function renderSkincarePage() {
 
   // v9476：迷你日期绑定（洞察式小字号）——任意历史可看，未来禁入；非今日即只读
   const md = page.querySelector('.sk-mini-date');
-  const mdShift = (delta) => {
-    const t = new Date(view + 'T00:00:00');
-    t.setDate(t.getDate() + delta);
-    let k = t.toISOString().slice(0, 10);
-    if (k > today) k = today;
-    skViewDate = k;
-    renderSkincarePage();
-  };
   if (md) {
-    md.querySelectorAll('[data-nav]').forEach(b => b.addEventListener('click', () => {
-      const nav = b.dataset.nav;
-      if (nav === 'today') { skViewDate = null; renderSkincarePage(); }
-      else mdShift(Number(nav));
-    }));
+    const tb = md.querySelector('.sk-md-today');
+    if (tb) tb.addEventListener('click', () => { skViewDate = null; renderSkincarePage(); });
     const pill = md.querySelector('.sk-md-pill');
     if (pill) pill.addEventListener('click', () => {
       openDatePicker({ initial: view, max: today, onSelect: (k) => { skViewDate = k > today ? today : k; renderSkincarePage(); } });
