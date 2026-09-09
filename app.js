@@ -12920,6 +12920,11 @@ function renderSkincarePage() {
   if (!sc.log) sc.log = {};
   if (!sc.log[today]) sc.log[today] = { done: 0, total: 0 };
   if (!sc.skinStatus) sc.skinStatus = {};
+  // v9463：自定义皮肤状态池（默认 5 项；缺失/为空时回默认）
+  if (!Array.isArray(sc.skinOpts) || sc.skinOpts.length === 0) {
+    sc.skinOpts = ['稳定', '干燥', '出油', '敏感', '长痘'];
+    saveSkincare();
+  }
   // v9459：默认打卡内容改版（早间洁面/水乳/防晒、晚间洁面/面膜/水乳、其他护理）——
   // 旧默认（含「温水洗脸」等旧条目）或缺「其他护理」组 → 整体替换为新的默认 routine（保留 notes/skinStatus/log）
   const hasOth = sc.routine && sc.routine.some(g => g.id === 'sk-oth');
@@ -12984,7 +12989,17 @@ function renderSkincarePage() {
     <div class="sk-section" data-sk-section="status">
       <div class="sk-section-head">${icon('heart', 14)} <span>今日皮肤状态</span></div>
       <div class="sk-status-tags" id="sk-status-tags">
-        ${['稳定','干燥','出油','敏感','长痘'].map(t => `<button class="sk-status-tag ${sc.skinStatus && sc.skinStatus[today] === t ? 'on' : ''}" data-sk-tag="${t}">${t}</button>`).join('')}
+        ${sc.skinOpts.map(t => `<span class="sk-tag-cell">
+          <button class="sk-status-tag ${sc.skinStatus && sc.skinStatus[today] === t ? 'on' : ''}" data-sk-tag="${escapeHTML(t)}">${escapeHTML(t)}</button>
+          <span class="sk-tag-acts">
+            <button class="sk-tag-act sk-tag-edit" data-edit="${escapeHTML(t)}" title="编辑">${icon('edit', 10)}</button>
+            <button class="sk-tag-act sk-tag-del" data-del="${escapeHTML(t)}" title="删除">${icon('delete', 10)}</button>
+          </span>
+        </span>`).join('')}
+      </div>
+      <div class="sk-add-inline" data-sk-opt-row>
+        <input class="lk-input" data-sk-opt-input placeholder="加一个皮肤状态...">
+        <button class="lk-mini-btn" data-sk-opt-btn aria-label="添加">${icon('plus', 12)}</button>
       </div>
     </div>
 
@@ -13087,9 +13102,42 @@ function renderSkincarePage() {
     if (inp) inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') doAdd(); });
   });
 
-  // v9440：皮肤状态 tag 单选（再点取消）
-  page.querySelectorAll('.sk-status-tag').forEach(btn => {
-    btn.addEventListener('click', () => {
+  // v9463：皮肤状态 —— 点击=选择/取消；长按 600ms 显示 ✎编辑/🗑删除；下方输入可新增自定义状态
+  let skLpTimer = null, skLpCell = null, skLpX = 0, skLpY = 0;
+  const hideSkActs = () => page.querySelectorAll('.sk-tag-cell.manage').forEach(c => c.classList.remove('manage'));
+  page.querySelectorAll('.sk-tag-cell').forEach(cell => {
+    const btn = cell.querySelector('.sk-status-tag');
+    const startLp = (e) => {
+      if (e.target.closest('.sk-tag-acts')) return;
+      const p = e.touches ? e.touches[0] : e;
+      skLpX = p.clientX; skLpY = p.clientY;
+      skLpCell = cell;
+      skLpTimer = setTimeout(() => {
+        hideSkActs();
+        cell.classList.add('manage');
+        cell._skLp = Date.now();
+        if (navigator.vibrate) navigator.vibrate(20);
+        skLpTimer = null;
+      }, 600);
+    };
+    const moveLp = (e) => {
+      if (!skLpTimer || !skLpCell) return;
+      const p = e.touches ? e.touches[0] : e;
+      if (Math.abs(p.clientX - skLpX) > 10 || Math.abs(p.clientY - skLpY) > 10) { clearTimeout(skLpTimer); skLpTimer = null; }
+    };
+    const clearLp = () => { if (skLpTimer) { clearTimeout(skLpTimer); skLpTimer = null; } skLpCell = null; };
+    cell.addEventListener('pointerdown', startLp);
+    cell.addEventListener('pointermove', moveLp);
+    cell.addEventListener('pointerup', clearLp);
+    cell.addEventListener('pointercancel', clearLp);
+    cell.addEventListener('contextmenu', (e) => e.preventDefault());
+    if (btn) btn.addEventListener('click', () => {
+      if (cell.classList.contains('manage')) {
+        // 长按释放后紧跟的 click 忽略（保证操作条可点）；下次点击收起
+        if (cell._skLp && Date.now() - cell._skLp < 700) return;
+        cell.classList.remove('manage');
+        return;
+      }
       if (!sc.skinStatus) sc.skinStatus = {};
       const t = btn.dataset.skTag;
       if (sc.skinStatus[today] === t) delete sc.skinStatus[today];
@@ -13098,6 +13146,49 @@ function renderSkincarePage() {
       renderSkincarePage();
     });
   });
+  // 点击空白/其它区域收起操作条
+  page.addEventListener('click', (e) => {
+    if (e.target.closest('.sk-tag-cell.manage, .sk-tag-acts')) return;
+    hideSkActs();
+  });
+  // 编辑（改名）
+  page.querySelectorAll('.sk-tag-edit').forEach(b => b.addEventListener('click', async (e) => {
+    e.preventDefault(); e.stopPropagation();
+    const old = b.dataset.edit;
+    if (!sc.skinOpts.includes(old)) return;
+    const v = await openModal('编辑皮肤状态', old, '修改名称后点确定');
+    if (v === null) return;
+    const nt = v.trim();
+    if (!nt || nt === old) return;
+    if (sc.skinOpts.includes(nt)) { toast('该状态已存在'); return; }
+    sc.skinOpts[sc.skinOpts.indexOf(old)] = nt;
+    if (sc.skinStatus && sc.skinStatus[today] === old) sc.skinStatus[today] = nt;
+    saveSkincare(); renderSkincarePage();
+  }));
+  // 删除（保留至少 1 项）
+  page.querySelectorAll('.sk-tag-del').forEach(b => b.addEventListener('click', (e) => {
+    e.preventDefault(); e.stopPropagation();
+    const t = b.dataset.del;
+    if (sc.skinOpts.length <= 1) { toast('至少保留一个皮肤状态'); return; }
+    sc.skinOpts = sc.skinOpts.filter(x => x !== t);
+    if (sc.skinStatus && sc.skinStatus[today] === t) delete sc.skinStatus[today];
+    saveSkincare(); renderSkincarePage();
+  }));
+  // 新增状态（输入框 + ➕ / Enter）
+  const optRow = page.querySelector('[data-sk-opt-row]');
+  if (optRow) {
+    const inp = optRow.querySelector('[data-sk-opt-input]');
+    const addBtn = optRow.querySelector('[data-sk-opt-btn]');
+    const doAdd = () => {
+      const v = (inp.value || '').trim();
+      if (!v) return;
+      if (sc.skinOpts.includes(v)) { toast('该状态已存在'); inp.value = ''; return; }
+      sc.skinOpts.push(v);
+      saveSkincare(); renderSkincarePage();
+    };
+    if (addBtn) addBtn.addEventListener('click', doAdd);
+    if (inp) inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') doAdd(); });
+  }
 }
 
 // ============ 我的 / 设置（Screenshot 4） ============

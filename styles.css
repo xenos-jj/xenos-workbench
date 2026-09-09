@@ -10083,3 +10083,12 @@ body.home-bg .topbar {
 /* 外貌页基准：积分 .lk-meta = 9.5px/600/站酷/gold；chip .lk-period-state = 9.5px 站酷 + padding 2 8 */
 .skincare-page .sk-day-pts { font-size: 9.5px !important; }
 .skincare-page .sk-pending { font-size: 9.5px !important; padding: 2px 8px !important; margin-left: auto !important; }
+
+/* ============ v9463 今日皮肤状态：长按 ✎/🗑 操作条 + 底部新增状态行 ============ */
+.skincare-page .sk-tag-cell { position: relative; display: inline-flex; }
+.skincare-page .sk-tag-acts { display: none; position: absolute; left: 0; top: calc(100% + 4px); z-index: 40; align-items: center; gap: 2px; padding: 2px; background: #fff; border: 1px solid var(--border-soft); border-radius: 8px; box-shadow: 0 2px 8px rgba(0, 0, 0, .06); }
+.skincare-page .sk-tag-cell.manage .sk-tag-acts { display: inline-flex; }
+.skincare-page .sk-tag-act { width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center; border: none; background: transparent; color: var(--text-muted); border-radius: 6px; }
+.skincare-page .sk-tag-act:hover { background: var(--bg-soft); color: var(--text); }
+.skincare-page .sk-tag-act.sk-tag-del:hover { background: #FDF0ED; color: #D9766B; }
+.skincare-page .sk-status-tags + .sk-add-inline { margin-top: 8px; }
