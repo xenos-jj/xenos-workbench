@@ -12954,6 +12954,7 @@ function renderSkincarePage() {
         ${group.items.map(it => `<div class="module-list-item ${it.done ? 'done' : ''}" data-item="${escapeHTML(it.id)}" data-group="${escapeHTML(group.id)}">
           <span class="mli-check">${it.done ? icon('check', 12) : ''}</span>
           <span class="mli-text">${escapeHTML(it.text)}</span>
+          <span class="mli-pts">+${it.points || 1}</span>
           <div class="module-item-actions">
             <button class="module-act-btn module-edit-btn" data-edit-type="skincare-item" data-edit-id="${escapeHTML(it.id)}" data-group="${escapeHTML(group.id)}" title="编辑">${icon('edit', 11)}</button>
             <button class="module-act-btn module-del-btn" data-del-type="skincare-item" data-del-id="${escapeHTML(it.id)}" data-group="${escapeHTML(group.id)}" title="删除">${icon('delete', 11)}</button>
