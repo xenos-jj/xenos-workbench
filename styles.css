@@ -10120,3 +10120,7 @@ body.home-bg .topbar {
 
 /* ============ v9478 护肤图标 ❤️ → ★（摄影审美同款星形，颜色同护肤图标 var(--text)） ============ */
 .skincare-page .insp-heatmap-grid .ih-icon { color: var(--text); }
+
+/* ============ v9479 支线卡右下行动按钮 +1px：底边与左侧折线底对齐（负边距 -7 抵消，卡片总高不变） ============ */
+.br-branch-card .br-next-btn { padding-top: 6px; }
+.br-branch-bottom { margin-bottom: -7px; }
