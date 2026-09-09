@@ -11665,17 +11665,17 @@ function renderBranchesPage() {
     if (type === 'health' || type === 'looks') {
       const log = (state.domains[type] || {}).log || {};
       const days = [];
-      for (let i = 8; i >= 0; i--) { const k = shiftDate(getTodayKey(), -i); days.push(Number(log[k]) || 0); }
+      for (let i = 6; i >= 0; i--) { const k = shiftDate(getTodayKey(), -i); days.push(Number(log[k]) || 0); }
       return days;
     }
     if (type === 'money') {
       const days = [];
-      for (let i = 8; i >= 0; i--) { const k = shiftDate(getTodayKey(), -i); days.push(getDayExpense(k)); }
+      for (let i = 6; i >= 0; i--) { const k = shiftDate(getTodayKey(), -i); days.push(getDayExpense(k)); }
       return days;
     }
     // learning：某天「学习活跃度」= 专注会话数 + 英语打卡勾选数；勾选任务即产生当天数据点
     const days = [];
-    for (let i = 8; i >= 0; i--) {
+    for (let i = 6; i >= 0; i--) {
       const k = shiftDate(getTodayKey(), -i);
       const sessions = state.focusSessions.filter(x => x.date === k && x.domain === 'learning').length;
       days.push(sessions + getEnglishDoneCount(k));
