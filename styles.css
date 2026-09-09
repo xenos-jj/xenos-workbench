@@ -10100,4 +10100,4 @@ body.home-bg .topbar {
 .skincare-page .sk-pending.ok { background: transparent !important; border: none !important; color: var(--text-muted) !important; }
 
 /* ============ v9470 护肤打卡行右侧积分（每步分值，12px） ============ */
-.skincare-page .module-list-item .mli-pts { font-size: 12px; font-weight: 600; color: var(--primary-dark); font-family: var(--font-small); }
+.skincare-page .module-list-item .mli-pts { font-size: 9px; font-weight: 400; color: var(--primary-dark); font-family: var(--font-small); }
