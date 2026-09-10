@@ -10138,3 +10138,7 @@ body.home-bg .topbar {
 
 /* ============ v9484 支线卡底部行（折线+胶囊）整体上移 2px：transform 位移，不改布局/卡高 ============ */
 .br-branch-bottom { transform: translateY(-2px); }
+
+/* ============ v9485 支线卡进度环：移到顶部水平居中，底边贴虚线分隔线 ============ */
+.br-branch-top { position: relative; }
+.br-branch-ring { position: absolute; left: 50%; transform: translateX(-50%); bottom: -2px; margin-right: 0; }
