@@ -10135,3 +10135,6 @@ body.home-bg .topbar {
 /* ============ v9483 支线卡右下胶囊更矮：上2下2（高 18px；底边仍与折线底同线、卡高不变） ============ */
 .br-branch-card .br-next-btn { padding-top: 2px; padding-bottom: 2px; margin-top: 8.5px; }
 .br-branch-bottom { margin-bottom: -11.5px; }
+
+/* ============ v9484 支线卡底部行（折线+胶囊）整体上移 2px：transform 位移，不改布局/卡高 ============ */
+.br-branch-bottom { transform: translateY(-2px); }
