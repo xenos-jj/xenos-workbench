@@ -10127,3 +10127,7 @@ body.home-bg .topbar {
 
 /* ============ v9480 支线卡：下一步行动 label 上移对齐左侧本周趋势文字 ============ */
 .br-next-wrap .br-next-label { margin-top: -2px; }
+
+/* ============ v9482 支线卡右下胶囊：行高 14 / 上下内边距 3 → 高 20px；底边仍与折线底同线、卡高不变 ============ */
+.br-branch-card .br-next-btn { line-height: 14px; padding-top: 3px; padding-bottom: 3px; margin-top: 6.5px; }
+.br-branch-bottom { margin-bottom: -9.5px; }
