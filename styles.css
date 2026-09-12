@@ -6350,7 +6350,7 @@ select.pf-input {
 /* =========================================================
    我的计划新设计（参考图复刻）
    ========================================================= */
-.br-page { padding: 10px 0 24px; overflow-x: hidden; touch-action: pan-y; }
+.br-page { padding: 8px 0 24px; overflow-x: hidden; touch-action: pan-y; }
 
 /* ---- 顶部栏：我的计划大标题 + 右上角日期/Lv 标签 ---- */
 .topbar.branches-topbar {
