@@ -6350,7 +6350,7 @@ select.pf-input {
 /* =========================================================
    我的计划新设计（参考图复刻）
    ========================================================= */
-.br-page { padding-bottom: 24px; overflow-x: hidden; touch-action: pan-y; }
+.br-page { padding: 10px 0 24px; overflow-x: hidden; touch-action: pan-y; }
 
 /* ---- 顶部栏：我的计划大标题 + 右上角日期/Lv 标签 ---- */
 .topbar.branches-topbar {
@@ -6546,11 +6546,11 @@ select.pf-input {
 /* v9421：支线环 44 → 56px（viewBox 64 等比放大，stroke 视觉随比例 2.75→3.5px） */
 .br-branch-ring .mini-ring { width: 56px; height: 56px; }
 .br-branch-ring .mini-ring svg { width: 56px; height: 56px; opacity: 0.8; }
-.br-branch-ring .mini-ring .mr-bg { stroke-width: 5; }
+.br-branch-ring .mini-ring .mr-bg { stroke-width: 4; }
 .br-branch-ring .mini-ring.ring-purple .mr-bg { stroke: #F3F1F4; }
 .br-branch-ring .mini-ring.ring-green .mr-bg { stroke: #F4F5E5; }
 .br-branch-ring .mini-ring.ring-peach .mr-bg { stroke: #F4F5E5; }
-.br-branch-ring .mini-ring .mr-fg { stroke-width: 5; }
+.br-branch-ring .mini-ring .mr-fg { stroke-width: 4; }
 .br-branch-ring .mini-ring.ring-purple .mr-fg { stroke: #8978c3; }
 .br-branch-ring .mini-ring.ring-green .mr-fg { stroke: #a0bb7a; }
 .br-branch-ring .mini-ring.ring-peach .mr-fg { stroke: #f4b75b; }
