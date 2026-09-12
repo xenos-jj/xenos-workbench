@@ -5267,6 +5267,31 @@ function bindDateBar(scope, handlers) {
   }
 }
 
+// v9510：日期完成度（用于日期选择器日期格右上角小圆点）
+// 聚合 4 个域（护肤/健康/记账/学习）的当日数据：
+// 1) 全无数据 → null（不显示圆点）
+// 2) 有做的域全部"满" → 'orange'
+// 3) 有做但未全满 → 'green'
+function getDayStatus(key) {
+  const looks = Number((state.domains && state.domains.looks && state.domains.looks.log || {})[key] || 0);
+  const health = Number((state.domains && state.domains.health && state.domains.health.log || {})[key] || 0);
+  const money = (state.transactions || []).some(t => t.date === key);
+  const learning = (state.englishCheckin && state.englishCheckin.dates || []).includes(key)
+    || (state.focusSessions || []).some(s => s.date === key && s.domain === 'learning');
+  // "满"标准：looks 11 步全完 / health 日志>0 / money 1 笔 / learning 有英语或专注
+  const checks = [
+    { done: looks > 0, full: looks >= 11 },
+    { done: health > 0, full: health >= 1 },
+    { done: money, full: money },
+    { done: learning, full: learning }
+  ];
+  const hasN = checks.filter(c => c.done).length;
+  if (hasN === 0) return null;
+  const fullN = checks.filter(c => c.full).length;
+  if (fullN === hasN) return 'orange';
+  return 'green';
+}
+
 function openDatePicker(opts) {
   opts = opts || {};
   const initial = opts.initial || getTodayKey();
@@ -5333,7 +5358,8 @@ function openDatePicker(opts) {
       if (c.key === selectedKey) cls += ' selected';
       if (c.key === getTodayKey()) cls += ' today';
       if (maxKey && c.key > maxKey) cls += ' disabled';
-      return `<button class="${cls}" data-dp-key="${c.key}">${c.day}</button>`;
+      const dot = getDayStatus(c.key) ? `<span class="dp-dot dp-${getDayStatus(c.key)}"></span>` : '';
+      return `<button class="${cls}" data-dp-key="${c.key}">${c.day}${dot}</button>`;
     }).join('');
   }
   function close() {
