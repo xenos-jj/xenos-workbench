@@ -11784,32 +11784,6 @@ function renderBranchesPage() {
     if (def) return def.sub;
     return '每天进步一点点，未来更自由';
   }
-  // v9516：支线等级——按「累计打卡/记录天数」升级（Lv.1→2 需 10 天，之后每级所需天数 +10）
-  const BRANCH_LEVEL_NAMES = ['起步中', '发育中', '稳定中', '进阶中'];
-  function branchLevelThreshold(n) { return 5 * n * (n - 1); } // Lv.n 的累计天数门槛（0/10/30/60/100/150…）
-  function branchLevelName(lv) { return BRANCH_LEVEL_NAMES[lv - 1] || '精进中'; }
-  // 累计打卡/记录天数（health/looks=log 有值的天数；money=有交易的天数；learning=英语打卡 ∪ 专注）
-  function getBranchTotalDays(type) {
-    const days = new Set();
-    if (type === 'money') {
-      (state.transactions || []).forEach(t => { if (t.date) days.add(t.date); });
-    } else if (type === 'learning') {
-      Object.keys((state.englishCheckin && state.englishCheckin.history) || {}).forEach(k => { if (getEnglishDoneCount(k) > 0) days.add(k); });
-      (state.focusSessions || []).forEach(s => { if (s.domain === 'learning' && s.date) days.add(s.date); });
-    } else {
-      const log = ((state.domains || {})[type] || {}).log || {};
-      Object.keys(log).forEach(k => { if (Number(log[k]) > 0) days.add(k); });
-    }
-    return days.size;
-  }
-  function getBranchLevelInfo(type) {
-    const days = getBranchTotalDays(type);
-    let level = 1;
-    while (days >= branchLevelThreshold(level + 1)) level++;
-    const curBase = branchLevelThreshold(level);
-    const nextNeed = branchLevelThreshold(level + 1);
-    return { days, level, levelText: branchLevelName(level), curBase, nextNeed, toNext: Math.max(0, nextNeed - days) };
-  }
 
   // 各支线近 7 天每日数据点（滚动窗口，含当天）——用于「本周趋势」折线
   function weeklyPointsFor(type, name) {
@@ -12028,18 +12002,25 @@ function renderBranchesPage() {
   page.querySelector('#br-stage-picker').addEventListener('click', openPhasePicker);
   page.querySelector('#br-focus-picker').addEventListener('click', openMonthlyFocusPicker);
 
-  page.querySelectorAll('.br-branch-card').forEach(card => {
-    card.addEventListener('click', (e) => {
-      if (e.target.closest('button')) return;
-      if (card.classList.contains('show-delete')) { card.classList.remove('show-delete'); return; }
-      selectItem(card.dataset.route);
+  // v9519：主线卡只有「胶囊」进入子页面，卡片空白不再整卡跳转
+  page.querySelectorAll('.br-next-btn[data-route]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      selectItem(btn.dataset.route);
     });
   });
 
-  page.querySelectorAll('[data-route]').forEach(card => {
+  // v9519：长按删除模式下，点击卡片空白仅关闭删除按钮（不跳转）
+  page.querySelectorAll('.br-branch-card').forEach(card => {
+    card.addEventListener('click', () => {
+      if (card.classList.contains('show-delete')) card.classList.remove('show-delete');
+    });
+  });
+
+  // 保持中/暂时放缓 列表项：整卡可点进入
+  page.querySelectorAll('.br-slow-card[data-route]').forEach(card => {
     card.addEventListener('click', (e) => {
       if (e.target.closest('.item-delete')) return;
-      if (card.classList && card.classList.contains('show-delete')) return;
       selectItem(card.dataset.route);
     });
   });
@@ -12064,6 +12045,33 @@ function renderBranchesPage() {
 
   const slowManage = page.querySelector('[data-manage="slow"]');
   if (slowManage) slowManage.addEventListener('click', openSlowBranchPicker);
+}
+
+// v9516：支线等级——按「累计打卡/记录天数」升级（Lv.1→2 需 10 天，之后每级所需天数 +10）
+const BRANCH_LEVEL_NAMES = ['起步中', '发育中', '稳定中', '进阶中'];
+function branchLevelThreshold(n) { return 5 * n * (n - 1); } // Lv.n 的累计天数门槛（0/10/30/60/100/150…）
+function branchLevelName(lv) { return BRANCH_LEVEL_NAMES[lv - 1] || '精进中'; }
+// 累计打卡/记录天数（health/looks=log 有值的天数；money=有交易的天数；learning=英语打卡 ∪ 专注）
+function getBranchTotalDays(type) {
+  const days = new Set();
+  if (type === 'money') {
+    (state.transactions || []).forEach(t => { if (t.date) days.add(t.date); });
+  } else if (type === 'learning') {
+    Object.keys((state.englishCheckin && state.englishCheckin.history) || {}).forEach(k => { if (getEnglishDoneCount(k) > 0) days.add(k); });
+    (state.focusSessions || []).forEach(s => { if (s.domain === 'learning' && s.date) days.add(s.date); });
+  } else {
+    const log = ((state.domains || {})[type] || {}).log || {};
+    Object.keys(log).forEach(k => { if (Number(log[k]) > 0) days.add(k); });
+  }
+  return days.size;
+}
+function getBranchLevelInfo(type) {
+  const days = getBranchTotalDays(type);
+  let level = 1;
+  while (days >= branchLevelThreshold(level + 1)) level++;
+  const curBase = branchLevelThreshold(level);
+  const nextNeed = branchLevelThreshold(level + 1);
+  return { days, level, levelText: branchLevelName(level), curBase, nextNeed, toNext: Math.max(0, nextNeed - days) };
 }
 
 // v9516：支线等级进度弹窗（点击支线卡上的等级标签触发）
