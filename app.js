@@ -11791,7 +11791,7 @@ function renderBranchesPage() {
               <div class="br-branch-title" style="color:${b.color}">${b.name}</div>
               <div class="br-branch-sub">${b.sub}</div>
               <div class="br-branch-meta">
-                <span class="br-lv-tag" style="background:${b.bg};color:${b.color}">Lv.${b.level} ${b.levelText}</span>
+                <span class="br-lv-tag" style="background:${b.bg};color:${b.color}">Lv.${b.level}<span class="br-lv-gap"></span>${b.levelText}</span>
                 <span class="br-freq-tag">每周 ${b.activeDays} 天</span>
               </div>
             </div>

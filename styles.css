@@ -6536,10 +6536,11 @@ select.pf-input {
 .br-branch-info { flex: 1; min-width: 0; }
 .br-branch-title { font-size: 12px; font-weight: 575; color: var(--text); margin: 0; font-family: var(--font-title); }
 /* v9403：支线卡副名（如「每天进步一点点，未来更自由」）9px → 8px */
-.br-branch-sub { font-size: 8px; font-family: var(--font-small); color: var(--text-muted); margin: 0 0 2px; }
+.br-branch-sub { font-size: 9px; font-family: var(--font-small); color: var(--text-muted); margin: 0 0 2px; }
 .br-branch-meta { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .br-lv-tag { border-radius: 999px; padding: 1px 7px; font-size: 9px; font-family: var(--font-small); font-weight: 500; }
-.br-freq-tag { font-size: 8px; font-family: var(--font-small); color: var(--text-muted); }
+.br-freq-tag { font-size: 9px; font-family: var(--font-small); color: var(--text-muted); }
+.br-lv-gap { display: inline-block; width: 2px; }
 /* v9382：进度环上移 2px（user 调整支线卡下半部分布局） */
 .br-branch-ring { flex-shrink: 0; margin-right: 4px; transform: translateY(-2px); }
 /* v9421：支线环 44 → 56px（viewBox 64 等比放大，stroke 视觉随比例 2.75→3.5px） */
