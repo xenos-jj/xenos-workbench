@@ -6501,7 +6501,7 @@ select.pf-input {
 /* v9376：圆角统一 12px（原 18px）+ 内边距向 12px 14px 靠拢（原 10px 14px 0） */
 /* v9384：支线卡高度优化——保留全部元素，仅压缩内部空白 */
 .br-branch-card {
-  background: var(--card); border-radius: var(--radius); padding: 10px 14px 4px 14px;
+  background: var(--card); border-radius: var(--radius); padding: 10px 14px 6px 14px;
   margin-bottom: 10px; box-shadow: 0 2px 8px rgba(120, 80, 40, 0.03);
   border: 1px solid #E2DCF5;
   display: flex; flex-direction: column;
@@ -10138,7 +10138,8 @@ body.home-bg .topbar {
 .br-branch-bottom { margin-bottom: -11.5px; }
 
 /* ============ v9484 支线卡底部行（折线+胶囊）整体上移 2px：transform 位移，不改布局/卡高 ============ */
-.br-branch-bottom { transform: translateY(-2px); }
+/* v9500：底部行整体下移 2px（相对 v9484 的上移回正） */
+.br-branch-bottom { transform: translateY(0); }
 
 /* ============ v9485 支线卡进度环：移到顶部水平居中，底边贴虚线分隔线 ============ */
 .br-branch-top { position: relative; }
