@@ -10178,26 +10178,24 @@ body.home-bg .topbar {
 .br-lv-tag { cursor: pointer; }
 .br-lv-tag:hover { filter: brightness(0.96); }
 
-/* ============ v9518 支线卡：本周趋势折线 → 7 天完成度圆点（按支线颜色） ============ */
-/* 7 个等距 col，圆点+周几 label 上下排布；空 / 部分 / 满 三档配色；今日加描边 */
-.br-trend { justify-content: flex-end; align-items: stretch; min-height: 22px; }
+/* ============ v9518 支线卡进度环弹窗：本周完成度 7 天圆点（按支线颜色） ============ */
+/* 弹窗内圆点较大（22px），周一~周日 label 上下排布；空 / 部分 / 满 三档配色；今日加描边 */
 .br-weekdots {
   display: flex; align-items: flex-end; justify-content: space-between;
-  width: 100%; height: 24px; gap: 2px;
-  transform: translateY(-1px);
-  margin-top: 1px; margin-bottom: 1px;
+  width: 100%; gap: 4px;
+  margin-top: 2px;
 }
 .br-wd-col {
-  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  display: flex; flex-direction: column; align-items: center; gap: 5px;
   flex: 1 1 0; min-width: 0;
 }
 .br-wd-dot {
-  width: 14px; height: 14px; border-radius: 50%;
+  width: 22px; height: 22px; border-radius: 50%;
   background: #f5efe6; border: 1px solid transparent;
   transition: transform 0.15s ease;
 }
 .br-wd-col.is-today .br-wd-dot { transform: scale(1.05); }
 .br-wd-label {
-  font-size: 8px; font-family: var(--font-small); font-weight: 400;
+  font-size: 10px; font-family: var(--font-small); font-weight: 400;
   color: var(--text-muted); line-height: 1;
 }

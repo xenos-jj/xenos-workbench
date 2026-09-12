@@ -11811,46 +11811,36 @@ function renderBranchesPage() {
     return { days, level, levelText: branchLevelName(level), curBase, nextNeed, toNext: Math.max(0, nextNeed - days) };
   }
 
-  // v9518：各支线本周（周一~周日）7 个日数据点；按周维度而非滚动7天，圆点图与本周趋势语义统一
-  const WEEK_LABELS = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+  // 各支线近 7 天每日数据点（滚动窗口，含当天）——用于「本周趋势」折线
   function weeklyPointsFor(type, name) {
-    const weekStart = getWeekStart();
     // v9517：looks 下各支线（护肤/仪态/穿搭/妆容）数据源互相独立
     if (type === 'looks') {
       if (name === '护肤') {
         const sc = state.skincare || {};
         const days = [];
-        for (let i = 0; i < 7; i++) { const k = shiftDate(weekStart, i); days.push(Object.keys((sc.dayIds || {})[k] || {}).length); }
+        for (let i = 6; i >= 0; i--) { const k = shiftDate(getTodayKey(), -i); days.push(Object.keys((sc.dayIds || {})[k] || {}).length); }
         return days;
       }
       const tabMap = { '仪态': 'posture', '穿搭': 'outfit', '妆容': 'makeup' };
       const tab = tabMap[name];
-      if (tab) {
-        const dots = getLooksWeekDots(tab);
-        // weekStart 是周一日期，把 dots 按"本周X天 = shiftDate(weekStart, i)"重新对齐
-        const isow = (ky) => { const d = new Date(ky + 'T00:00:00'); return (d.getDay() + 6) % 7; };
-        const idx = dot => isow(dot.key);
-        const arr = [0, 0, 0, 0, 0, 0, 0];
-        dots.forEach(d => { const j = idx(d); if (j >= 0 && j < 7) arr[j] = d.pts; });
-        return arr;
-      }
+      if (tab) return getLooksWeekDots(tab).map(x => x.pts);
       return [0, 0, 0, 0, 0, 0, 0];
     }
     if (type === 'health') {
       const log = (state.domains[type] || {}).log || {};
       const days = [];
-      for (let i = 0; i < 7; i++) { const k = shiftDate(weekStart, i); days.push(Number(log[k]) || 0); }
+      for (let i = 6; i >= 0; i--) { const k = shiftDate(getTodayKey(), -i); days.push(Number(log[k]) || 0); }
       return days;
     }
     if (type === 'money') {
       const days = [];
-      for (let i = 0; i < 7; i++) { const k = shiftDate(weekStart, i); days.push(getDayExpense(k)); }
+      for (let i = 6; i >= 0; i--) { const k = shiftDate(getTodayKey(), -i); days.push(getDayExpense(k)); }
       return days;
     }
-    // learning：本周每天「学习活跃度」= 专注会话数 + 英语打卡勾选数
+    // learning：某天「学习活跃度」= 专注会话数 + 英语打卡勾选数；勾选任务即产生当天数据点
     const days = [];
-    for (let i = 0; i < 7; i++) {
-      const k = shiftDate(weekStart, i);
+    for (let i = 6; i >= 0; i--) {
+      const k = shiftDate(getTodayKey(), -i);
       const sessions = state.focusSessions.filter(x => x.date === k && x.domain === 'learning').length;
       days.push(sessions + getEnglishDoneCount(k));
     }
@@ -11866,33 +11856,21 @@ function renderBranchesPage() {
       let cnt = 0;
       if (name === '护肤') {
         const sc = state.skincare || {};
-        const weekStart = getWeekStart();
         for (let i = 0; i < 7; i++) {
-          const k = shiftDate(weekStart, i);
+          const k = shiftDate(todayKey, -i);
           const ids = (sc.dayIds || {})[k];
           if (ids && Object.keys(ids).length > 0) cnt++;
         }
       } else {
         const tabMap = { '仪态': 'posture', '穿搭': 'outfit', '妆容': 'makeup' };
         const tab = tabMap[name];
-        if (tab) {
-          // 按本周（周一~周日）计算完成天数
-          const weekStart = getWeekStart();
-          const isow = ky => { const d = new Date(ky + 'T00:00:00'); return (d.getDay() + 6) % 7; };
-          const dots = getLooksWeekDots(tab);
-          const tipSet = new Set(dots.filter(x => x.has).map(x => x.key));
-          for (let i = 0; i < 7; i++) {
-            const k = shiftDate(weekStart, i);
-            if (tipSet.has(k)) cnt++;
-          }
-        }
+        if (tab) cnt = getLooksWeekDots(tab).filter(x => x.has).length;
       }
       return Math.round(cnt / 7 * 100);
     }
     let sum = 0;
-    const weekStart = getWeekStart();
     for (let i = 0; i < 7; i++) {
-      const k = shiftDate(weekStart, i);
+      const k = shiftDate(todayKey, -i);
       let ratio = 0;
       // 任务勾选：当天该支线已勾选的每日任务按比例计入（有勾选即动）
       let tasks;
@@ -11992,15 +11970,15 @@ function renderBranchesPage() {
                 <span class="br-freq-tag">每周 ${b.activeDays} 天</span>
               </div>
             </div>
-            <div class="br-branch-ring">
+            <div class="br-branch-ring"${hasData ? ` data-week-type="${b.type}" data-week-name="${escapeHTML(b.name)}"` : ''}>
               ${hasData ? miniRingHTML(b.progress, '', b.progress + '%', '本周进度', b.color) : '<span class="br-no-data">暂无数据</span>'}
             </div>
           </div>
           <div class="br-branch-divider" style="border-color:${b.border}"></div>
           <div class="br-branch-bottom">
             <div class="br-trend">
-              <div class="br-trend-label">本周完成度</div>
-              ${branchWeekDotsHTML(b.week, b.color, b.bg)}
+              <div class="br-trend-label">本周趋势</div>
+              ${inlineSparkline(b.week, b.color, null, b.bg, 9)}
             </div>
             <div class="br-branch-vline" style="border-color:${b.border}"></div>
             <div class="br-next-wrap">
@@ -12071,6 +12049,16 @@ function renderBranchesPage() {
     el.addEventListener('click', (e) => { e.stopPropagation(); openBranchLevelModal(el.dataset.levelType); });
   });
 
+  // v9518：点击进度环 → 弹出本周完成度小卡片（圆点图 + 周一到周日）
+  page.querySelectorAll('.br-branch-ring[data-week-type]').forEach(el => {
+    el.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const card = el.closest('.br-branch-card');
+      const c = focusColorOf(el.dataset.weekName);
+      openBranchWeekModal(el.dataset.weekType, el.dataset.weekName, c.color, c.bg);
+    });
+  });
+
   const keepManage = page.querySelector('[data-manage="keep"]');
   if (keepManage) keepManage.addEventListener('click', () => selectItem('每日计划'));
 
@@ -12098,6 +12086,62 @@ function openBranchLevelModal(type) {
     </div>
   `;
   openInfoModal(`等级进度 · ${tname}`, body, icon('star', 20));
+}
+
+// v9518：按「本周（周一~周日）」固定 7 天取每日数据点——用于点击进度环弹出的完成度卡片
+function weeklyWeekPoints(type, name) {
+  const weekStart = getWeekStart();
+  if (type === 'looks') {
+    if (name === '护肤') {
+      const sc = state.skincare || {};
+      const days = [];
+      for (let i = 0; i < 7; i++) { const k = shiftDate(weekStart, i); days.push(Object.keys((sc.dayIds || {})[k] || {}).length); }
+      return days;
+    }
+    const tabMap = { '仪态': 'posture', '穿搭': 'outfit', '妆容': 'makeup' };
+    const tab = tabMap[name];
+    if (tab) {
+      const isow = ky => { const d = new Date(ky + 'T00:00:00'); return (d.getDay() + 6) % 7; };
+      const arr = [0, 0, 0, 0, 0, 0, 0];
+      getLooksWeekDots(tab).forEach(d => { const j = isow(d.key); if (j >= 0 && j < 7) arr[j] = d.pts; });
+      return arr;
+    }
+    return [0, 0, 0, 0, 0, 0, 0];
+  }
+  if (type === 'health') {
+    const log = (state.domains[type] || {}).log || {};
+    const days = [];
+    for (let i = 0; i < 7; i++) { const k = shiftDate(weekStart, i); days.push(Number(log[k]) || 0); }
+    return days;
+  }
+  if (type === 'money') {
+    const days = [];
+    for (let i = 0; i < 7; i++) { const k = shiftDate(weekStart, i); days.push(getDayExpense(k)); }
+    return days;
+  }
+  const days = [];
+  for (let i = 0; i < 7; i++) {
+    const k = shiftDate(weekStart, i);
+    const sessions = state.focusSessions.filter(x => x.date === k && x.domain === 'learning').length;
+    days.push(sessions + getEnglishDoneCount(k));
+  }
+  return days;
+}
+
+// v9518：点击进度环 → 弹出本周完成度小卡片（圆点图 + 周一到周日 + 图例）
+function openBranchWeekModal(type, name, color, bg) {
+  const week = weeklyWeekPoints(type, name);
+  const doneDays = week.filter(v => v > 0).length;
+  const body = `
+    ${branchWeekDotsHTML(week, color, bg)}
+    <div style="display:flex; justify-content:center; align-items:center; gap:14px; margin-top:14px; font-size:11px; color:var(--text-muted); font-family:var(--font-small);">
+      <span style="display:inline-flex; align-items:center; gap:5px;"><i style="width:10px;height:10px;border-radius:50%;background:${bg || '#f5efe6'};display:inline-block;"></i>未打卡</span>
+      <span style="display:inline-flex; align-items:center; gap:5px;"><i style="width:10px;height:10px;border-radius:50%;background:${color};opacity:0.42;display:inline-block;"></i>部分完成</span>
+      <span style="display:inline-flex; align-items:center; gap:5px;"><i style="width:10px;height:10px;border-radius:50%;background:${color};display:inline-block;"></i>已完成</span>
+    </div>
+    <div style="text-align:center; margin-top:12px; font-size:12px; color:var(--text);">本周完成 <b style="color:${color};">${doneDays}</b> / 7 天</div>
+  `;
+  openInfoModal(`本周完成度 · ${name}`, body, icon('sparkle', 20));
 }
 
 // ============ 学习成长：英语打卡（v9144） ============
