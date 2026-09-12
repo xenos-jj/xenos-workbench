@@ -10161,3 +10161,10 @@ body.home-bg .topbar {
 /* ============ v9497 支线卡：等级标签下移1px、频率标签下移1px+右移4px ============ */
 .br-lv-tag { transform: translateY(1px); }
 .br-freq-tag { transform: translate(4px, 1px); }
+
+/* ============ v9504 支线卡：副标题/本周趋势/下一步行动 下移0.5px；lv/freq 再下移1px ============ */
+.br-branch-sub { transform: translateY(0.5px); }
+.br-lv-tag { transform: translateY(2px); }
+.br-freq-tag { transform: translate(4px, 2px); }
+.br-trend-label { transform: translateY(0.5px); }
+.br-next-label { transform: translateY(0.5px); }
