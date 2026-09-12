@@ -10199,3 +10199,10 @@ body.home-bg .topbar {
   font-size: 10px; font-family: var(--font-small); font-weight: 400;
   color: var(--text-muted); line-height: 1;
 }
+
+/* ============ v9521 全局去除点击蓝色高亮（移动端 tap highlight） ============ */
+/* 点击胶囊/等级标签/进度环/卡片空白等任何区域，都不再闪现系统默认蓝色高亮层 */
+* {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+}
