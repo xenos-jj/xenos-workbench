@@ -11749,6 +11749,33 @@ function renderBranchesPage() {
     if (def) return def.sub;
     return '每天进步一点点，未来更自由';
   }
+  // v9516：支线等级——按「累计打卡/记录天数」升级（Lv.1→2 需 10 天，之后每级所需天数 +10）
+  const BRANCH_LEVEL_NAMES = ['起步中', '发育中', '稳定中', '进阶中'];
+  function branchLevelThreshold(n) { return 5 * n * (n - 1); } // Lv.n 的累计天数门槛（0/10/30/60/100/150…）
+  function branchLevelName(lv) { return BRANCH_LEVEL_NAMES[lv - 1] || '精进中'; }
+  // 累计打卡/记录天数（health/looks=log 有值的天数；money=有交易的天数；learning=英语打卡 ∪ 专注）
+  function getBranchTotalDays(type) {
+    const days = new Set();
+    if (type === 'money') {
+      (state.transactions || []).forEach(t => { if (t.date) days.add(t.date); });
+    } else if (type === 'learning') {
+      Object.keys((state.englishCheckin && state.englishCheckin.history) || {}).forEach(k => { if (getEnglishDoneCount(k) > 0) days.add(k); });
+      (state.focusSessions || []).forEach(s => { if (s.domain === 'learning' && s.date) days.add(s.date); });
+    } else {
+      const log = ((state.domains || {})[type] || {}).log || {};
+      Object.keys(log).forEach(k => { if (Number(log[k]) > 0) days.add(k); });
+    }
+    return days.size;
+  }
+  function getBranchLevelInfo(type) {
+    const days = getBranchTotalDays(type);
+    let level = 1;
+    while (days >= branchLevelThreshold(level + 1)) level++;
+    const curBase = branchLevelThreshold(level);
+    const nextNeed = branchLevelThreshold(level + 1);
+    return { days, level, levelText: branchLevelName(level), curBase, nextNeed, toNext: Math.max(0, nextNeed - days) };
+  }
+
   // 各支线近9天每日数据点（包含当天）
   function weeklyPointsFor(type) {
     if (type === 'health' || type === 'looks') {
@@ -11810,16 +11837,10 @@ function renderBranchesPage() {
     const week = weeklyPointsFor(type);
     const weekTotal = week.reduce((s, v) => s + v, 0);
     const activeDays = week.filter(v => v > 0).length;
-    let level, levelText;
-    if (type === 'learning') {
-      const learned = Object.keys(state.language.learned || {}).length;
-      level = Math.max(1, Math.floor(learned / 200) + 1);
-      levelText = level >= 5 ? '精通中' : level >= 3 ? '进阶中' : '起步中';
-    } else {
-      const pts = getDomainPoints(type);
-      level = Math.max(1, Math.floor(pts / 50) + 1);
-      levelText = level >= 5 ? '精通中' : level >= 3 ? '稳定中' : '起步中';
-    }
+    // v9516：等级按累计打卡/记录天数（不再用积分/词量）
+    const lvInfo = getBranchLevelInfo(type);
+    const level = lvInfo.level;
+    const levelText = lvInfo.levelText;
     const focusMin = type === 'learning' ? getFocusMinutesByDomain(null, 'learning') : 0;
     const learnedWords = Object.keys(state.language.learned || {}).length;
     const hasData = weekTotal > 0 || (type === 'learning' && learnedWords > 0);
@@ -11880,7 +11901,7 @@ function renderBranchesPage() {
               <div class="br-branch-title" style="color:${b.color}">${b.name}</div>
               <div class="br-branch-sub">${b.sub}</div>
               <div class="br-branch-meta">
-                <span class="br-lv-tag" style="background:${b.bg};color:${b.color}">Lv.${b.level}<span class="br-lv-gap"></span>${b.levelText}</span>
+                <span class="br-lv-tag" data-level-type="${b.type}" title="点击查看等级进度" style="background:${b.bg};color:${b.color}">Lv.${b.level}<span class="br-lv-gap"></span>${b.levelText}</span>
                 <span class="br-freq-tag">每周 ${b.activeDays} 天</span>
               </div>
             </div>
@@ -11958,11 +11979,38 @@ function renderBranchesPage() {
     });
   });
 
+  // v9516：点击等级标签 → 查看该支线等级进度
+  page.querySelectorAll('.br-lv-tag[data-level-type]').forEach(el => {
+    el.addEventListener('click', (e) => { e.stopPropagation(); openBranchLevelModal(el.dataset.levelType); });
+  });
+
   const keepManage = page.querySelector('[data-manage="keep"]');
   if (keepManage) keepManage.addEventListener('click', () => selectItem('每日计划'));
 
   const slowManage = page.querySelector('[data-manage="slow"]');
   if (slowManage) slowManage.addEventListener('click', openSlowBranchPicker);
+}
+
+// v9516：支线等级进度弹窗（点击支线卡上的等级标签触发）
+function openBranchLevelModal(type) {
+  const info = getBranchLevelInfo(type);
+  const nameMap = { health: '健康', looks: '护肤', money: '记账', learning: '英语' };
+  const tname = nameMap[type] || type;
+  const span = Math.max(1, info.nextNeed - info.curBase);
+  const pct = Math.max(0, Math.min(100, Math.round((info.days - info.curBase) / span * 100)));
+  const body = `
+    <div style="text-align:center; margin-bottom: 10px;">
+      <div style="font-size: 20px; font-weight: 600; color: var(--primary-dark);">Lv.${info.level} ${info.levelText}</div>
+      <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">累计打卡/记录 ${info.days} 天</div>
+    </div>
+    <div style="height: 8px; background: var(--bg-soft); border-radius: 999px; overflow: hidden; margin: 10px 0 6px;">
+      <div style="height: 100%; width: ${pct}%; background: var(--primary); border-radius: 999px;"></div>
+    </div>
+    <div style="font-size: 11px; color: var(--text-muted); text-align: center;">
+      距 Lv.${info.level + 1} 还需 ${info.toNext} 天（累计 ${info.nextNeed} 天）
+    </div>
+  `;
+  openInfoModal(`等级进度 · ${tname}`, body, icon('star', 20));
 }
 
 // ============ 学习成长：英语打卡（v9144） ============

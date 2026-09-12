@@ -10173,3 +10173,7 @@ body.home-bg .topbar {
 .dp-cell .dp-dot { position: absolute; top: 3px; right: 4px; width: 4px; height: 4px; border-radius: 50%; pointer-events: none; }
 .dp-cell .dp-dot.dp-green { background: #a0bb7a; }
 .dp-cell .dp-dot.dp-orange { background: #f4b75b; }
+
+/* ============ v9516 支线等级标签可点击（查看等级进度） ============ */
+.br-lv-tag { cursor: pointer; }
+.br-lv-tag:hover { filter: brightness(0.96); }
