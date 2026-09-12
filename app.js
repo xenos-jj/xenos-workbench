@@ -13039,6 +13039,21 @@ function renderSkincarePage() {
     sc.routine = JSON.parse(JSON.stringify(DEFAULT_SKINCARE.routine));
     saveSkincare();
   }
+  // v9514：跨天重置勾选——新的一天任务全新未勾选（任务内容/结构沿用，仅清零勾选；同日重进不重置）
+  if (isToday) {
+    const doneDate = sc.doneDate || '';
+    if (doneDate !== today) {
+      // 先清零全部勾选
+      sc.routine.forEach(g => (g.items || []).forEach(it => { it.done = false; }));
+      // 若今天已有逐日明细（同日首次进/回退），按 dayIds[today] 恢复当天勾选
+      const idsToday = (sc.dayIds && sc.dayIds[today]) || {};
+      sc.routine.forEach(g => (g.items || []).forEach(it => { if (idsToday[it.id]) it.done = true; }));
+      const totalSteps = sc.routine.reduce((a, g) => a + (g.items || []).length, 0);
+      sc.log[today] = { done: Object.keys(idsToday).length, total: totalSteps };
+      sc.doneDate = today;
+      saveSkincare();
+    }
+  }
   // v9474：逐步骤明细按日期存 id 集合；今日渲染时同步，保证日后可回看
   if (isToday) {
     sc.dayIds = sc.dayIds || {};
