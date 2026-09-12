@@ -5280,7 +5280,7 @@ function getDayStatus(key) {
     || (state.focusSessions || []).some(s => s.date === key && s.domain === 'learning');
   // "满"标准：looks 11 步全完 / health 日志>0 / money 1 笔 / learning 有英语或专注
   const checks = [
-    { done: looks > 0, full: looks >= 11 },
+    { done: looks > 0, full: looks >= 8 },
     { done: health > 0, full: health >= 1 },
     { done: money, full: money },
     { done: learning, full: learning }
