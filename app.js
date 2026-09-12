@@ -906,9 +906,9 @@ const FOCUS_CARD_DEF = {
   '健康': { type: 'health', route: '健康', action: '今晚 23:30 前睡', sub: '健康是所有热爱的底气' },
   '记账': { type: 'money', route: '记账', action: '记 1 笔收支', sub: '把热爱变现，创造更多可能' },
   '护肤': { type: 'looks', route: '护肤', action: '完成今日护肤', sub: '认真护肤，是对自己的温柔' },
-  '妆容': { type: 'looks', route: '外貌', action: '练习一个妆容', sub: '一点点精致，让自己更喜欢自己' },
-  '仪态': { type: 'looks', route: '外貌', action: '体态训练 10min', sub: '挺拔一点，自信一点' },
-  '穿搭': { type: 'looks', route: '外貌', action: '搭配今日穿搭', sub: '今天的出场，也是生活的仪式感' }
+  '妆容': { type: 'looks', route: '妆容', action: '练习一个妆容', sub: '一点点精致，让自己更喜欢自己' },
+  '仪态': { type: 'looks', route: '仪态', action: '体态训练 10min', sub: '挺拔一点，自信一点' },
+  '穿搭': { type: 'looks', route: '穿搭', action: '搭配今日穿搭', sub: '今天的出场，也是生活的仪式感' }
 };
 const REMOVED_FOCUS_LABELS = ['睡眠', '自媒体', '锻炼', '生活'];
 function focusColorOf(name) {
@@ -11021,6 +11021,15 @@ window.addEventListener('beforeunload', (e) => {
 // 现在积分/进度仅在用户主动「设置 → 清空全部数据」时清零，符合「总积分永久累加、不周期性清零」的需求。
 localStorage.setItem('xenos-reset-progress-v9066', '1');
 localStorage.setItem('xenos-reset-rewards-v9067', '1');
+// v9517：穿搭/妆容/仪态 旧打卡记录归零（user 要求：各自独立，有打卡才有进度）
+if (localStorage.getItem('xenos-looks-sub-reset-v9517') === null) {
+  [['posture', 'looksPosture'], ['outfit', 'looksOutfit'], ['makeup', 'looksMakeup']].forEach(function (pair) {
+    const sk = pair[1];
+    if (state[sk]) { state[sk].checkin = {}; state[sk].log = {}; }
+    saveLooks(pair[0]);
+  });
+  localStorage.setItem('xenos-looks-sub-reset-v9517', '1');
+}
 migrateData();
 resetPlansForNewDay();
 renderProfileCard();
@@ -11777,8 +11786,21 @@ function renderBranchesPage() {
   }
 
   // 各支线近9天每日数据点（包含当天）
-  function weeklyPointsFor(type) {
-    if (type === 'health' || type === 'looks') {
+  function weeklyPointsFor(type, name) {
+    // v9517：looks 下各支线（护肤/仪态/穿搭/妆容）数据源互相独立
+    if (type === 'looks') {
+      if (name === '护肤') {
+        const sc = state.skincare || {};
+        const days = [];
+        for (let i = 6; i >= 0; i--) { const k = shiftDate(getTodayKey(), -i); days.push(Object.keys((sc.dayIds || {})[k] || {}).length); }
+        return days;
+      }
+      const tabMap = { '仪态': 'posture', '穿搭': 'outfit', '妆容': 'makeup' };
+      const tab = tabMap[name];
+      if (tab) return getLooksWeekDots(tab).map(x => x.pts);
+      return [0, 0, 0, 0, 0, 0, 0];
+    }
+    if (type === 'health') {
       const log = (state.domains[type] || {}).log || {};
       const days = [];
       for (let i = 6; i >= 0; i--) { const k = shiftDate(getTodayKey(), -i); days.push(Number(log[k]) || 0); }
@@ -11801,8 +11823,25 @@ function renderBranchesPage() {
 
   // 进度环：100% 按一周 7 天均分，每天基础份额 100/7；当天进度再按当天任务完成比例细化
   const DAY_BASE = 100 / 7;
-  function calcBranchWeeklyProgress(type) {
+  function calcBranchWeeklyProgress(type, name) {
     const todayKey = getTodayKey();
+    // v9517：looks 下各支线进度独立（护肤=护肤日常完成天数；仪态/穿搭/妆容=各自打卡天数）
+    if (type === 'looks') {
+      let cnt = 0;
+      if (name === '护肤') {
+        const sc = state.skincare || {};
+        for (let i = 0; i < 7; i++) {
+          const k = shiftDate(todayKey, -i);
+          const ids = (sc.dayIds || {})[k];
+          if (ids && Object.keys(ids).length > 0) cnt++;
+        }
+      } else {
+        const tabMap = { '仪态': 'posture', '穿搭': 'outfit', '妆容': 'makeup' };
+        const tab = tabMap[name];
+        if (tab) cnt = getLooksWeekDots(tab).filter(x => x.has).length;
+      }
+      return Math.round(cnt / 7 * 100);
+    }
     let sum = 0;
     for (let i = 0; i < 7; i++) {
       const k = shiftDate(todayKey, -i);
@@ -11834,7 +11873,7 @@ function renderBranchesPage() {
   const branches = monthlyFocus.slice(0, 3).map(name => {
     const type = focusTypeOf(name);
     const c = focusColorOf(name);
-    const week = weeklyPointsFor(type);
+    const week = weeklyPointsFor(type, name);
     const weekTotal = week.reduce((s, v) => s + v, 0);
     const activeDays = week.filter(v => v > 0).length;
     // v9516：等级按累计打卡/记录天数（不再用积分/词量）
@@ -11848,7 +11887,7 @@ function renderBranchesPage() {
       name, type, icon: branchIconFor(name, c.color), color: c.color, border: c.border, bg: c.bg,
       sub: branchSubFor(name), action: branchActionFor(name), route: branchRouteFor(name),
       week, level, levelText, activeDays, focusMin, hasData,
-      progress: calcBranchWeeklyProgress(type)
+      progress: calcBranchWeeklyProgress(type, name)
     };
   });
   const keepList = (state.settings.keepBranches || DEFAULT_SETTINGS.keepBranches).filter(k => k.name !== '攒钱');

@@ -8,14 +8,14 @@ const CACHE = 'xenos-cache-v9462';
 const STATIC = [
   './',
   'index.html',
-  'app.js?v=516',
-  'styles.css?v=516',
-  'fonts/zcool-sub.ttf?v=516',
-  'fonts/strawberry-sub.ttf?v=516',
-  'manifest.webmanifest?v=516',
-  'icon-192.png?v=516',
-  'modules/study.js?v=516',
-  'modules/contentlib.js?v=516'
+  'app.js?v=517',
+  'styles.css?v=517',
+  'fonts/zcool-sub.ttf?v=517',
+  'fonts/strawberry-sub.ttf?v=517',
+  'manifest.webmanifest?v=517',
+  'icon-192.png?v=517',
+  'modules/study.js?v=517',
+  'modules/contentlib.js?v=517'
 ];
 
 self.addEventListener('install', (e) => {
