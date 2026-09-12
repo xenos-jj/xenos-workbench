@@ -610,6 +610,18 @@ const DEFAULT_GROUPS = [
     ]
   },
   {
+    id: 'g-looks',
+    name: '外貌',
+    icon: 'sparkles',
+    collapsed: false,
+    items: [
+      { id: 'i-posture', name: '仪态', icon: 'body' },
+      { id: 'i-outfit', name: '穿搭', icon: 'shirt' },
+      { id: 'i-makeup', name: '妆容', icon: 'brush' },
+      { id: 'i-skincare', name: '护肤', icon: 'droplet' }
+    ]
+  },
+  {
     id: 'g-self',
     name: '自我',
     icon: 'user',
@@ -2206,6 +2218,18 @@ function loadGroups() {
           g.items = g.items.filter(i => !removed.has(i.name));
         }
       });
+        // v9513：确保「外貌」分组存在（仪态/穿搭/妆容/护肤）
+        if (!parsed.data.some(g => g.id === 'g-looks')) {
+          const looksGroup = { id: 'g-looks', name: '外貌', icon: 'sparkles', collapsed: false, items: [
+            { id: 'i-posture', name: '仪态', icon: 'body' },
+            { id: 'i-outfit', name: '穿搭', icon: 'shirt' },
+            { id: 'i-makeup', name: '妆容', icon: 'brush' },
+            { id: 'i-skincare', name: '护肤', icon: 'droplet' }
+          ] };
+          const di = parsed.data.findIndex(g => g.id === 'g-domains');
+          if (di >= 0) parsed.data.splice(di + 1, 0, looksGroup);
+          else parsed.data.push(looksGroup);
+        }
         return parsed.data;
       }
     }
@@ -3853,6 +3877,10 @@ const PAGE_ROUTES = {
   // v9317：社交拓展重命名为「爱好拓展」（user 需求）
   '爱好拓展': renderSocialPage,
   '护肤': renderSkincarePage,
+  // v9513：外貌下的独立页面（仪态/穿搭/妆容）
+  '仪态': renderLooksPosturePage,
+  '穿搭': renderLooksOutfitPage,
+  '妆容': renderLooksMakeupPage,
   // v9253：暂时放缓 6 模块（从「我的支线 → 暂时放缓」卡片进入）
   '摄影审美': renderPhotographyPage,
   '技能考证': renderCertPage,
@@ -3943,6 +3971,10 @@ const PAGE_BACK_FALLBACK = {
   '生活秩序': '工作台首页',
   '内在成长': '工作台首页',
   '护肤': '工作台首页',
+  // v9513：外貌下的独立页面
+  '仪态': '工作台首页',
+  '穿搭': '工作台首页',
+  '妆容': '工作台首页',
   '书籍阅读': '学习成长',
   '历史': '学习成长',
   '视频剪辑': '学习成长',
@@ -9328,7 +9360,9 @@ function switchLooksTabContent(page, activeName) {
 // 对外：挂载到 domain 页面（由 renderDomainPage('外貌') 调用）
 // 移除通用「工具/资产 + 每日打卡」card，在 stat-boxes 之后插入 #looks-content 容器，
 // 并把当前激活 tab 的内容渲染进去。顶部 4 个 hero 标签即作为分段切换控件。
-function mountLooksTabIntoPage(page) {
+function mountLooksTabIntoPage(page, opts) {
+  opts = opts || {};
+  const fixedTab = opts.fixedTab || '';
   page.dataset.looksMode = '1';
   const stat = page.querySelector('.stat-boxes');
   if (!stat) return;
@@ -9343,6 +9377,12 @@ function mountLooksTabIntoPage(page) {
     mount.id = 'looks-content';
     stat.insertAdjacentElement('afterend', mount);
   }
+  // v9513：独立页面（固定单个 tab）——直接渲染该 tab，无标签切换
+  if (fixedTab) {
+    renderLooksContentArea(page, fixedTab);
+    updateLooksStatBoxes(page, LOOKS_TAB_NAME[fixedTab] || '仪态');
+    return;
+  }
   // 同步 hero 标签 active
   const activeName = (state.domainTagFilter && state.domainTagFilter.looks) || '仪态';
   page.querySelectorAll('[data-tagfilter]').forEach(btn => {
@@ -9353,6 +9393,11 @@ function mountLooksTabIntoPage(page) {
   // 更新顶部 stat 卡片为本 tab 的数据
   updateLooksStatBoxes(page, activeName);
 }
+
+// v9513：外貌下的独立页面（仪态/穿搭/妆容）——左上标题为对应名
+function renderLooksPosturePage() { renderDomainPage('外貌', { title: '仪态', icon: 'body',    hideTags: true, fixedTab: 'posture' }); }
+function renderLooksOutfitPage()  { renderDomainPage('外貌', { title: '穿搭', icon: 'shirt',   hideTags: true, fixedTab: 'outfit' }); }
+function renderLooksMakeupPage()  { renderDomainPage('外貌', { title: '妆容', icon: 'brush',   hideTags: true, fixedTab: 'makeup' }); }
 
 function updateLooksStatBoxes(page, activeName) {
   const tab = LOOKS_TAB_KEYS[activeName] || 'posture';
@@ -9460,9 +9505,12 @@ function refreshLooksStatsUI(page, tab) {
 window.__looksModuleLoaded = true;
 
 // ============ 人生领域页模板 ============
-function renderDomainPage(name) {
+function renderDomainPage(name, opts) {
+  opts = opts || {};
+  const pageTitle = opts.title || name;
   const cfg = DOMAIN_CONFIG[name];
   if (!cfg) return;
+  const pageIcon = opts.icon || cfg.icon;
   const key = cfg.key;
   normalizeDomainTasks(key);
   const domain = ensureDomain(key);
@@ -9487,12 +9535,12 @@ function renderDomainPage(name) {
   page.innerHTML = `
     <div class="domain-hero">
       <div class="domain-head">
-        <div class="domain-icon">${icon(cfg.icon, 24)}</div>
+        <div class="domain-icon">${icon(pageIcon, 24)}</div>
         <div>
-          <h3 class="domain-title">${name}</h3>
+          <h3 class="domain-title">${pageTitle}</h3>
         </div>
       </div>
-      ${cfg.tags && cfg.tags.length ? `<div class="domain-tags tag-filter">${cfg.tags.map(t => `<button class="tag-chip${activeTag === t ? ' active' : ''}" data-tagfilter="${escapeHTML(t)}">${escapeHTML(t)}</button>`).join('')}</div>` : ''}
+      ${(!opts.hideTags && cfg.tags && cfg.tags.length) ? `<div class="domain-tags tag-filter">${cfg.tags.map(t => `<button class="tag-chip${activeTag === t ? ' active' : ''}" data-tagfilter="${escapeHTML(t)}">${escapeHTML(t)}</button>`).join('')}</div>` : ''}
     </div>
 
     ${dateBarHTML(viewKey, { id: 'domain-date-trigger' })}
@@ -9551,7 +9599,8 @@ function renderDomainPage(name) {
   content.appendChild(page);
 
   // v9258：外貌页 — 挂载 4 标签内容（护肤/仪态/穿搭/妆容）
-  if (name === '外貌') mountLooksTabIntoPage(page);
+  // v9513：opts.fixedTab 时只挂载单个 tab（外貌下的独立页面：仪态/穿搭/妆容）
+  if (name === '外貌') mountLooksTabIntoPage(page, opts);
   // v9319：删除所有领域洞察/计划洞察卡片（user 反馈：所有"建议"删除）
   const insightCard = page.querySelector('#domain-insight-card');
   if (insightCard) { insightCard.hidden = true; insightCard.innerHTML = ''; }
