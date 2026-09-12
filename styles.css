@@ -6578,7 +6578,7 @@ select.pf-input {
 /* v9382：竖线缩短 7px——align-self stretch 默认拉满，height 22-7=15 + margin-top 7 让竖线从下往上缩短 */
 /* v9415/v9424：竖线下方延伸累计 10px（伪元素定位，不改高度、不撑开布局） */
 .br-branch-vline { width: 0; flex-shrink: 0; opacity: 0.35; align-self: stretch; border-left: 1px dashed; margin-top: 7px; height: 15px; position: relative; }
-.br-branch-vline::after { content: ''; position: absolute; left: 0; top: 100%; width: 0; height: 10px; border-left: 1px dashed #d8cfc4; opacity: 0.35; }
+.br-branch-vline::after { content: ''; position: absolute; left: 0; top: 100%; width: 0; height: 16px; border-left: 1px dashed #d8cfc4; opacity: 0.35; }
 /* v9384 + v9414 + v9415：下一步区下移 4px（累计） */
 .br-next-wrap {
   display: flex; flex-direction: column; justify-content: flex-start;
