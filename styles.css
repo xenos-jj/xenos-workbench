@@ -10150,3 +10150,6 @@ body.home-bg .topbar {
 
 /* ============ v9488 胶囊文字 9px ============ */
 .br-branch-card .br-next-btn { font-size: 9px; }
+
+/* ============ v9492 支线卡左上内容整体上移 3px（顶边↔虚线之间上下居中） ============ */
+.br-branch-icon, .br-branch-info { transform: translateY(-3px); }
