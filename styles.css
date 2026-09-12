@@ -10142,3 +10142,8 @@ body.home-bg .topbar {
 /* ============ v9485 支线卡进度环：移到顶部水平居中，底边贴虚线分隔线 ============ */
 .br-branch-top { position: relative; }
 .br-branch-ring { position: absolute; left: 50%; transform: translateX(-50%); bottom: -2px; margin-right: 0; }
+
+/* ============ v9486 支线卡：进度环回右侧（底边仍贴虚线）；胶囊底对齐折线“线”底 ============ */
+.br-branch-ring { left: auto; right: 4px; transform: none; }
+.br-branch-card .br-next-btn { margin-top: 6.5px; }
+.br-next-wrap { padding-bottom: 2px; }
