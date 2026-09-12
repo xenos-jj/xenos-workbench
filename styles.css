@@ -6350,7 +6350,7 @@ select.pf-input {
 /* =========================================================
    我的计划新设计（参考图复刻）
    ========================================================= */
-.br-page { padding: 8px 0 24px; overflow-x: hidden; touch-action: pan-y; }
+.br-page { padding: 0 0 24px; overflow-x: hidden; touch-action: pan-y; }
 
 /* ---- 顶部栏：我的计划大标题 + 右上角日期/Lv 标签 ---- */
 .topbar.branches-topbar {
@@ -6417,8 +6417,7 @@ select.pf-input {
 .br-streak-clean {
   display: flex; align-items: center; gap: 5px;
   font-size: 10px; font-weight: 450; color: var(--text-muted);
-  /* v9403/v9416/v9421：「持续推进 X 天」累计上移 8px（位置不动）+ z-index 提升防顶部被其他层遮住上半文字 */
-  transform: translateY(-8px);
+  /* v9503：去掉 translateY(-8px)——持续推进保持原视觉位置（padding-top 已取消），且不再溢出被裁 */
   position: relative;
   z-index: 100;
 }
