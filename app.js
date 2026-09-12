@@ -11017,14 +11017,10 @@ window.addEventListener('beforeunload', (e) => {
 })();
 
 // Init
-if (localStorage.getItem('xenos-reset-progress-v9066') === null) {
-  resetProgressData();
-  localStorage.setItem('xenos-reset-progress-v9066', '1');
-}
-if (localStorage.getItem('xenos-reset-rewards-v9067') === null) {
-  resetRewardsDefaults();
-  localStorage.setItem('xenos-reset-rewards-v9067', '1');
-}
+// v9515：移除 v9066/v9067 的一次性自动重置——迁移早已完成；保留会在 localStorage flag 丢失（清缓存/换设备）时误清空总积分与全部进度。
+// 现在积分/进度仅在用户主动「设置 → 清空全部数据」时清零，符合「总积分永久累加、不周期性清零」的需求。
+localStorage.setItem('xenos-reset-progress-v9066', '1');
+localStorage.setItem('xenos-reset-rewards-v9067', '1');
 migrateData();
 resetPlansForNewDay();
 renderProfileCard();
