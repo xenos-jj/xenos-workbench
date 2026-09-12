@@ -11084,6 +11084,32 @@ function miniRingHTML(percent, colorClass, num, label, strokeColor) {
   </div>`;
 }
 
+// v9518：支线卡本周 7 天完成度圆点（图例=周一~周日，按支线颜色显示）
+const BR_WEEKDAY_NAMES = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+// v9518：满级阈值；满 ≥ THRESHOLD，部分 0<v<THRESHOLD，空 v===0
+const BR_FULL_THRESHOLD = 4;
+function branchWeekDotsHTML(week, color, bg) {
+  const arr = (week && week.length === 7) ? week : [0, 0, 0, 0, 0, 0, 0];
+  const todayKey = getTodayKey();
+  const weekStart = getWeekStart();
+  const todayIdx = (() => {
+    for (let i = 0; i < 7; i++) if (shiftDate(weekStart, i) === todayKey) return i;
+    return -1;
+  })();
+  const dots = arr.map((v, i) => {
+    let bgStyle;
+    if (v >= BR_FULL_THRESHOLD) bgStyle = `background:${color};opacity:1`;       // 满
+    else if (v > 0) bgStyle = `background:${color};opacity:0.42`;                // 部分
+    else bgStyle = `background:${bg || '#f5efe6'};opacity:1`;                    // 空
+    const isToday = i === todayIdx;
+    return `<div class="br-wd-col${isToday ? ' is-today' : ''}">
+      <div class="br-wd-dot" style="${bgStyle}${isToday ? ';box-shadow:0 0 0 1.5px '+color : ''}"></div>
+      <div class="br-wd-label"${isToday ? ' style="color:'+color+';font-weight:600"' : ''}>${BR_WEEKDAY_NAMES[i]}</div>
+    </div>`;
+  }).join('');
+  return `<div class="br-weekdots">${dots}</div>`;
+}
+
 function inlineSparkline(values, color, fillOpacity, fillTo, padX) {
   if (!values || values.length < 2) return '<p class="chart-empty">数据不足</p>';
   const w = 260, h = 44, pad = { l: (padX == null ? 4 : padX), r: (padX == null ? 4 : padX), t: 6, b: 4 };
@@ -11785,36 +11811,46 @@ function renderBranchesPage() {
     return { days, level, levelText: branchLevelName(level), curBase, nextNeed, toNext: Math.max(0, nextNeed - days) };
   }
 
-  // 各支线近9天每日数据点（包含当天）
+  // v9518：各支线本周（周一~周日）7 个日数据点；按周维度而非滚动7天，圆点图与本周趋势语义统一
+  const WEEK_LABELS = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
   function weeklyPointsFor(type, name) {
+    const weekStart = getWeekStart();
     // v9517：looks 下各支线（护肤/仪态/穿搭/妆容）数据源互相独立
     if (type === 'looks') {
       if (name === '护肤') {
         const sc = state.skincare || {};
         const days = [];
-        for (let i = 6; i >= 0; i--) { const k = shiftDate(getTodayKey(), -i); days.push(Object.keys((sc.dayIds || {})[k] || {}).length); }
+        for (let i = 0; i < 7; i++) { const k = shiftDate(weekStart, i); days.push(Object.keys((sc.dayIds || {})[k] || {}).length); }
         return days;
       }
       const tabMap = { '仪态': 'posture', '穿搭': 'outfit', '妆容': 'makeup' };
       const tab = tabMap[name];
-      if (tab) return getLooksWeekDots(tab).map(x => x.pts);
+      if (tab) {
+        const dots = getLooksWeekDots(tab);
+        // weekStart 是周一日期，把 dots 按"本周X天 = shiftDate(weekStart, i)"重新对齐
+        const isow = (ky) => { const d = new Date(ky + 'T00:00:00'); return (d.getDay() + 6) % 7; };
+        const idx = dot => isow(dot.key);
+        const arr = [0, 0, 0, 0, 0, 0, 0];
+        dots.forEach(d => { const j = idx(d); if (j >= 0 && j < 7) arr[j] = d.pts; });
+        return arr;
+      }
       return [0, 0, 0, 0, 0, 0, 0];
     }
     if (type === 'health') {
       const log = (state.domains[type] || {}).log || {};
       const days = [];
-      for (let i = 6; i >= 0; i--) { const k = shiftDate(getTodayKey(), -i); days.push(Number(log[k]) || 0); }
+      for (let i = 0; i < 7; i++) { const k = shiftDate(weekStart, i); days.push(Number(log[k]) || 0); }
       return days;
     }
     if (type === 'money') {
       const days = [];
-      for (let i = 6; i >= 0; i--) { const k = shiftDate(getTodayKey(), -i); days.push(getDayExpense(k)); }
+      for (let i = 0; i < 7; i++) { const k = shiftDate(weekStart, i); days.push(getDayExpense(k)); }
       return days;
     }
-    // learning：某天「学习活跃度」= 专注会话数 + 英语打卡勾选数；勾选任务即产生当天数据点
+    // learning：本周每天「学习活跃度」= 专注会话数 + 英语打卡勾选数
     const days = [];
-    for (let i = 6; i >= 0; i--) {
-      const k = shiftDate(getTodayKey(), -i);
+    for (let i = 0; i < 7; i++) {
+      const k = shiftDate(weekStart, i);
       const sessions = state.focusSessions.filter(x => x.date === k && x.domain === 'learning').length;
       days.push(sessions + getEnglishDoneCount(k));
     }
@@ -11830,21 +11866,33 @@ function renderBranchesPage() {
       let cnt = 0;
       if (name === '护肤') {
         const sc = state.skincare || {};
+        const weekStart = getWeekStart();
         for (let i = 0; i < 7; i++) {
-          const k = shiftDate(todayKey, -i);
+          const k = shiftDate(weekStart, i);
           const ids = (sc.dayIds || {})[k];
           if (ids && Object.keys(ids).length > 0) cnt++;
         }
       } else {
         const tabMap = { '仪态': 'posture', '穿搭': 'outfit', '妆容': 'makeup' };
         const tab = tabMap[name];
-        if (tab) cnt = getLooksWeekDots(tab).filter(x => x.has).length;
+        if (tab) {
+          // 按本周（周一~周日）计算完成天数
+          const weekStart = getWeekStart();
+          const isow = ky => { const d = new Date(ky + 'T00:00:00'); return (d.getDay() + 6) % 7; };
+          const dots = getLooksWeekDots(tab);
+          const tipSet = new Set(dots.filter(x => x.has).map(x => x.key));
+          for (let i = 0; i < 7; i++) {
+            const k = shiftDate(weekStart, i);
+            if (tipSet.has(k)) cnt++;
+          }
+        }
       }
       return Math.round(cnt / 7 * 100);
     }
     let sum = 0;
+    const weekStart = getWeekStart();
     for (let i = 0; i < 7; i++) {
-      const k = shiftDate(todayKey, -i);
+      const k = shiftDate(weekStart, i);
       let ratio = 0;
       // 任务勾选：当天该支线已勾选的每日任务按比例计入（有勾选即动）
       let tasks;
@@ -11951,8 +11999,8 @@ function renderBranchesPage() {
           <div class="br-branch-divider" style="border-color:${b.border}"></div>
           <div class="br-branch-bottom">
             <div class="br-trend">
-              <div class="br-trend-label">本周趋势</div>
-              ${inlineSparkline(b.week, b.color, null, b.bg, 9)}
+              <div class="br-trend-label">本周完成度</div>
+              ${branchWeekDotsHTML(b.week, b.color, b.bg)}
             </div>
             <div class="br-branch-vline" style="border-color:${b.border}"></div>
             <div class="br-next-wrap">
