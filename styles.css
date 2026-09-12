@@ -10157,3 +10157,7 @@ body.home-bg .topbar {
 
 /* ============ v9493 支线卡：进度环容器固定 56×56 并居中，让 50px 虚线环与 56px 进度环中心对齐（大小不变） ============ */
 .br-branch-ring { width: 56px; height: 56px; display: flex; align-items: center; justify-content: center; }
+
+/* ============ v9497 支线卡：等级标签下移1px、频率标签下移1px+右移4px ============ */
+.br-lv-tag { transform: translateY(1px); }
+.br-freq-tag { transform: translate(4px, 1px); }
