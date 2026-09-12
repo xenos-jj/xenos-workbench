@@ -2155,7 +2155,28 @@ function saveTravel() { saveJSON('xenos-travel', state.travel); }
 function loadSocial() { return loadJSON('xenos-social', JSON.parse(JSON.stringify(DEFAULT_SOCIAL))); }
 function saveSocial() { saveJSON('xenos-social', state.social); }
 function loadSkincare() { return loadJSON('xenos-skincare', JSON.parse(JSON.stringify(DEFAULT_SKINCARE))); }
-function saveSkincare() { saveJSON('xenos-skincare', state.skincare); }
+function saveSkincare() {
+  saveJSON('xenos-skincare', state.skincare);
+  // v9509：同步护肤日常进度到支线卡读的数据源 state.domains.looks.log
+  // 修复"护肤日常勾选/完成任务后，支线卡护肤卡不显示进度（暂无数据 + 空折线）"bug
+  if (state.skincare && state.domains) {
+    if (!state.domains.looks) state.domains.looks = { log: {} };
+    if (!state.domains.looks.log) state.domains.looks.log = {};
+    const dayIds = state.skincare.dayIds || {};
+    Object.keys(dayIds).forEach(k => {
+      const cnt = Object.keys(dayIds[k] || {}).length;
+      if (cnt > 0) state.domains.looks.log[k] = cnt;
+    });
+    // 兜底：今天基于 sc.routine 的 done 状态（兼容 v9474 之前无 dayIds 的旧数据）
+    if (state.skincare.routine) {
+      const today = getTodayKey();
+      let todayDone = 0;
+      state.skincare.routine.forEach(g => (g.items || []).forEach(it => { if (it.done) todayDone++; }));
+      if (todayDone > 0) state.domains.looks.log[today] = todayDone;
+    }
+    saveDomains();
+  }
+}
 function loadOrder() { return loadJSON('xenos-order', JSON.parse(JSON.stringify(DEFAULT_ORDER))); }
 function saveOrder() { saveJSON('xenos-order', state.order); }
 function loadGrowth() { return loadJSON('xenos-growth', JSON.parse(JSON.stringify(DEFAULT_GROWTH))); }
