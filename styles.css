@@ -6600,7 +6600,7 @@ select.pf-input {
 .br-next-btn.btn-orange { background: #f4b75b; color: #fff; }
 .br-next-action { font-size: 9px; font-family: var(--font-small); font-weight: 500; white-space: nowrap; }
 .br-next-arrow { font-size: 12px; opacity: 0.9; line-height: 1; }
-.br-branch-ring .br-no-data { font-size: 9px; color: var(--text-muted); display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 50%; border: 1px dashed #d8cfc4; font-family: var(--font-small); }
+.br-branch-ring .br-no-data { font-size: 9px; color: var(--text-muted); display: inline-flex; align-items: center; justify-content: center; width: 56px; height: 56px; border-radius: 50%; border: 1px dashed #d8cfc4; font-family: var(--font-small); }
 /* ---- 保持中的支线 ---- */
 .br-keep-grid-clean { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
 /* v9376：圆角统一 12px（原 14px） */
