@@ -640,7 +640,7 @@ const DOMAIN_CONFIG = {
   },
   '外貌': {
     key: 'looks', icon: 'sparkles', subtitle: '把自己当作长期作品来打磨',
-    tags: ['护肤', '仪态', '穿搭', '妆容'],
+    tags: ['仪态', '穿搭', '妆容'],
     tools: [],
     tasks: [
       { text: '早晚护肤', points: 2 },
@@ -8629,13 +8629,12 @@ const LOOKS_DEFAULTS = {
 };
 
 const LOOKS_TABS = [
-  { key: 'skin',    name: '护肤', icon: 'droplet', color: '#B07A9E' },
   { key: 'posture', name: '仪态', icon: 'body',    color: '#7A9C7A' },
   { key: 'outfit',  name: '穿搭', icon: 'shirt',   color: '#8C7BB6' },
   { key: 'makeup',  name: '妆容', icon: 'brush',   color: '#C4798C' }
 ];
-const LOOKS_TAB_KEYS = { 护肤: 'skin', 仪态: 'posture', 穿搭: 'outfit', 妆容: 'makeup' };
-const LOOKS_TAB_NAME = { skin: '护肤', posture: '仪态', outfit: '穿搭', makeup: '妆容' };
+const LOOKS_TAB_KEYS = { 仪态: 'posture', 穿搭: 'outfit', 妆容: 'makeup' };
+const LOOKS_TAB_NAME = { posture: '仪态', outfit: '穿搭', makeup: '妆容' };
 
 // === 3. load / save ===
 function loadLooks(tab) { return loadJSON('xenos-looks-' + tab, JSON.parse(JSON.stringify(LOOKS_DEFAULTS[tab]))); }
@@ -8688,7 +8687,7 @@ function migrateLooks() {
   });
   if (!state.domainTagFilter) state.domainTagFilter = {};
   if (!state.domainTagFilter.looks || !LOOKS_TAB_NAME[state.domainTagFilter.looks]) {
-    state.domainTagFilter.looks = '护肤';
+    state.domainTagFilter.looks = '仪态';
   }
 }
 migrateLooks();
@@ -9302,14 +9301,12 @@ function _looksPickImage(maxW, q, cb) {
 function renderLooksContentArea(page, tab) {
   const today = getTodayKey();
   let html = '';
-  if (tab === 'skin') html = renderLooksSkinHTML(today);
-  else if (tab === 'posture') html = renderLooksPostureHTML(today);
+  if (tab === 'posture') html = renderLooksPostureHTML(today);
   else if (tab === 'outfit') html = renderLooksOutfitHTML(today);
   else if (tab === 'makeup') html = renderLooksMakeupHTML(today);
   const mount = page.querySelector('#looks-content');
   if (mount) mount.innerHTML = html;
-  if (tab === 'skin') bindLooksSkin(page, today);
-  else if (tab === 'posture') bindLooksPosture(page, today);
+  if (tab === 'posture') bindLooksPosture(page, today);
   else if (tab === 'outfit') bindLooksOutfit(page, today);
   else if (tab === 'makeup') bindLooksMakeup(page, today);
 }
@@ -9323,7 +9320,7 @@ function switchLooksTabContent(page, activeName) {
   page.querySelectorAll('[data-tagfilter]').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.tagfilter === activeName);
   });
-  const tabKey = LOOKS_TAB_KEYS[activeName] || 'skin';
+  const tabKey = LOOKS_TAB_KEYS[activeName] || 'posture';
   renderLooksContentArea(page, tabKey);
   updateLooksStatBoxes(page, activeName);
 }
@@ -9347,18 +9344,18 @@ function mountLooksTabIntoPage(page) {
     stat.insertAdjacentElement('afterend', mount);
   }
   // 同步 hero 标签 active
-  const activeName = (state.domainTagFilter && state.domainTagFilter.looks) || '护肤';
+  const activeName = (state.domainTagFilter && state.domainTagFilter.looks) || '仪态';
   page.querySelectorAll('[data-tagfilter]').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.tagfilter === activeName);
   });
   // 渲染当前 tab
-  renderLooksContentArea(page, LOOKS_TAB_KEYS[activeName] || 'skin');
+  renderLooksContentArea(page, LOOKS_TAB_KEYS[activeName] || 'posture');
   // 更新顶部 stat 卡片为本 tab 的数据
   updateLooksStatBoxes(page, activeName);
 }
 
 function updateLooksStatBoxes(page, activeName) {
-  const tab = LOOKS_TAB_KEYS[activeName] || 'skin';
+  const tab = LOOKS_TAB_KEYS[activeName] || 'posture';
   const sb = page.querySelector('.stat-boxes');
   if (!sb) return;
   const v1 = sb.children[0].querySelector('.stb-val');
