@@ -14482,20 +14482,24 @@ function slowStatsCard(cfg, stats, items) {
 // 今日打卡卡片（字段可配置）
 function slowCheckinCard(cfg, opts) {
   const m = state[cfg.key] || {};
-  const today = getTodayKey();
-  const c = (m.checkin || {})[today] || {};
+  // v9547：支持历史视图回看（opts.view 传入某一天；缺省=今天 → 其他 5 页行为不变）
+  const view = opts.view || getTodayKey();
+  const isToday = view === getTodayKey();
+  const c = (m.checkin || {})[view] || {};
   const done = !!c.done;
   return `<div class="section-card module-card slow-checkin">
     <div class="module-card-head">
       <span class="module-card-icon" style="color:${cfg.color}">${icon(cfg.icon, 14)}</span>
       <span class="soft-card-title" style="margin:0;">${opts.title}</span>
-      <span class="module-card-meta">${done ? '今日已完成' : '待完成'}</span>
+      <span class="sk-pending${done ? ' ok' : ''}">${done ? '已完成' : '待完成'}</span>
     </div>
     ${opts.fields.map(f => `<div class="slow-field">
       <span class="slow-label">${f.label}</span>
-      <input class="pf-input" id="slow-${cfg.key}-${f.key}" type="${f.type || 'text'}" value="${escapeHTML(String(c[f.key] === undefined ? '' : c[f.key]))}" placeholder="${f.placeholder || ''}">
+      <input class="pf-input" id="slow-${cfg.key}-${f.key}" type="${f.type || 'text'}" value="${escapeHTML(String(c[f.key] === undefined ? '' : c[f.key]))}" placeholder="${f.placeholder || ''}"${isToday ? '' : ' disabled'}>
     </div>`).join('')}
-    <button class="gold-btn slow-check-btn${done ? ' done' : ''}" data-slow-checkin="${cfg.key}">${done ? '✓ 今日已打卡（点击取消）' : `完成打卡 +${cfg.points}分`}</button>
+    ${isToday
+      ? `<button class="gold-btn slow-check-btn${done ? ' done' : ''}" data-slow-checkin="${cfg.key}">${done ? '✓ 今日已打卡（点击取消）' : `完成打卡 +${cfg.points}分`}</button>`
+      : `<div class="sk-hist-tip" style="margin-top:2px">${icon('info', 12)} 历史记录 · 只读</div>`}
   </div>`;
 }
 
@@ -14633,12 +14637,15 @@ function bindSlowImagePreview(page) {
 }
 
 // ==================== 摄影审美 ====================
+let photoViewDate = null;   // v9547：视图日期（默认今天；点日期按钮可回看历史，历史只读）
 function renderPhotographyPage() {
   content.innerHTML = '';
   const cfg = SLOW_MODULE_DEF.photography;
   if (!state.photography) state.photography = JSON.parse(JSON.stringify(DEFAULT_PHOTOGRAPHY));
   const m = state.photography;
   const today = getTodayKey();
+  const view = photoViewDate || today;
+  const isToday = view === today;
   const stats = slowWeekStats('photography');
   const page = document.createElement('div');
   // v9546：参考护肤页视觉——复用 skincare-page 的卡片/间距/字号体系，描边用模块图标色调（浅蓝），去掉橘色
@@ -14647,12 +14654,6 @@ function renderPhotographyPage() {
 
   const TAGS = ['人像', '风景', '静物'];
   let curTag = TAGS[0];
-
-  function photoSuggest() {
-    if (stats.times >= 3) return '这周练习很稳定，可以挑一张最满意的作品写写心得 📷';
-    if (stats.times > 0) return '已经开始了就很好，下次试试只练一个构图元素，不用一次到位。';
-    return '';
-  }
 
   // 本周练习热力图（护肤页「本周护肤统计」同款）
   const weekDates = [];
@@ -14665,17 +14666,16 @@ function renderPhotographyPage() {
   }).join('');
 
   page.innerHTML = `
-    <div class="domain-hero slow-photo-hero">
-      <div class="domain-head">
-        <div><h3 class="domain-title">摄影审美</h3></div>
-        <button class="slow-insight-toggle${m.enabled ? ' on' : ''}" data-insight-toggle="photography" title="是否纳入本周洞察统计">${icon('chart', 13)}<span>${m.enabled ? '已统计' : '统计'}</span></button>
-      </div>
-    </div>
+    <div class="domain-hero"><div class="domain-head"><div><h3 class="domain-title">摄影审美</h3></div></div></div>
 
-    <div class="module-rule-banner"><span class="mrb-icon">${icon('info', 12)}</span><span class="mrb-text">不用强迫每天拍，看到喜欢的画面就记下来；一次只练一个点（构图 / 光线 / 色彩），慢慢养出自己的审美。</span></div>
+    <div class="sk-mini-date">${skMiniDateHTML(view)}</div>
+    ${isToday
+      ? `<div class="module-rule-banner"><span class="mrb-icon">${icon('info', 12)}</span><span class="mrb-text">不用强迫每天拍，看到喜欢的画面就记下来；一次只练一个点（构图 / 光线 / 色彩），慢慢养出自己的审美。</span></div>`
+      : `<div class="sk-hist-tip">${icon('info', 12)} 正在查看历史记录 · 只读不可更改（如需修改请告知）</div>`}
 
     ${slowCheckinCard(cfg, {
       title: '今日练习打卡',
+      view,
       fields: [
         { key: 'content', label: '练习内容', placeholder: '例：构图练习 / 修图 / 看优秀作品 / 外出实拍' },
         { key: 'minutes', label: '耗时（分钟）', type: 'number', placeholder: '30' }
@@ -14686,8 +14686,9 @@ function renderPhotographyPage() {
       <div class="module-card-head">
         <span class="module-card-icon" style="color:${cfg.color}">${icon('image', 14)}</span>
         <span class="soft-card-title" style="margin:0;">作品记录库</span>
-        <span class="module-card-meta">${m.records.length} 张</span>
+        <span class="sk-pending ok">${m.records.length} 张</span>
       </div>
+      ${isToday ? `
       <div class="slow-field"><span class="slow-label">标题</span><input class="pf-input" id="ph-title" placeholder="例：阳台的午后光影"></div>
       <div class="slow-field"><span class="slow-label">标签</span>
         <div class="slow-chips" id="ph-tags">
@@ -14695,9 +14696,13 @@ function renderPhotographyPage() {
         </div>
       </div>
       <div class="slow-field"><span class="slow-label">拍摄时间</span><div class="pf-input pf-date-trigger" id="ph-date" data-val="${today}">${formatDateCN(today)}</div></div>
-      <div class="slow-field"><span class="slow-label">照片</span><input class="pf-input" id="ph-img" type="file" accept="image/*"></div>
+      <div class="slow-field"><span class="slow-label">照片</span>
+        <button class="ph-img-btn" id="ph-img-btn" aria-label="选择照片">${icon('image', 13)}</button>
+        <span class="ph-img-name" id="ph-img-name"></span>
+        <input id="ph-img" type="file" accept="image/*" style="display:none">
+      </div>
       <div class="slow-field"><span class="slow-label">心得笔记</span><input class="pf-input" id="ph-note" placeholder="这张照片我想表达什么"></div>
-      <div class="focus-actions" style="margin-top:10px;"><button class="gold-btn" id="ph-add">保存作品</button></div>
+      <div class="focus-actions"><button class="gold-btn" id="ph-add">保存作品</button></div>` : ''}
       <div class="slow-record-list" id="ph-records">
         ${m.records.length ? m.records.map(r => slowRecordItem(r, 'ph-record', true)).join('') : slowEmpty('还没有作品记录，先存一张吧')}
       </div>
@@ -14707,12 +14712,13 @@ function renderPhotographyPage() {
       <div class="module-card-head">
         <span class="module-card-icon" style="color:${cfg.color}">${icon('star', 14)}</span>
         <span class="soft-card-title" style="margin:0;">审美素材收藏</span>
-        <span class="module-card-meta">${m.favorites.length} 条</span>
+        <span class="sk-pending ok">${m.favorites.length} 条</span>
       </div>
+      ${isToday ? `
       <div class="slow-field"><span class="slow-label">素材标题</span><input class="pf-input" id="ph-fav-title" placeholder="例：某摄影师的光影处理"></div>
       <div class="slow-field"><span class="slow-label">分类</span><input class="pf-input" id="ph-fav-cat" placeholder="例：光影 / 构图 / 色彩"></div>
       <div class="slow-field"><span class="slow-label">摘抄感悟</span><input class="pf-input" id="ph-fav-note" placeholder="这段打动我的地方是…"></div>
-      <div class="focus-actions" style="margin-top:10px;"><button class="gold-btn" id="ph-fav-add">收藏素材</button></div>
+      <div class="focus-actions"><button class="gold-btn" id="ph-fav-add">收藏素材</button></div>` : ''}
       <div class="slow-record-list" id="ph-favs">
         ${m.favorites.length ? m.favorites.map(r => slowRecordItem(r, 'ph-fav', false)).join('') : slowEmpty('还没有收藏素材')}
       </div>
@@ -14722,15 +14728,15 @@ function renderPhotographyPage() {
       <div class="module-card-head">
         <span class="module-card-icon" style="color:${cfg.color}">${icon('list', 14)}</span>
         <span class="soft-card-title" style="margin:0;">练习计划清单</span>
-        <span class="module-card-meta">${m.tasks.filter(t => t.done && t.date === today).length}/${m.tasks.length}</span>
+        <span class="sk-pending ok">${m.tasks.filter(t => t.done && t.date === today).length}/${m.tasks.length}</span>
       </div>
       <div class="module-list" id="ph-tasks">
         ${m.tasks.map(t => slowTaskItem(t, 'ph-task')).join('') || slowEmpty('还没有练习计划')}
       </div>
-      <div class="slow-add-row">
+      ${isToday ? `<div class="slow-add-row">
         <input class="pf-input" id="ph-task-input" placeholder="添加练习小任务，如：练习三分构图">
         <button class="gold-btn" id="ph-task-add">添加</button>
-      </div>
+      </div>` : ''}
     </div>
 
     <div class="sk-section">
@@ -14745,21 +14751,105 @@ function renderPhotographyPage() {
   `;
   content.appendChild(page);
 
-  bindSlowInsightToggle(page);
   bindSlowCheckin(page, cfg, renderPhotographyPage);
-  bindSlowTasks(page, cfg, '#ph-tasks .module-list-item', 'tasks', 'ph-task', renderPhotographyPage);
   bindSlowImagePreview(page);
 
-  // 标签选择
-  page.querySelectorAll('#ph-tags .chip').forEach(btn => {
-    btn.addEventListener('click', () => {
-      page.querySelectorAll('#ph-tags .chip').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      curTag = btn.dataset.tag;
+  // 迷你日期（护肤/妆容同款）：点日期回看历史，点「今天」回到今日
+  const md = page.querySelector('.sk-mini-date');
+  if (md) {
+    const tb = md.querySelector('.sk-md-today');
+    if (tb) tb.addEventListener('click', () => { photoViewDate = null; renderPhotographyPage(); });
+    const pill = md.querySelector('.sk-md-pill');
+    if (pill) pill.addEventListener('click', () => {
+      openDatePicker({
+        initial: view, max: today,
+        dayStatus: (k) => {
+          const ck = (m.checkin || {})[k] || {};
+          if (ck.done) return 'orange';
+          return Number((m.log || {})[k] || 0) > 0 ? 'green' : null;
+        },
+        onSelect: (k) => { photoViewDate = k > today ? today : k; renderPhotographyPage(); }
+      });
     });
-  });
+  }
 
-  // 删除作品 / 收藏
+  if (isToday) {
+    // 只有今日可增删改；历史视图只读
+    bindSlowTasks(page, cfg, '#ph-tasks .module-list-item', 'tasks', 'ph-task', renderPhotographyPage);
+    bindDateTrigger(page.querySelector('#ph-date'), { initial: today, format: formatDateCN });
+
+    // 照片：图标按钮唤起文件选择（与穿搭页图标按钮同款）
+    const imgBtn = page.querySelector('#ph-img-btn');
+    const imgInput = page.querySelector('#ph-img');
+    if (imgBtn && imgInput) {
+      imgBtn.addEventListener('click', () => imgInput.click());
+      imgInput.addEventListener('change', () => {
+        const nameEl = page.querySelector('#ph-img-name');
+        const f = imgInput.files && imgInput.files[0];
+        if (nameEl) nameEl.textContent = f ? f.name : '';
+      });
+    }
+
+    // 标签选择
+    page.querySelectorAll('#ph-tags .chip').forEach(btn => {
+      btn.addEventListener('click', () => {
+        page.querySelectorAll('#ph-tags .chip').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        curTag = btn.dataset.tag;
+      });
+    });
+
+    // 保存作品（含图片压缩）
+    const phAdd = page.querySelector('#ph-add');
+    if (phAdd) phAdd.addEventListener('click', async () => {
+      const title = (page.querySelector('#ph-title').value || '').trim();
+      if (!title) { toast('先给作品起个名字吧'); return; }
+      const fileInput = page.querySelector('#ph-img');
+      let img = '';
+      if (fileInput && fileInput.files && fileInput.files[0]) {
+        try { img = await fileToResizedDataURL(fileInput.files[0], 720, 0.6); } catch (e) { img = ''; }
+      }
+      m.records.unshift({
+        id: uid('ph-r'), title, tag: curTag,
+        date: page.querySelector('#ph-date').dataset.val || today,
+        img, note: (page.querySelector('#ph-note').value || '').trim()
+      });
+      savePhotography();
+      renderPhotographyPage();
+      toast('作品已保存');
+    });
+
+    // 收藏素材
+    const favAdd = page.querySelector('#ph-fav-add');
+    if (favAdd) favAdd.addEventListener('click', () => {
+      const title = (page.querySelector('#ph-fav-title').value || '').trim();
+      if (!title) { toast('先写个素材标题吧'); return; }
+      m.favorites.unshift({
+        id: uid('ph-f'), title,
+        category: (page.querySelector('#ph-fav-cat').value || '').trim(),
+        note: (page.querySelector('#ph-fav-note').value || '').trim(),
+        date: today
+      });
+      savePhotography();
+      renderPhotographyPage();
+      toast('已收藏');
+    });
+
+    // 添加练习任务
+    const addTask = () => {
+      const text = (page.querySelector('#ph-task-input').value || '').trim();
+      if (!text) return;
+      m.tasks.push({ id: uid('ph-t'), text, points: 3, done: false, date: '' });
+      savePhotography();
+      renderPhotographyPage();
+    };
+    const taskAdd = page.querySelector('#ph-task-add');
+    if (taskAdd) taskAdd.addEventListener('click', addTask);
+    const taskInput = page.querySelector('#ph-task-input');
+    if (taskInput) taskInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') addTask(); });
+  }
+
+  // 删除作品 / 收藏（集合类模块：任何日期都可删）
   page.querySelectorAll('[data-del-type="ph-record"]').forEach(b => {
     b.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -14774,56 +14864,7 @@ function renderPhotographyPage() {
       if (i >= 0) { m.favorites.splice(i, 1); savePhotography(); renderPhotographyPage(); }
     });
   });
-
-  // v9274：替换浏览器默认日期为工作台触发器
-  bindDateTrigger(page.querySelector('#ph-date'), { initial: today, format: formatDateCN });
-
-  // 保存作品（含图片压缩）
-  page.querySelector('#ph-add').addEventListener('click', async () => {
-    const title = (page.querySelector('#ph-title').value || '').trim();
-    if (!title) { toast('先给作品起个名字吧'); return; }
-    const fileInput = page.querySelector('#ph-img');
-    let img = '';
-    if (fileInput && fileInput.files && fileInput.files[0]) {
-      try { img = await fileToResizedDataURL(fileInput.files[0], 720, 0.6); } catch (e) { img = ''; }
-    }
-    m.records.unshift({
-      id: uid('ph-r'), title, tag: curTag,
-      date: page.querySelector('#ph-date').dataset.val || today,
-      img, note: (page.querySelector('#ph-note').value || '').trim()
-    });
-    savePhotography();
-    renderPhotographyPage();
-    toast('作品已保存');
-  });
-
-  // 收藏素材
-  page.querySelector('#ph-fav-add').addEventListener('click', () => {
-    const title = (page.querySelector('#ph-fav-title').value || '').trim();
-    if (!title) { toast('先写个素材标题吧'); return; }
-    m.favorites.unshift({
-      id: uid('ph-f'), title,
-      category: (page.querySelector('#ph-fav-cat').value || '').trim(),
-      note: (page.querySelector('#ph-fav-note').value || '').trim(),
-      date: today
-    });
-    savePhotography();
-    renderPhotographyPage();
-    toast('已收藏');
-  });
-
-  // 添加练习任务
-  const addTask = () => {
-    const text = (page.querySelector('#ph-task-input').value || '').trim();
-    if (!text) return;
-    m.tasks.push({ id: uid('ph-t'), text, points: 3, done: false, date: '' });
-    savePhotography();
-    renderPhotographyPage();
-  };
-  page.querySelector('#ph-task-add').addEventListener('click', addTask);
-  page.querySelector('#ph-task-input').addEventListener('keydown', (e) => { if (e.key === 'Enter') addTask(); });
 }
-
 
 // ==================== 技能考证 ====================
 function renderCertPage() {

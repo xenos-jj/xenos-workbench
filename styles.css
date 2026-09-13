@@ -10307,3 +10307,29 @@ body.home-bg .topbar {
 /* v9546 补充：卡内标题/按钮字号与护肤页同口径（护肤卡内标题 = 基准 10px + 圆角 chip 9.5px） */
 .slow-photo .soft-card-title { font-size: 10px; font-weight: 500; margin: 0; }
 .slow-photo .gold-btn { font-size: 11px; }
+
+/* ============ v9547 摄影审美：按钮/胶囊/照片按钮/标题层级/间距 细化 ============ */
+/* ① 主按钮（完成打卡 / 保存作品 / 收藏素材 / 添加）改成提示条那种「淡淡的蓝」 + 同色系文字 */
+.slow-photo .gold-btn { background: var(--slcbg); color: var(--slcd); border: 1px solid var(--slcb); font-weight: 500; }
+.slow-photo .gold-btn:hover { background: #E3EEF8; color: var(--slcd); }
+.slow-photo .slow-check-btn.done { background: var(--slcbg); color: var(--slcd); border-color: var(--slcb); }
+/* ② 标签胶囊：描边粗细/颜色与其它控件一致（1px + 浅蓝），并做成一枚真正的「胶囊」 */
+.slow-photo .slow-chips .chip { border: 1px solid var(--slcb); border-radius: 999px; }
+.slow-photo .slow-chips .chip.active { border: 1px solid var(--slc); }
+/* ③ 照片：改成穿搭页那种图标按钮（不再是 input 套一个「选择文件」按钮的卡片） */
+.slow-photo .ph-img-btn {
+  flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center;
+  width: 40px; height: 32px; padding: 0; box-sizing: border-box;
+  border: 1px solid var(--slcb); border-radius: 8px; background: #fff; color: var(--slc); cursor: pointer;
+}
+.slow-photo .ph-img-btn:hover { border-color: var(--slc); background: var(--slcbg); }
+.slow-photo .ph-img-name { flex: 1; min-width: 0; font-size: 9.5px; color: var(--text-muted); font-family: var(--font-small); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* ④ 卡内标题字号层级 = 「本周练习统计」（12 / 575），下边距 8（护肤卡内标题口径） */
+.slow-photo .module-card-head { margin-bottom: 8px; }
+.slow-photo .soft-card-title { font-size: 12px; font-weight: 575; }
+/* ⑤ 「本周练习统计」左侧图标（标题图标 + 热力图行图标）与页面图标同色 */
+.slow-photo .sk-section-head svg,
+.slow-photo .insp-heatmap-grid .ih-icon { color: var(--slc); }
+/* ⑥ 卡内按钮行 / 间距用护肤页口径（7px） */
+.slow-photo .focus-actions { margin-top: 7px; }
+.slow-photo .sk-hist-tip { margin-top: 7px; }
