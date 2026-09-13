@@ -10505,3 +10505,15 @@ body.home-bg .topbar {
 .slow-skin .ck-act { border-color: var(--slcb); }
 .slow-skin .ck-act:hover { border-color: var(--slc); color: var(--slcd); }
 .slow-skin .module-tip, .slow-skin .module-goal-text { font-size: 10.5px; }
+
+
+/* ============ v9559 生活秩序 / 内在成长：进度环卡（study-goal）换成本模块色系 ============ */
+.slow-skin .study-goal {
+  background: linear-gradient(120deg, var(--slcbg) 0%, #FFFFFF 100%);
+  border-color: var(--slcb); box-shadow: none; padding: 14px;
+}
+.slow-skin .study-goal h4 { font-size: 13px; font-weight: 600; color: var(--text); }
+.slow-skin .study-goal .sg-sub { font-size: 10.5px; margin: 0; }
+.slow-skin .study-goal .mini-ring .mr-fg { stroke: var(--slc); }
+.slow-skin .study-goal .mini-ring .mr-bg { stroke: var(--slcb); }
+.slow-skin .study-goal .mini-ring .mr-num { color: var(--slcd); }

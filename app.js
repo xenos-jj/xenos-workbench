@@ -11972,7 +11972,9 @@ function renderLifeOrderPage() {
   // 关键：内部 toggle 会递归调用本函数，必须先清空防止整页叠加
   content.innerHTML = '';
   const page = document.createElement('div');
-  page.className = 'page';
+  // v9559：对齐摄影审美——护肤页视觉体系 + 模块色皮肤（生活秩序＝秩序绿）
+  page.className = 'page skincare-page slow-skin';
+  page.style.cssText = modSkinStyle('#a0bb7a');
   if (greetLine) greetLine.textContent = '生活秩序';
   const o = state.order || JSON.parse(JSON.stringify(DEFAULT_ORDER));
   const today = getTodayKey();
@@ -12005,11 +12007,14 @@ function renderLifeOrderPage() {
   }
 
   page.innerHTML = `
-    <div class="sub-page-head">
-      <h3 class="sub-title">生活秩序 <span class="sub-spark">${icon('sparkle', 14)}</span></h3>
-    </div>
-    ${dateBarHTML(viewKey, { id: 'order-date-trigger' })}
-    <div class="study-goal section-card" style="background:linear-gradient(135deg,#E8F0E2 0%,#FFF5E9 100%);">
+    <div class="domain-hero"><div class="domain-head"><div><h3 class="domain-title">生活秩序</h3></div></div></div>
+
+    <div class="sk-mini-date">${skMiniDateHTML(viewKey)}</div>
+    ${isToday
+      ? `<div class="module-rule-banner"><span class="mrb-icon">${icon('info', 12)}</span><span class="mrb-text">用固定的小节奏减少内耗：早晚各几件小事，能做到就点一下，不用苛求全做完。</span></div>`
+      : `<div class="sk-hist-tip">${icon('info', 12)} 正在查看历史记录 · 只读不可更改（如需修改请告知）</div>`}
+
+    <div class="study-goal section-card">
       ${miniRingHTML(pct, 'ring-green', pct + '%', '本周完成')}
       <div class="sg-info">
         <h4>秩序感养成中</h4>
@@ -12021,7 +12026,7 @@ function renderLifeOrderPage() {
       <div class="module-card-head">
         <span class="module-card-icon" style="color:#E8A85C">${icon('sunrise', 14)}</span>
         <span class="soft-card-title" style="margin:0;">☀️ 晨间秩序</span>
-        <span class="module-card-meta">${o.morning.filter(a => a.done && a.date === viewKey).length}/${o.morning.length}</span>
+        <span class="sk-pending ok">${o.morning.filter(a => a.done && a.date === viewKey).length}/${o.morning.length}</span>
       </div>
       <div class="module-list" id="order-morning-actions">
         ${o.morning.map(a => renderActionItem(a, 'order-morning')).join('')}
@@ -12032,22 +12037,24 @@ function renderLifeOrderPage() {
       <div class="module-card-head">
         <span class="module-card-icon" style="color:#7B8DAD">${icon('moon', 14)}</span>
         <span class="soft-card-title" style="margin:0;">🌙 晚间秩序</span>
-        <span class="module-card-meta">${o.evening.filter(a => a.done && a.date === viewKey).length}/${o.evening.length}</span>
+        <span class="sk-pending ok">${o.evening.filter(a => a.done && a.date === viewKey).length}/${o.evening.length}</span>
       </div>
       <div class="module-list" id="order-evening-actions">
         ${o.evening.map(a => renderActionItem(a, 'order-evening')).join('')}
       </div>
     </div>
+
+    ${slowHeatSectionHTML(o, 'list', '本周秩序统计')}
   `;
   content.appendChild(page);
   page.querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', () => selectItem(b.dataset.go)));
 
-  // 日期切换：全局统一日期组件
-  bindDateBar(page, {
-    onShift: (d) => { state.orderViewDate = shiftDate(viewKey, d); renderLifeOrderPage(); },
-    onPick: (k) => { state.orderViewDate = k; renderLifeOrderPage(); },
-    onToday: () => { state.orderViewDate = today; renderLifeOrderPage(); },
-    max: today
+  // v9559：摄影审美同款迷你日期（可回看历史；圆点＝当天有积分=绿 / 全部完成=橙）
+  bindSlowMiniDate(page, 'order', o, renderLifeOrderPage, function (k) {
+    const allTasks2 = o.morning.concat(o.evening);
+    const allDone = allTasks2.length > 0 && allTasks2.every(a => a.done && a.date === k);
+    if (allDone) return 'orange';
+    return Number((o.log || {})[k] || 0) > 0 ? 'green' : null;
   });
 
   // 完成切换并计积分（仅切换状态，不生成新条目）
@@ -12082,7 +12089,9 @@ function renderInnerGrowthPage() {
   // 关键：内部 toggle 会递归调用本函数，必须先清空防止整页叠加
   content.innerHTML = '';
   const page = document.createElement('div');
-  page.className = 'page';
+  // v9559：对齐摄影审美——护肤页视觉体系 + 模块色皮肤（内在成长＝觉察紫）
+  page.className = 'page skincare-page slow-skin';
+  page.style.cssText = modSkinStyle('#A99BD6');
   if (greetLine) greetLine.textContent = '内在成长';
   const g = state.growth || JSON.parse(JSON.stringify(DEFAULT_GROWTH));
   const today = getTodayKey();
@@ -12115,11 +12124,14 @@ function renderInnerGrowthPage() {
   }
 
   page.innerHTML = `
-    <div class="sub-page-head">
-      <h3 class="sub-title">内在成长 <span class="sub-spark">${icon('sparkle', 14)}</span></h3>
-    </div>
-    ${dateBarHTML(viewKey, { id: 'growth-date-trigger' })}
-    <div class="study-goal section-card" style="background:linear-gradient(135deg,#EDEAF9 0%,#E8F0E2 100%);">
+    <div class="domain-hero"><div class="domain-head"><div><h3 class="domain-title">内在成长</h3></div></div></div>
+
+    <div class="sk-mini-date">${skMiniDateHTML(viewKey)}</div>
+    ${isToday
+      ? `<div class="module-rule-banner"><span class="mrb-icon">${icon('info', 12)}</span><span class="mrb-text">留一点时间给自己：记录情绪、练习觉察都算，不必要求自己每天都状态很好。</span></div>`
+      : `<div class="sk-hist-tip">${icon('info', 12)} 正在查看历史记录 · 只读不可更改（如需修改请告知）</div>`}
+
+    <div class="study-goal section-card">
       ${miniRingHTML(pct, 'ring-purple', pct + '%', '本周完成')}
       <div class="sg-info">
         <h4>向内探索</h4>
@@ -12131,7 +12143,7 @@ function renderInnerGrowthPage() {
       <div class="module-card-head">
         <span class="module-card-icon" style="color:#A99BD6">${icon('meditate', 14)}</span>
         <span class="soft-card-title" style="margin:0;">🧘 今日觉察</span>
-        <span class="module-card-meta">${doneToday}/${total}</span>
+        <span class="sk-pending ok">${doneToday}/${total}</span>
       </div>
       <div class="module-list" id="growth-awareness-actions">
         ${g.awareness.map(a => renderActionItem(a, 'growth-awareness')).join('')}
@@ -12145,14 +12157,15 @@ function renderInnerGrowthPage() {
       </div>
       <p class="module-goal-text">${escapeHTML(g.theme || DEFAULT_GROWTH.theme)}</p>
     </div>
+
+    ${slowHeatSectionHTML(g, 'leaf', '本周觉察统计')}
   `;
 
-  // 日期切换：全局统一日期组件
-  bindDateBar(page, {
-    onShift: (d) => { state.growthViewDate = shiftDate(viewKey, d); renderInnerGrowthPage(); },
-    onPick: (k) => { state.growthViewDate = k; renderInnerGrowthPage(); },
-    onToday: () => { state.growthViewDate = today; renderInnerGrowthPage(); },
-    max: today
+  // v9559：摄影审美同款迷你日期（可回看历史；圆点＝当天有积分=绿 / 全部完成=橙）
+  bindSlowMiniDate(page, 'growth', g, renderInnerGrowthPage, function (k) {
+    const allDone = g.awareness.length > 0 && g.awareness.every(a => a.done && a.date === k);
+    if (allDone) return 'orange';
+    return Number((g.log || {})[k] || 0) > 0 ? 'green' : null;
   });
 
   // 完成切换并计积分（仅切换状态，不生成新条目）
@@ -14576,7 +14589,7 @@ function modSkinStyle(color) {
   return `--slc:${c};--slcb:${_mixHex(c, '#FFFFFF', 0.72)};--slcd:${_mixHex(c, '#000000', 0.18)};--slcbg:${_mixHex(c, '#FFFFFF', 0.88)};`;
 }
 // 各模块「回看日期」（null = 今天）
-const SLOW_VIEW = { photography: null, cert: null, homeorg: null, music: null, social: null, travel: null };
+const SLOW_VIEW = { photography: null, cert: null, homeorg: null, music: null, social: null, travel: null, order: null, growth: null };
 // 日期选择器圆点：该模块自己的打卡/积分（不与其他模块共享）
 function slowDateStatus(m) {
   return function (k) {
