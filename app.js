@@ -13174,9 +13174,6 @@ function renderOutfitPage() {
     <div class="module-card">
       <div class="lk-sub-title">风格</div>
       <div class="lk-tags" style="grid-template-columns: repeat(${(r.styles || []).length}, 1fr)">${stylesHTML}</div>
-      <div class="sk-add-inline" style="margin-top:7px">
-        <input class="lk-input" data-outfit-note placeholder="记一句今天穿了什么 / 心情..." value="${escapeHTML(c.outfitNote || '')}" ${isToday ? '' : 'disabled'}>
-      </div>
       ${isToday ? `<div class="sk-add-inline" style="margin-top:7px">
         <button class="lk-mini-btn is-wide" data-outfit-upload>${icon('image', 12)} 上传今日穿搭图</button>
       </div>` : ''}
@@ -13230,13 +13227,6 @@ function renderOutfitPage() {
       saveLooks('outfit');
       renderOutfitPage();
     });
-  });
-  // 笔记
-  const note = page.querySelector('[data-outfit-note]');
-  if (note) note.addEventListener('change', () => {
-    const cc = r.checkin[today] = r.checkin[today] || {};
-    cc.outfitNote = note.value;
-    saveLooks('outfit');
   });
   // 上传图 / 删图
   const outfitUpload = page.querySelector('[data-outfit-upload]');
