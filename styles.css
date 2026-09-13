@@ -10219,3 +10219,8 @@ body.home-bg .topbar {
 .skincare-page .sk-add-inline .lk-pick-trigger::after { margin-left: 6px; }
 /* ③ 迷你按钮统一 30px（与输入框、数字框、选择器等高） */
 .skincare-page .sk-add-inline .lk-mini-btn { height: 30px; }
+
+/* ============ v9527 穿搭风格胶囊：6 个等宽均匀排列（右端对齐「记一句…」输入框右边） ============ */
+/* 覆盖 lk-tags 默认 flex-wrap；用 grid（列数由 HTML inline 指定 = 风格数量）等分，胶囊等宽、间距均匀 */
+.skincare-page .lk-tags { display: grid; gap: 6px; }
+.skincare-page .lk-tags .lk-tag { width: 100%; text-align: center; box-sizing: border-box; }

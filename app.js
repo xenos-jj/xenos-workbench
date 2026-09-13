@@ -8633,7 +8633,7 @@ const LOOKS_DEFAULTS = {
     checkin: {}, log: {}, notes: ''
   },
   outfit: {
-    styles: ['休闲', '通勤', '运动', '正式', '可爱', '松弛感'],
+    styles: ['休闲', '通勤', '运动', '正式', '可爱', '松弛'],
     seasons: ['春', '夏', '秋', '冬', '不限'],
     scenes:  ['日常', '通勤', '约会', '出游', '居家', '不限'],
     wardrobeCats: ['上衣', '裤子', '裙子', '外套', '鞋子', '配饰'],
@@ -8696,6 +8696,9 @@ function ensureLooksTab(tab) {
     if (!ref.tips) ref.tips = d.tips;
   } else if (tab === 'outfit') {
     if (!ref.styles) ref.styles = d.styles;
+    // v9527：「松弛感」→「松弛」（同步旧数据）；旧选中值也一并替换
+    ref.styles = ref.styles.map(s => s === '松弛感' ? '松弛' : s);
+    Object.keys(ref.checkin || {}).forEach(k => { const c = ref.checkin[k]; if (c && c.style === '松弛感') c.style = '松弛'; });
     if (!ref.seasons) ref.seasons = d.seasons;
     if (!ref.scenes) ref.scenes = d.scenes;
     if (!ref.wardrobeCats) ref.wardrobeCats = d.wardrobeCats;
@@ -13794,7 +13797,7 @@ function renderOutfitPage() {
     <div class="module-card">
       <div class="module-card-head"><span class="module-card-title">${icon('shirt', 14)} 今日穿搭记录</span><span class="sk-pending ${c.style ? 'ok' : ''}">${c.style ? '已记录' : '待记录'}</span></div>
       <div class="lk-sub-title">风格</div>
-      <div class="lk-tags">${stylesHTML}</div>
+      <div class="lk-tags" style="grid-template-columns: repeat(${(r.styles || []).length}, 1fr)">${stylesHTML}</div>
       <div class="sk-add-inline" style="margin-top:8px">
         <input class="lk-input" data-outfit-note placeholder="记一句今天穿了什么 / 心情..." value="${escapeHTML(c.outfitNote || '')}" ${isToday ? '' : 'disabled'}>
       </div>
