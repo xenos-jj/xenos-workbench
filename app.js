@@ -1395,7 +1395,6 @@ const state = {
   bookNotes: loadBookNotes(),
   bookPlans: loadBookPlans(),
   bookInsights: loadBookInsights(),
-  historyNotes: loadHistoryNotes(),
   language: loadLanguage(),
   englishCheckin: loadEnglishCheckin(),
   videoEdit: loadVideoEdit(),
@@ -1899,47 +1898,6 @@ function loadBookPlans() { return loadJSON('xenos-book-plans', []); }
 function saveBookPlans() { saveJSON('xenos-book-plans', state.bookPlans); }
 function loadBookInsights() { return loadJSON('xenos-book-insights', []); }
 function saveBookInsights() { saveJSON('xenos-book-insights', state.bookInsights); }
-
-const normHistRecord = r => ({
-  id: r && r.id ? r.id : uid('hr'),
-  era: r && r.era ? r.era : '',
-  title: r && r.title ? r.title : '',
-  date: r && r.date ? r.date : '',
-  bg: r && r.bg ? r.bg : '',
-  event: r && r.event ? r.event : '',
-  people: r && r.people ? r.people : '',
-  cause: r && r.cause ? r.cause : '',
-  impact: r && r.impact ? r.impact : '',
-  thought: r && r.thought ? r.thought : ''
-});
-
-function loadHistoryNotes() {
-  const raw = loadJSON('xenos-history', null);
-  if (Array.isArray(raw)) {
-    // 旧版：扁平笔记数组 → 迁移为带专题的对象
-    return {
-      topics: [{ id: uid('ht'), name: '通史', records: raw.map(n => normHistRecord({
-        id: n.id, era: n.era, title: n.title, date: n.date, event: n.note
-      })) }],
-      reviews: []
-    };
-  }
-  if (raw && typeof raw === 'object') {
-    const topics = Array.isArray(raw.topics) ? raw.topics.map(t => ({
-      id: t && t.id ? t.id : uid('ht'),
-      name: t && t.name ? t.name : '未命名',
-      records: Array.isArray(t.records) ? t.records.map(normHistRecord) : []
-    })) : [];
-    const reviews = Array.isArray(raw.reviews) ? raw.reviews.map(r => ({
-      id: r && r.id ? r.id : uid('hv'),
-      title: r && r.title ? r.title : '',
-      content: r && r.content ? r.content : ''
-    })) : [];
-    return { topics, reviews };
-  }
-  return { topics: [], reviews: [] };
-}
-function saveHistoryNotes() { saveJSON('xenos-history', state.historyNotes); }
 
 function loadLanguage() {
   const l = loadJSON('xenos-language', null);
@@ -3917,7 +3875,7 @@ const PAGE_ROUTES = {
   '技能考证': renderCertPage,
   '家居整理': renderHomeOrgPage,
   '音乐练习': renderMusicPage,
-  // 成长提升（书籍阅读/历史/视频剪辑/3D建模 为懒加载模块，见 LAZY_PAGES）
+  // 成长提升（书籍阅读/视频剪辑/3D建模 为懒加载模块，见 LAZY_PAGES）
   // 保留的功能页（由领域页的工具入口跳转）
   '每日计划': renderDailyPlan,
   '健康': renderHealthPage,
@@ -3934,7 +3892,6 @@ const PAGE_ROUTES = {
 const LAZY_PAGES = {
   '内容素材库': { file: 'modules/contentlib.js' },
   '书籍阅读': { file: 'modules/study.js' },
-  '历史': { file: 'modules/study.js' },
   '视频剪辑': { file: 'modules/study.js' },
   '3D建模': { file: 'modules/study.js' }
 };
@@ -3946,9 +3903,10 @@ function loadLazyPage(name, cb) {
   if (!cfg) { if (cb) cb(); return; }
   if (_lazyLoaded[name]) { if (cb) cb(); return; }
   const s = document.createElement('script');
-  // v9560：懒加载模块 URL 戳与 sw.js STATIC 保持一致（原来写死 ?v=261，与缓存键不匹配 →
-  // 每次打开都要重新联网下载模块文件；对齐后由 SW 缓存直接命中，打开即显示）
-  s.src = cfg.file + '?v=560';
+  // v9561：模块 URL 戳由 BUILT 自动派生（后三位），与 sw.js STATIC / index.html 的 ?v= 天然同步，
+  // 避免再出现「写死戳号 → 与缓存键不匹配 → 每次打开都联网下载」的问题（v9560 前的 ?v=261 事故）
+  const _v3 = String((typeof BUILT !== 'undefined' && BUILT) ? BUILT : '').slice(-3);
+  s.src = cfg.file + '?v=' + _v3;
   s.onload = () => { _lazyLoaded[name] = true; if (cb) cb(); };
   s.onerror = () => { _lazyFailed[name] = true; if (cb) cb(); };
   document.head.appendChild(s);
@@ -4009,7 +3967,6 @@ const PAGE_BACK_FALLBACK = {
   '穿搭': '工作台首页',
   '妆容': '工作台首页',
   '书籍阅读': '学习成长',
-  '历史': '学习成长',
   '视频剪辑': '学习成长',
   '3D建模': '学习成长'
 };
