@@ -8644,15 +8644,9 @@ const LOOKS_DEFAULTS = {
     checkin: {}, log: {}, notes: ''
   },
   makeup: {
-    types: ['日常淡妆', '伪素颜', '通勤妆', '约会妆', '拍照妆', '浓妆'],
-    tasks: [
-      { id: 'mk-1', text: '底妆', points: 2 },
-      { id: 'mk-2', text: '眉毛', points: 1 },
-      { id: 'mk-3', text: '眼妆', points: 2 },
-      { id: 'mk-4', text: '腮红', points: 1 },
-      { id: 'mk-5', text: '口红', points: 1 },
-      { id: 'mk-6', text: '定妆', points: 1 }
-    ],
+    // v9532：删除「日常淡妆」；「约会妆→亚裔妆」「拍照妆→韩系妆」「浓妆→丧系妆」
+    types: ['伪素颜', '通勤妆', '亚裔妆', '韩系妆', '丧系妆'],
+    tasks: [],        // v9532：妆容步骤清单已删除（打卡只保留「妆容类型」）
     scenes: ['日常', '通勤', '约会', '拍照', '不限'],
     products: [],     // {id,name}
     inspirations: [],  // {id,type,scene,date,image,note}
@@ -8700,7 +8694,19 @@ function ensureLooksTab(tab) {
     if (!ref.wardrobe) ref.wardrobe = [];
     if (!ref.plans) ref.plans = [];
   } else if (tab === 'makeup') {
-    if (!ref.types) ref.types = d.types;
+    if (!ref.types) ref.types = d.types.slice();
+    // v9532：妆容类型改名同步（日常淡妆并入伪素颜；约会妆→亚裔妆；拍照妆→韩系妆；浓妆→丧系妆）
+    const MK_RENAME = { '日常淡妆': '伪素颜', '约会妆': '亚裔妆', '拍照妆': '韩系妆', '浓妆': '丧系妆' };
+    ref.types = (ref.types || []).map(t => MK_RENAME[t] || t).filter((t, i, a) => a.indexOf(t) === i);
+    if (!ref.types.length) ref.types = d.types.slice();
+    Object.keys(ref.checkin || {}).forEach(k => {
+      const c = ref.checkin[k]; if (!c) return;
+      if (c.makeupType && MK_RENAME[c.makeupType]) c.makeupType = MK_RENAME[c.makeupType];
+      // v9532：删除妆容步骤清单后，清掉历史打卡里的步骤痕迹
+      if (c.taskDone) delete c.taskDone;
+    });
+    ref.tasks = [];
+    (ref.inspirations || []).forEach(i => { if (i && i.type && MK_RENAME[i.type]) i.type = MK_RENAME[i.type]; });
     if (!ref.scenes) ref.scenes = d.scenes;
     if (!ref.products) ref.products = [];
     if (!ref.inspirations) ref.inspirations = [];
@@ -8766,9 +8772,8 @@ function getLooksTodayPct(tab) {
   } else if (tab === 'outfit') {
     return c.style ? 100 : 0;
   } else if (tab === 'makeup') {
-    const total = r.tasks.length;
-    const done = Object.keys(c.taskDone || {}).length;
-    return total ? Math.round(done / total * 100) : 0;
+    // v9532：步骤清单已删除，完成度只看是否选了「妆容类型」
+    return c.makeupType ? 100 : 0;
   }
   return 0;
 }
@@ -10300,10 +10305,6 @@ document.addEventListener('click', async (e) => {
     const t = state.looksPosture.tasks.find(x => x.id === id); if (!t) return;
     const v = await openModal('编辑文字', t.text, ''); if (v === null) return;
     t.text = v.trim() || t.text; saveLooks('posture');
-  } else if (type === 'makeup-task') {
-    const t = state.looksMakeup.tasks.find(x => x.id === id); if (!t) return;
-    const v = await openModal('编辑文字', t.text, ''); if (v === null) return;
-    t.text = v.trim() || t.text; saveLooks('makeup');
   } else if (type === 'slow-task-pts') {
     const key = btn.dataset.editKey;
     const m = state[key]; if (!m) return;
@@ -13270,23 +13271,10 @@ function renderMakeupPage() {
   const view = makeupViewDate || today;
   const isToday = view === today;
   const c = r.checkin[view] || {};
-  const td = c.taskDone || {};
-  const tasks = r.tasks || [];
-  const total = tasks.length;
-  const done = tasks.filter(t => td[t.id]).length;
-  const pct = total ? Math.round(done / total * 100) : 0;
-  const allDone = total > 0 && pct >= 100;
   const page = document.createElement('div');
   page.className = 'page skincare-page looks-sub';
 
   const typesHTML = (r.types || []).map(t => `<span class="sk-tag-cell"><button class="sk-status-tag ${c.makeupType === t ? 'on' : ''}" data-makeup-type="${escapeHTML(t)}">${escapeHTML(t)}</button></span>`).join('');
-  const stepsHTML = tasks.map(t => { const itDone = !!td[t.id]; return `<div class="module-list-item ${itDone ? 'done' : ''}" data-item="${escapeHTML(t.id)}">
-    <span class="mli-check">${itDone ? icon('check', 12) : ''}</span><span class="mli-text">${escapeHTML(t.text)}</span><span class="mli-pts">+${t.points || 1}</span>
-    ${isToday ? `<div class="module-item-actions">
-      <button class="module-act-btn module-edit-btn" data-edit-type="makeup-task" data-edit-id="${escapeHTML(t.id)}" title="编辑">${icon('edit', 11)}</button>
-      <button class="module-act-btn module-del-btn" data-del-type="makeup-task" data-del-id="${escapeHTML(t.id)}" title="删除">${icon('delete', 11)}</button>
-    </div>` : ''}
-  </div>`; }).join('');
   const products = (r.products || []).map(p => `<div class="lk-prod"><span class="lk-prod-name">${escapeHTML(p.name)}</span><button class="lk-mini-btn" data-prod-del="${p.id}">${icon('delete', 11)}</button></div>`).join('');
   const insps = (r.inspirations || []).slice().reverse().map(i => `<div class="lk-insp">
     ${i.image ? `<img class="lk-insp-img" src="${i.image}" alt="">` : `<div class="lk-insp-img lk-insp-empty">${icon('image', 20)}</div>`}
@@ -13300,10 +13288,8 @@ function renderMakeupPage() {
   for (let i = 0; i < 7; i++) { const d2 = new Date(ws); d2.setDate(d2.getDate() + i); weekDates.push(d2.toISOString().slice(0, 10)); }
   const heatDots = weekDates.map((dk) => {
     const ck = r.checkin[dk] || {};
-    const doneD = Object.keys(ck.taskDone || {}).length;
-    let lvl = 0;
-    if (ck.makeupType || doneD > 0) lvl = (total && doneD >= total) ? 3 : (doneD > 0 ? 2 : 1);
-    return `<span class="ih-dot lvl${lvl}"></span>`;
+    const has = !!(ck.makeupType || ck.done);
+    return `<span class="ih-dot ${has ? 'lvl3' : 'lvl0'}"></span>`;
   }).join('');
 
   page.innerHTML = `
@@ -13319,27 +13305,19 @@ function renderMakeupPage() {
 
     <div class="module-card">
       <div class="module-card-head"><span class="module-card-title">${icon('brush', 14)} 妆容类型</span><span class="sk-pending ${c.makeupType ? 'ok' : ''}">${c.makeupType || '待选择'}</span></div>
-      <div class="sk-status-tags">${typesHTML}</div>
+      <div class="sk-status-tags is-grid" style="grid-template-columns: repeat(${(r.types || []).length}, 1fr)">${typesHTML}</div>
     </div>
 
-    <div class="module-card">
-      <div class="module-card-head"><span class="module-card-title">${icon('list', 14)} 妆容步骤清单</span><span class="sk-pending ${allDone ? 'ok' : ''}">完成率 ${pct}%</span></div>
-      <div class="module-list">
-        ${stepsHTML}
-        ${isToday ? `<div class="sk-add-inline"><input class="lk-input" data-makeup-add placeholder="加一个步骤..."><button class="lk-mini-btn" data-makeup-add-btn aria-label="添加">${icon('plus', 12)}</button></div>` : ''}
-      </div>
-    </div>
-
-    <div class="module-card">
-      <div class="module-card-head"><span class="module-card-title">${icon('gift', 14)} 妆容用品记录</span><span class="sk-pending ok">${(r.products || []).length} 件</span></div>
+    <div class="sk-section">
+      <div class="sk-section-head">${icon('gift', 14)} <span>妆容用品记录</span><span class="sk-pending ok" style="margin-left:auto">${(r.products || []).length} 件</span></div>
       ${isToday ? `<div class="sk-add-inline"><input class="lk-input" data-prod-name placeholder="如：粉底液 / 某品牌口红"><button class="lk-mini-btn" data-prod-add>${icon('plus', 12)} 记录</button></div>` : ''}
       <div class="lk-prod-list">${products || '<p class="lk-empty">还没记过用品，记一下常用化妆品方便补货</p>'}</div>
     </div>
 
-    <div class="module-card">
-      <div class="module-card-head"><span class="module-card-title">${icon('star', 14)} 妆容灵感收藏</span><span class="sk-pending ok">${(r.inspirations || []).length} 条</span></div>
-      ${isToday ? `<div class="sk-add-inline"><input class="lk-input" data-minsp-type placeholder="妆容"><select class="lk-input" data-minsp-scene>${r.scenes.map(s => `<option>${s}</option>`).join('')}</select></div>
-      <div class="sk-add-inline"><input class="lk-input" data-minsp-note placeholder="备注"><button class="lk-mini-btn" data-minsp-upload>${icon('image', 12)}</button><button class="lk-mini-btn" data-minsp-add>${icon('plus', 12)} 收藏</button></div>` : ''}
+    <div class="sk-section">
+      <div class="sk-section-head">${icon('star', 14)} <span>妆容灵感收藏</span><span class="sk-pending ok" style="margin-left:auto">${(r.inspirations || []).length} 条</span></div>
+      ${isToday ? `<div class="sk-add-inline"><div class="lk-pick-trigger" data-minsp-type-trig>${r._pendingMinspType || '妆容类型'}</div><div class="lk-pick-trigger" data-minsp-scene>${r._pendingMinspScene || '场合'}</div></div>
+      <div class="sk-add-inline"><input class="lk-input" data-minsp-note placeholder="备注（可选）"><button class="lk-mini-btn" data-minsp-upload>${icon('image', 12)}</button><button class="lk-mini-btn" data-minsp-add>${icon('plus', 12)} 收藏</button></div>` : ''}
       <div class="lk-insp-grid">${insps || '<p class="lk-empty">收藏喜欢的妆容，慢慢攒成灵感库</p>'}</div>
     </div>
 
@@ -13359,54 +13337,12 @@ function renderMakeupPage() {
       if (!isToday) return;
       const cc = r.checkin[today] = r.checkin[today] || {};
       const prev = cc.makeupType;
-      if (cc.makeupType === btn.dataset.makeupType) { delete cc.makeupType; if (prev) addLooksPoints('makeup', -2); cc.done = !!Object.keys(cc.taskDone || {}).length; }
+      if (cc.makeupType === btn.dataset.makeupType) { delete cc.makeupType; if (prev) addLooksPoints('makeup', -2); cc.done = false; }
       else { cc.makeupType = btn.dataset.makeupType; if (!prev) addLooksPoints('makeup', 2); cc.done = true; }
       saveLooks('makeup');
       renderMakeupPage();
     });
   });
-  // 步骤勾选
-  page.querySelectorAll('.module-list-item').forEach(el => {
-    el.addEventListener('click', () => {
-      if (!isToday) return;
-      if (el.classList.contains('show-delete')) return;
-      const t = r.tasks.find(x => x.id === el.dataset.item);
-      if (!t) return;
-      const cc = r.checkin[today] = r.checkin[today] || { taskDone: {} };
-      if (!cc.taskDone) cc.taskDone = {};
-      if (cc.taskDone[t.id]) { delete cc.taskDone[t.id]; addLooksPoints('makeup', -(t.points || 1)); }
-      else { cc.taskDone[t.id] = true; addLooksPoints('makeup', t.points || 1); }
-      cc.done = !!(cc.taskDone && Object.keys(cc.taskDone).length) || !!cc.makeupType;
-      saveLooks('makeup');
-      renderMakeupPage();
-    });
-  });
-  // 删除步骤
-  page.querySelectorAll('.module-del-btn[data-del-type="makeup-task"]').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.preventDefault(); e.stopPropagation();
-      if (!isToday) return;
-      const id = btn.dataset.delId;
-      if (td[id]) delete td[id];
-      r.tasks = r.tasks.filter(x => x.id !== id);
-      saveLooks('makeup');
-      renderMakeupPage();
-    });
-  });
-  // 加步骤
-  const addRow = page.querySelector('[data-makeup-add]');
-  if (addRow) {
-    const btn = page.querySelector('[data-makeup-add-btn]');
-    const doAdd = () => {
-      const text = addRow.value.trim();
-      if (!text) return;
-      r.tasks.push({ id: 'mk-' + Date.now().toString(36), text, points: 1 });
-      saveLooks('makeup');
-      renderMakeupPage();
-    };
-    if (btn) btn.addEventListener('click', doAdd);
-    addRow.addEventListener('keydown', (e) => { if (e.key === 'Enter') doAdd(); });
-  }
   // 用品
   const prodAdd = page.querySelector('[data-prod-add]');
   if (prodAdd) prodAdd.addEventListener('click', () => {
@@ -13419,17 +13355,31 @@ function renderMakeupPage() {
     r.products = r.products.filter(x => x.id !== b.dataset.prodDel);
     saveLooks('makeup'); renderMakeupPage();
   }));
-  // 灵感
+  // 灵感：妆容类型 / 场合 选择器（改用工作台统一样式的选择卡片，替换系统原生下拉）
+  const minspTypeTrig = page.querySelector('[data-minsp-type-trig]');
+  if (minspTypeTrig) minspTypeTrig.addEventListener('click', async () => {
+    const opts = (r.types || []).map(t => ({ label: t, value: t }));
+    const prev = r._pendingMinspType || (r.types || [])[0];
+    const v = await openOptionPicker('选择妆容类型', opts, prev);
+    if (v != null) { r._pendingMinspType = v; minspTypeTrig.textContent = v; }
+  });
+  const minspSceneTrig = page.querySelector('[data-minsp-scene]');
+  if (minspSceneTrig) minspSceneTrig.addEventListener('click', async () => {
+    const opts = (r.scenes || []).map(s => ({ label: s, value: s }));
+    const prev = r._pendingMinspScene || (r.scenes || [])[0];
+    const v = await openOptionPicker('选择场合', opts, prev);
+    if (v != null) { r._pendingMinspScene = v; minspSceneTrig.textContent = v; }
+  });
   const minspUpload = page.querySelector('[data-minsp-upload]');
   if (minspUpload) minspUpload.addEventListener('click', () => _looksPickImage(720, 0.65, (url) => { r._pendingMinspImage = url; toast('图已选，点「收藏」保存', 'info'); }));
   const minspAdd = page.querySelector('[data-minsp-add]');
   if (minspAdd) minspAdd.addEventListener('click', () => {
-    const type = page.querySelector('[data-minsp-type]').value.trim();
-    const scene = page.querySelector('[data-minsp-scene]').value;
+    const type = r._pendingMinspType || (r.types || [])[0];
+    const scene = r._pendingMinspScene || (r.scenes || [])[0];
     const note2 = page.querySelector('[data-minsp-note]').value.trim();
-    if (!type) { toast('填一下妆容类型', 'info'); return; }
+    if (!type) { toast('选一下妆容类型', 'info'); return; }
     r.inspirations.push({ id: _looksId('minsp'), type, scene, note: note2, date: today, image: r._pendingMinspImage || '' });
-    delete r._pendingMinspImage;
+    delete r._pendingMinspImage; delete r._pendingMinspType; delete r._pendingMinspScene;
     saveLooks('makeup'); renderMakeupPage();
   });
   page.querySelectorAll('[data-minsp-del]').forEach(b => b.addEventListener('click', () => {
