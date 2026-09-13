@@ -10240,7 +10240,7 @@ body.home-bg .topbar {
 .skincare-page.looks-sub .lk-prod-list { margin-top: 7px; gap: 7px; }   /* 衣橱 / 用品 列表 */
 
 
-/* ============ v9532 妆容页：妆容类型一排等宽均匀排列（右端对齐卡片右边，不换行不超出） ============ */
+/* ============ v9532/v9533 妆容类型 + 护肤皮肤状态：一排等宽均匀排列（右端对齐卡片右边，不换行不超出） ============ */
 .skincare-page .sk-status-tags.is-grid { display: grid; gap: 7px; }
 .skincare-page .sk-status-tags.is-grid .sk-tag-cell { display: flex; min-width: 0; }
-.skincare-page .sk-status-tags.is-grid .sk-status-tag { width: 100%; text-align: center; box-sizing: border-box; white-space: nowrap; padding-left: 6px; padding-right: 6px; }
+.skincare-page .sk-status-tags.is-grid .sk-status-tag { width: 100%; text-align: center; box-sizing: border-box; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-left: 6px; padding-right: 6px; }

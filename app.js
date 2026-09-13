@@ -12567,7 +12567,7 @@ function renderSkincarePage() {
   // v9434：内部重绘前必须先清空 content，否则每次点击都会叠加一份新页面（旧状态滞留视口，刷新才看到结果）
   content.innerHTML = '';
   const sc = state.skincare;
-  if (greetLine) greetLine.textContent = '护肤日常';
+  if (greetLine) greetLine.textContent = '护肤';
   const today = getTodayKey();
   if (!sc.log) sc.log = {};
   if (!sc.log[today]) sc.log[today] = { done: 0, total: 0 };
@@ -12575,10 +12575,15 @@ function renderSkincarePage() {
   const view = skViewDate || today;
   const isToday = view === today;
   if (!sc.skinStatus) sc.skinStatus = {};
-  // v9463：自定义皮肤状态池（默认 5 项；缺失/为空时回默认）
+  // v9463：自定义皮肤状态池（默认 6 项；缺失/为空时回默认）
   if (!Array.isArray(sc.skinOpts) || sc.skinOpts.length === 0) {
-    sc.skinOpts = ['稳定', '干燥', '出油', '敏感', '长痘'];
+    sc.skinOpts = ['稳定', '干燥', '出油', '敏感', '长痘', '闭口'];
     saveSkincare();
+  }
+  // v9533：新增「闭口」状态（一次性补进旧数据；用户之后手动删除不再回补）
+  if (localStorage.getItem('xenos-skin-close-v9533') === null) {
+    if (!sc.skinOpts.includes('闭口')) { sc.skinOpts.push('闭口'); saveSkincare(); }
+    localStorage.setItem('xenos-skin-close-v9533', '1');
   }
   // v9459：默认打卡内容改版（早间洁面/水乳/防晒、晚间洁面/面膜/水乳、其他护理）——
   // 旧默认（含「温水洗脸」等旧条目）或缺「其他护理」组 → 整体替换为新的默认 routine（保留 notes/skinStatus/log）
@@ -12662,7 +12667,7 @@ function renderSkincarePage() {
     <div class="domain-hero">
       <div class="domain-head">
         <div>
-          <h3 class="domain-title">护肤日常</h3>
+          <h3 class="domain-title">护肤</h3>
         </div>
       </div>
     </div>
@@ -12684,7 +12689,7 @@ function renderSkincarePage() {
 
     <div class="sk-section" data-sk-section="status">
       <div class="sk-section-head">${icon('star', 14)} <span>今日皮肤状态</span></div>
-      <div class="sk-status-tags" id="sk-status-tags">
+      <div class="sk-status-tags is-grid" id="sk-status-tags" style="grid-template-columns: repeat(${sc.skinOpts.length}, 1fr)">
         ${sc.skinOpts.map(t => `<span class="sk-tag-cell">
           <button class="sk-status-tag ${sc.skinStatus && sc.skinStatus[view] === t ? 'on' : ''}" data-sk-tag="${escapeHTML(t)}">${escapeHTML(t)}</button>
           ${isToday ? `<span class="sk-tag-acts">
