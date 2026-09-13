@@ -10509,6 +10509,43 @@ if (localStorage.getItem('xenos-looks-sub-reset-v9517') === null) {
   });
   localStorage.setItem('xenos-looks-sub-reset-v9517', '1');
 }
+// v9557：旅行体验——「小幅拓展周」的内容并入「入门适应周」（阶段合并，取消阶段切换）；一次性迁移。
+if (localStorage.getItem('xenos-travel-merge-v9557') === null) {
+  try {
+    const t = state.travel;
+    if (t && t.phases) {
+      const keys = Object.keys(t.phases);
+      const keepKey = t.phases.adapt ? 'adapt' : keys[0];
+      const keep = t.phases[keepKey];
+      if (keep) {
+        keys.forEach(function (key) {
+          if (key === keepKey) return;
+          const src = t.phases[key] || {};
+          (src.places || []).forEach(function (pl) {
+            if (!keep.places) keep.places = [];
+            if (!keep.places.some(function (x) { return x.id === pl.id; })) keep.places.push(pl);
+          });
+          (src.actions || []).forEach(function (a) {
+            if (!keep.actions) keep.actions = [];
+            if (!keep.actions.some(function (x) { return x.id === a.id; })) keep.actions.push(a);
+          });
+          (src.discoveries || []).forEach(function (d) {
+            if (!keep.discoveries) keep.discoveries = [];
+            if (!keep.discoveries.some(function (x) { return x.id === d.id; })) keep.discoveries.push(d);
+          });
+          if (src.inspirationGuide && (keep.inspirationGuide || '').indexOf(src.inspirationGuide) < 0) {
+            keep.inspirationGuide = keep.inspirationGuide ? (keep.inspirationGuide + ' ' + src.inspirationGuide) : src.inspirationGuide;
+          }
+          delete t.phases[key];
+        });
+        t.phase = keepKey;
+        saveTravel();
+      }
+    }
+  } catch (e) { /* noop */ }
+  localStorage.setItem('xenos-travel-merge-v9557', '1');
+}
+
 // v9523：穿搭/妆容/仪态 之前并未真正打卡，清空残留 checkin+log 并重建 domains.looks.log（只保留护肤 dayIds），
 // 使日期选择器/周统计不再显示这三模块的历史完成圆点。
 if (localStorage.getItem('xenos-looks-clean-v9523') === null) {
@@ -12154,7 +12191,7 @@ function renderTravelPage() {
   page.style.cssText = modSkinStyle('#7FB0D3');
   if (greetLine) greetLine.textContent = '旅行体验';
   const t = state.travel || JSON.parse(JSON.stringify(DEFAULT_TRAVEL));
-  const ph = t.phases[t.phase] || t.phases.adapt;
+  const ph = t.phases[t.phase] || t.phases.adapt || Object.values(t.phases)[0];
   const today = getTodayKey();
   const ws = getWeekStart();
   let weekPts = 0;
@@ -12164,7 +12201,6 @@ function renderTravelPage() {
   const ckCats = (t.checkin && Array.isArray(t.checkin.categories)) ? t.checkin.categories : [];
   const checkedCount = ckCats.reduce((n, c) => n + c.places.filter(p => p.checked).length, 0);
   const totalPlaces = ckCats.reduce((n, c) => n + c.places.length, 0);
-  const phaseIds = Object.keys(t.phases);
 
   function travelSuggest() {
     if (weekPts > 0 && departed > 0) return '这周已经迈出轻量出门的第一步啦，顺着节奏慢慢来，旅行从楼下开始就很美好 🌿';
@@ -12215,16 +12251,6 @@ function renderTravelPage() {
       <h3 class="sub-title">旅行体验 <span class="sub-spark">${icon('sparkle', 14)}</span></h3>
     </div>
 
-    <div class="module-phase-tabs">
-      ${phaseIds.map(id => `<button class="module-phase-tab ${id === t.phase ? 'active' : ''}" data-phase="${id}">${escapeHTML(t.phases[id].name)}</button>`).join('')}
-    </div>
-
-    <div class="module-hero module-hero-travel">
-      <div class="mh-body">
-        <h4>待出发清单 · ${escapeHTML(ph.name)}</h4>
-      </div>
-    </div>
-
     <div class="section-card module-card">
       <div class="module-card-head">
         <span class="module-card-icon" style="color:#7FB0D3">${icon('mountain', 14)}</span>
@@ -12273,15 +12299,6 @@ function renderTravelPage() {
   content.appendChild(page);
 
   page.querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', () => selectItem(b.dataset.go)));
-
-  // 切换阶段
-  page.querySelectorAll('.module-phase-tab').forEach(tab => {
-    tab.addEventListener('click', () => {
-      t.phase = tab.dataset.phase;
-      saveTravel();
-      renderTravelPage();
-    });
-  });
 
   // 想去的地方：状态切换 待规划 ↔ 已出发（有积分则计入）
   page.querySelectorAll('#travel-places .module-status').forEach(el => {
