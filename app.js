@@ -12150,7 +12150,8 @@ function renderTravelPage() {
   // 关键：内部 toggle / 切阶段 / + 按钮会递归调用本函数，必须先清空防止整页叠加
   content.innerHTML = '';
   const page = document.createElement('div');
-  page.className = 'page';
+  page.className = 'page skincare-page slow-skin';
+  page.style.cssText = modSkinStyle('#7FB0D3');
   if (greetLine) greetLine.textContent = '旅行体验';
   const t = state.travel || JSON.parse(JSON.stringify(DEFAULT_TRAVEL));
   const ph = t.phases[t.phase] || t.phases.adapt;
@@ -12386,7 +12387,8 @@ function renderTravelCheckinPage() {
   // 关键：内部 toggle / + 按钮 / 编辑会递归调用本函数，必须先清空防止整页叠加
   content.innerHTML = '';
   const page = document.createElement('div');
-  page.className = 'page';
+  page.className = 'page skincare-page slow-skin';
+  page.style.cssText = modSkinStyle('#7FB0D3');
   if (greetLine) greetLine.textContent = '地点打卡';
   const t = state.travel || JSON.parse(JSON.stringify(DEFAULT_TRAVEL));
   if (!t.checkin || !Array.isArray(t.checkin.categories)) t.checkin = JSON.parse(JSON.stringify(DEFAULT_TRAVEL.checkin));
@@ -12569,7 +12571,8 @@ function renderSocialPage() {
   // 关键：内部 toggle / + 按钮会递归调用本函数，必须先清空防止整页叠加
   content.innerHTML = '';
   const page = document.createElement('div');
-  page.className = 'page';
+  page.className = 'page skincare-page slow-skin';
+  page.style.cssText = modSkinStyle('#A99BD6');
   if (greetLine) greetLine.textContent = '爱好拓展';
   const s = state.social || JSON.parse(JSON.stringify(DEFAULT_SOCIAL));
   const today = getTodayKey();
@@ -14525,6 +14528,76 @@ function slowWeekStats(key) {
 function slowStatsCard(cfg, stats, items) {
 }
 
+// ============ v9553：暂缓模块「模块色皮肤」（摄影审美为样板） ============
+// 由模块图标色派生同色系：--slc 主色 / --slcb 浅色描边 / --slcd 深一档文字 / --slcbg 浅底
+function _mixHex(hex, target, ratio) {
+  const p = String(hex || '#7FB0D3').replace('#', '');
+  const q = String(target).replace('#', '');
+  const f = (h) => (h.length === 3 ? h.split('').map(c => c + c).join('') : h);
+  const a = f(p), b = f(q);
+  const m = (i) => Math.round(parseInt(a.substr(i, 2), 16) * (1 - ratio) + parseInt(b.substr(i, 2), 16) * ratio);
+  return '#' + [0, 2, 4].map(i => ('0' + m(i).toString(16)).slice(-2)).join('');
+}
+function modSkinStyle(color) {
+  const c = color || '#7FB0D3';
+  return `--slc:${c};--slcb:${_mixHex(c, '#FFFFFF', 0.72)};--slcd:${_mixHex(c, '#000000', 0.18)};--slcbg:${_mixHex(c, '#FFFFFF', 0.88)};`;
+}
+// 各模块「回看日期」（null = 今天）
+const SLOW_VIEW = { photography: null, cert: null, homeorg: null, music: null };
+// 日期选择器圆点：该模块自己的打卡/积分（不与其他模块共享）
+function slowDateStatus(m) {
+  return function (k) {
+    const c = ((m && m.checkin) || {})[k] || {};
+    if (c.done) return 'orange';
+    return Number(((m && m.log) || {})[k] || 0) > 0 ? 'green' : null;
+  };
+}
+// 迷你日期（摄影审美同款）：点日期回看历史、点「今天」返回
+function bindSlowMiniDate(page, key, m, rerender) {
+  if (!page || !rerender) return;
+  const today = getTodayKey();
+  const view = SLOW_VIEW[key] || today;
+  const md = page.querySelector('.sk-mini-date');
+  if (!md) return;
+  const tb = md.querySelector('.sk-md-today');
+  if (tb) tb.addEventListener('click', () => { SLOW_VIEW[key] = null; rerender(); });
+  const pill = md.querySelector('.sk-md-pill');
+  if (pill) pill.addEventListener('click', () => {
+    openDatePicker({
+      initial: view, max: today, dayStatus: slowDateStatus(m),
+      onSelect: (k) => { SLOW_VIEW[key] = k > today ? today : k; rerender(); }
+    });
+  });
+}
+// 本周统计热力图（摄影审美同款）
+function slowHeatSectionHTML(m, heatIcon, title) {
+  const weekDates = [];
+  for (let i = 0; i < 7; i++) weekDates.push(shiftDate(getWeekStart(), i));
+  const dots = weekDates.map(dk => {
+    const ck = (m.checkin || {})[dk] || {};
+    const pts = Number((m.log || {})[dk] || 0);
+    const lvl = ck.done ? 3 : (pts > 0 ? 2 : 0);
+    return `<span class="ih-dot lvl${lvl}"></span>`;
+  }).join('');
+  return `<div class="sk-section">
+      <div class="sk-section-head">${icon('chart', 14)} <span>${title}</span><div class="insp-heat-legend sk-week-legend"><i class="ht-low"></i><i class="ht-mid"></i><i class="ht-high"></i>完成度 低 → 高</div></div>
+      <div class="insp-heatmap-grid">
+        <div class="ih-row ih-header-row"><span></span>${['周一', '周二', '周三', '周四', '周五', '周六', '周日'].map(l => `<span class="ih-day">${l}</span>`).join('')}</div>
+        <div class="ih-row"><span class="ih-icon">${icon(heatIcon, 12)}</span>${dots}</div>
+      </div>
+    </div>`;
+}
+// 多行文本框自动长高（可手动换行 / 写满自动折行，无滚动条）
+function bindSlowTextarea(page) {
+  if (!page) return;
+  const grow = (el) => { el.style.height = 'auto'; el.style.height = Math.max(32, el.scrollHeight + 2) + 'px'; };
+  page.querySelectorAll('textarea.pf-textarea').forEach(ta => {
+    ta.addEventListener('input', () => grow(ta));
+    ta.addEventListener('keydown', (e) => { if (e.key === 'Enter') setTimeout(() => grow(ta), 0); });
+    grow(ta);
+  });
+}
+
 // 今日打卡卡片（字段可配置）
 function slowCheckinCard(cfg, opts) {
   const m = state[cfg.key] || {};
@@ -14826,15 +14899,7 @@ function renderPhotographyPage() {
     bindDateTrigger(page.querySelector('#ph-date'), { initial: today, format: formatDateCN, dayStatus: () => null });
 
     // v9551：心得笔记 / 摘抄感悟 —— 可手动换行（Enter）、写满自动折行，高度随行数变化，无滚动条
-    const autoGrow = (el) => {
-      el.style.height = 'auto';
-      el.style.height = Math.max(32, el.scrollHeight + 2) + 'px';
-    };
-    page.querySelectorAll('textarea.pf-textarea').forEach(ta => {
-      ta.addEventListener('input', () => autoGrow(ta));
-      ta.addEventListener('keydown', (e) => { if (e.key === 'Enter') setTimeout(() => autoGrow(ta), 0); });
-      autoGrow(ta);
-    });
+    bindSlowTextarea(page);
 
     // 照片：图标按钮唤起文件选择（与穿搭页图标按钮同款）
     const imgBtn = page.querySelector('#ph-img-btn');
@@ -14938,43 +15003,58 @@ function renderPhotographyPage() {
 }
 
 // ==================== 技能考证 ====================
+// ==================== 技能考证 ====================
 function renderCertPage() {
   content.innerHTML = '';
   const cfg = SLOW_MODULE_DEF.cert;
   if (!state.cert) state.cert = JSON.parse(JSON.stringify(DEFAULT_CERT));
   const m = state.cert;
   const today = getTodayKey();
+  const view = SLOW_VIEW.cert || today;
+  const isToday = view === today;
   const stats = slowWeekStats('cert');
   const page = document.createElement('div');
-  page.className = 'page';
+  // v9553：参考摄影审美——复用护肤页视觉体系 + 模块色皮肤（描边/底色/文字由图标色派生）
+  page.className = 'page skincare-page slow-skin';
+  page.style.cssText = modSkinStyle(cfg.color);
   if (greetLine) greetLine.textContent = '技能考证';
 
+  const goal = m.goal || { name: '', deadline: '' };
   const total = m.tasks.length;
   const doneCount = m.tasks.filter(t => t.done).length;
   const pct = total ? Math.round(doneCount / total * 100) : 0;
-  const goal = m.goal || { name: '', deadline: '' };
-
-  function certSuggest() {
-    if (stats.times >= 3) return '这周备考节奏不错，可以给自己留半天休息，别把弦绷太紧 📜';
-    if (stats.times > 0) return '已经翻开书了就很棒，下次只啃一个小节，不求多。';
-    return '先只做一件事：把证书名称和截止日期写下来，其他的慢慢来。';
-  }
+  const pend = m._pendingImgs || [];
+  // 记录列表：长期累积（添加日期 ≤ 查看日期），最新在前
+  const notes = (m.records || []).filter(r => !r.date || r.date <= view).slice().reverse();
 
   page.innerHTML = `
-    ${slowPageHead(cfg)}
+    <div class="domain-hero"><div class="domain-head"><div><h3 class="domain-title">技能考证</h3></div></div></div>
+
+    <div class="sk-mini-date">${skMiniDateHTML(view)}</div>
+    ${isToday
+      ? `<div class="module-rule-banner"><span class="mrb-icon">${icon('info', 12)}</span><span class="mrb-text">备考不用一次啃完：每天一个小节、一套真题就够；把证书名称和截止日期写下来，心里就有底了。</span></div>`
+      : `<div class="sk-hist-tip">${icon('info', 12)} 正在查看历史记录 · 只读不可更改（如需修改请告知）</div>`}
 
     <div class="section-card module-card">
       <div class="module-card-head">
         <span class="module-card-icon" style="color:${cfg.color}">${icon('target', 14)}</span>
         <span class="soft-card-title" style="margin:0;">目标设置</span>
+        <span class="sk-pending${goal.name ? ' ok' : ''}">${goal.name ? '已设定' : '待设定'}</span>
       </div>
+      ${isToday ? `
       <div class="slow-field"><span class="slow-label">证书名称</span><input class="pf-input" id="ct-name" value="${escapeHTML(goal.name || '')}" placeholder="例：教师资格证"></div>
       <div class="slow-field"><span class="slow-label">截止日期</span><div class="pf-input pf-date-trigger" id="ct-deadline" data-val="${escapeHTML(goal.deadline || '')}">${goal.deadline ? formatDateCN(goal.deadline) : '轻点选择'}</div></div>
-      <div class="focus-actions" style="margin-top:6px;"><button class="gold-btn" id="ct-goal-save">保存目标</button></div>
+      <div class="focus-actions"><button class="gold-btn" id="ct-goal-save">保存目标</button></div>` : `
+      <div class="slow-field"><span class="slow-label">证书名称</span><div class="pf-input" style="border:none;background:transparent;padding-left:0">${escapeHTML(goal.name || '未设定')}</div></div>
+      <div class="slow-field"><span class="slow-label">截止日期</span><div class="pf-input" style="border:none;background:transparent;padding-left:0">${goal.deadline ? formatDateCN(goal.deadline) : '未设定'}</div></div>`}
+      <div class="slow-progress-row">
+        <div class="slow-progress-bar"><i class="slow-progress-fill" style="width:${pct}%;background:${cfg.color}"></i></div>
+      </div>
     </div>
 
     ${slowCheckinCard(cfg, {
       title: '每日备考打卡',
+      view,
       fields: [
         { key: 'content', label: '学习内容', placeholder: '例：第三章考点 / 真题一套' },
         { key: 'minutes', label: '学习时长', type: 'number', placeholder: '60' }
@@ -14985,79 +15065,111 @@ function renderCertPage() {
       <div class="module-card-head">
         <span class="module-card-icon" style="color:${cfg.color}">${icon('list', 14)}</span>
         <span class="soft-card-title" style="margin:0;">学习任务清单</span>
-        <span class="module-card-meta">${doneCount}/${total}</span>
+        <span class="sk-pending ok">${doneCount}/${total}</span>
       </div>
       <div class="module-list" id="ct-tasks">
-        ${m.tasks.map(t => slowTaskItem(t, 'ct-task')).join('') || slowEmpty('还没有备考任务')}
+        ${m.tasks.map(t => slowTaskItem(t, 'ct-task')).join('')}
       </div>
-      <div class="slow-add-row">
+      ${isToday ? `<div class="slow-add-row">
         <input class="pf-input" id="ct-task-input" placeholder="添加备考任务，如：刷一套真题">
         <button class="gold-btn" id="ct-task-add">添加</button>
-      </div>
+      </div>` : ''}
     </div>
 
     <div class="section-card module-card">
       <div class="module-card-head">
         <span class="module-card-icon" style="color:${cfg.color}">${icon('note', 14)}</span>
         <span class="soft-card-title" style="margin:0;">资料笔记库</span>
-        <span class="module-card-meta">${m.records.length} 条</span>
+        <span class="sk-pending ok">${notes.length} 条</span>
       </div>
+      ${isToday ? `
       <div class="slow-field"><span class="slow-label">笔记标题</span><input class="pf-input" id="ct-note-title" placeholder="例：第三章重点公式"></div>
-      <div class="slow-field"><span class="slow-label">资料片段</span><input class="pf-input" id="ct-note-content" placeholder="粘贴保存的备考资料内容"></div>
-      <div class="focus-actions" style="margin-top:6px;"><button class="gold-btn" id="ct-note-add">保存笔记</button></div>
+      <div class="slow-field"><span class="slow-label">资料片段</span><textarea class="pf-input pf-textarea" id="ct-note-content" rows="1" placeholder="粘贴保存的备考资料内容"></textarea></div>
+      <div class="slow-field"><span class="slow-label">配图</span>
+        <button class="ph-img-btn" id="ct-img-btn" aria-label="选择图片">${icon('image', 13)} 选择图片</button>
+        <input id="ct-img" type="file" accept="image/*" multiple style="display:none">
+      </div>
+      <div class="ph-img-preview" id="ct-img-preview">${pend.length ? `<div class="lk-insp-grid is-pending" data-ct-pending>${_pendingCardsHTML(pend, '待保存', today)}</div>` : ''}</div>
+      <div class="focus-actions"><button class="gold-btn" id="ct-note-add">保存笔记</button></div>` : ''}
       <div class="slow-record-list" id="ct-notes">
-        ${m.records.length ? m.records.map(r => slowRecordItem(r, 'ct-record', false)).join('') : slowEmpty('还没有笔记')}
+        ${notes.map(r => slowRecordItem(r, 'ct-record', true)).join('')}
       </div>
     </div>
 
-    <div class="section-card module-card">
-      <div class="module-card-head">
-        <span class="module-card-icon" style="color:${cfg.color}">${icon('chartLine', 14)}</span>
-        <span class="soft-card-title" style="margin:0;">备考进度</span>
-        <span class="module-card-meta">${pct}%</span>
-      </div>
-      <div class="slow-progress-row">
-        <div class="slow-progress-bar"><i class="slow-progress-fill" style="width:${pct}%;background:${cfg.color}"></i></div>
-      </div>
-    </div>
-
-    ${slowStatsCard(cfg, stats, [
-      { value: stats.minutes, label: '本周分钟' },
-      { value: stats.times, label: '学习次数' },
-      { value: stats.pts, label: '本周积分' }
-    ])}
+    ${slowHeatSectionHTML(m, 'scroll', '本周备考统计')}
   `;
   content.appendChild(page);
 
-  bindSlowInsightToggle(page);
   bindSlowCheckin(page, cfg, renderCertPage);
   bindSlowTasks(page, cfg, '#ct-tasks .module-list-item', 'tasks', 'ct-task', renderCertPage);
+  bindSlowMiniDate(page, 'cert', m, renderCertPage);
+  bindSlowImagePreview(page);
 
-  // v9274：替换浏览器默认日期为工作台触发器
-  bindDateTrigger(page.querySelector('#ct-deadline'), { format: formatDateCN, placeholder: '轻点选择截止日' });
+  if (isToday) {
+    // v9274：替换浏览器默认日期为工作台触发器（此处的日期是普通日期，不显示完成圆点）
+    bindDateTrigger(page.querySelector('#ct-deadline'), { format: formatDateCN, placeholder: '轻点选择截止日', dayStatus: () => null });
+    bindSlowTextarea(page);
 
-  page.querySelector('#ct-goal-save').addEventListener('click', () => {
-    m.goal = {
-      name: (page.querySelector('#ct-name').value || '').trim(),
-      deadline: page.querySelector('#ct-deadline').dataset.val || ''
-    };
-    saveCert();
-    toast('目标已保存');
-    renderCertPage();
-  });
-
-  page.querySelector('#ct-note-add').addEventListener('click', () => {
-    const title = (page.querySelector('#ct-note-title').value || '').trim();
-    if (!title) { toast('先写个笔记标题吧'); return; }
-    m.records.unshift({
-      id: uid('ct-n'), title,
-      content: (page.querySelector('#ct-note-content').value || '').trim(),
-      date: today
+    page.querySelector('#ct-goal-save').addEventListener('click', () => {
+      m.goal = {
+        name: (page.querySelector('#ct-name').value || '').trim(),
+        deadline: page.querySelector('#ct-deadline').dataset.val || ''
+      };
+      saveCert();
+      toast('目标已保存');
+      renderCertPage();
     });
-    saveCert();
-    renderCertPage();
-    toast('笔记已保存');
-  });
+
+    // 多图添加（与摄影审美 / 穿搭同一套：多选多放 + 待保存预览 + 逐张删除）
+    const ctImgBtn = page.querySelector('#ct-img-btn');
+    const ctImgInput = page.querySelector('#ct-img');
+    const refreshCtPend = () => _renderPendingGrid(page.querySelector('#ct-img-preview'), '', 'data-ct-pending', m._pendingImgs || [], '待保存', today, (i) => {
+      m._pendingImgs.splice(i, 1);
+      saveCert();
+      refreshCtPend();
+    });
+    refreshCtPend();
+    if (ctImgBtn && ctImgInput) {
+      ctImgBtn.addEventListener('click', () => ctImgInput.click());
+      ctImgInput.addEventListener('change', async () => {
+        const files = Array.prototype.slice.call(ctImgInput.files || []);
+        if (!files.length) return;
+        m._pendingImgs = m._pendingImgs || [];
+        for (let i = 0; i < files.length; i++) {
+          try {
+            const url = await fileToResizedDataURL(files[i], 720, 0.6);
+            if (url) m._pendingImgs.push(url);
+          } catch (e) { /* 单张失败跳过 */ }
+        }
+        saveCert();
+        refreshCtPend();
+        ctImgInput.value = '';
+        if (m._pendingImgs.length) toast('已选 ' + m._pendingImgs.length + ' 张，点「保存笔记」入库', 'info');
+      });
+    }
+
+    page.querySelector('#ct-note-add').addEventListener('click', () => {
+      const title = (page.querySelector('#ct-note-title').value || '').trim();
+      if (!title) { toast('先写个笔记标题吧'); return; }
+      const content = (page.querySelector('#ct-note-content').value || '').trim();
+      const imgs = (m._pendingImgs && m._pendingImgs.length) ? m._pendingImgs.slice() : [''];
+      imgs.forEach(img => m.records.unshift({ id: uid('ct-n'), title, content, date: today, img }));
+      delete m._pendingImgs;
+      saveCert();
+      renderCertPage();
+      toast(imgs.length > 1 ? ('已保存 ' + imgs.length + ' 条笔记') : '笔记已保存');
+    });
+
+    const addTask = () => {
+      const text = (page.querySelector('#ct-task-input').value || '').trim();
+      if (!text) return;
+      m.tasks.push({ id: uid('ct-t'), text, points: 3, done: false, date: '' });
+      saveCert();
+      renderCertPage();
+    };
+    page.querySelector('#ct-task-add').addEventListener('click', addTask);
+    page.querySelector('#ct-task-input').addEventListener('keydown', (e) => { if (e.key === 'Enter') addTask(); });
+  }
 
   page.querySelectorAll('[data-del-type="ct-record"]').forEach(b => {
     b.addEventListener('click', (e) => {
@@ -15066,18 +15178,9 @@ function renderCertPage() {
       if (i >= 0) { m.records.splice(i, 1); saveCert(); renderCertPage(); }
     });
   });
-
-  const addTask = () => {
-    const text = (page.querySelector('#ct-task-input').value || '').trim();
-    if (!text) return;
-    m.tasks.push({ id: uid('ct-t'), text, points: 3, done: false, date: '' });
-    saveCert();
-    renderCertPage();
-  };
-  page.querySelector('#ct-task-add').addEventListener('click', addTask);
-  page.querySelector('#ct-task-input').addEventListener('keydown', (e) => { if (e.key === 'Enter') addTask(); });
 }
 
+// ==================== 家居整理 ====================
 // ==================== 家居整理 ====================
 function renderHomeOrgPage() {
   content.innerHTML = '';
@@ -15085,21 +15188,31 @@ function renderHomeOrgPage() {
   if (!state.homeorg) state.homeorg = JSON.parse(JSON.stringify(DEFAULT_HOMEORG));
   const m = state.homeorg;
   const today = getTodayKey();
+  const view = SLOW_VIEW.homeorg || today;
+  const isToday = view === today;
   const stats = slowWeekStats('homeorg');
   const page = document.createElement('div');
-  page.className = 'page';
+  // v9553：参考摄影审美——复用护肤页视觉体系 + 模块色皮肤
+  page.className = 'page skincare-page slow-skin';
+  page.style.cssText = modSkinStyle(cfg.color);
   if (greetLine) greetLine.textContent = '家居整理';
 
-  function homeSuggest() {
-    if (stats.times >= 3) return '家里应该清爽多了，记得奖励自己一杯喜欢的饮料 🏠';
-    if (stats.times > 0) return '已经动手了就好，下次只整理一个抽屉，不用一整间。';
-    return '从最小的一块开始：桌面的一角，5 分钟就够。';
-  }
+  const pendItem = m._pendingItemImgs || [];
+  const pendNote = m._pendingNoteImgs || [];
+  const items = (m.records || []).slice().reverse();
+  const notes = (m.notes || []).filter(r => !r.date || r.date <= view).slice().reverse();
 
   page.innerHTML = `
-    ${slowPageHead(cfg)}
+    <div class="domain-hero"><div class="domain-head"><div><h3 class="domain-title">家居整理</h3></div></div></div>
+
+    <div class="sk-mini-date">${skMiniDateHTML(view)}</div>
+    ${isToday
+      ? `<div class="module-rule-banner"><span class="mrb-icon">${icon('info', 12)}</span><span class="mrb-text">不用一次整理一整间：每次只收拾一小块（一个抽屉、一层架子），整理完记一下位置，下次更好找。</span></div>`
+      : `<div class="sk-hist-tip">${icon('info', 12)} 正在查看历史记录 · 只读不可更改（如需修改请告知）</div>`}
+
     ${slowCheckinCard(cfg, {
       title: '今日整理打卡',
+      view,
       fields: [
         { key: 'area', label: '整理区域', placeholder: '例：衣柜 / 书桌 / 厨房' },
         { key: 'minutes', label: '耗时（分钟）', type: 'number', placeholder: '20' }
@@ -15110,40 +15223,46 @@ function renderHomeOrgPage() {
       <div class="module-card-head">
         <span class="module-card-icon" style="color:${cfg.color}">${icon('list', 14)}</span>
         <span class="soft-card-title" style="margin:0;">整理任务清单</span>
-        <span class="module-card-meta">${m.tasks.filter(t => t.done && t.date === today).length}/${m.tasks.length}</span>
+        <span class="sk-pending ok">${m.tasks.filter(t => t.done && t.date === today).length}/${m.tasks.length}</span>
       </div>
       <div class="module-list" id="hm-tasks">
-        ${m.tasks.map(t => slowTaskItem(t, 'hm-task')).join('') || slowEmpty('还没有整理任务')}
+        ${m.tasks.map(t => slowTaskItem(t, 'hm-task')).join('')}
       </div>
-      <div class="slow-add-row">
+      ${isToday ? `<div class="slow-add-row">
         <input class="pf-input" id="hm-task-input" placeholder="添加待整理任务，如：清理冰箱">
         <button class="gold-btn" id="hm-task-add">添加</button>
-      </div>
+      </div>` : ''}
     </div>
 
     <div class="section-card module-card">
       <div class="module-card-head">
         <span class="module-card-icon" style="color:${cfg.color}">${icon('box', 14)}</span>
         <span class="soft-card-title" style="margin:0;">家居物品库存</span>
-        <span class="module-card-meta">${m.records.length} 件</span>
+        <span class="sk-pending ok">${items.length} 件</span>
       </div>
+      ${isToday ? `
       <div class="slow-field"><span class="slow-label">物品名称</span><input class="pf-input" id="hm-item-name" placeholder="例：洗衣液"></div>
       <div class="slow-field"><span class="slow-label">数量</span><input class="pf-input" id="hm-item-qty" type="number" placeholder="1"></div>
       <div class="slow-field"><span class="slow-label">购入时间</span><div class="pf-input pf-date-trigger" id="hm-item-buy" data-val="${today}">${formatDateCN(today)}</div></div>
-      <div class="slow-field"><span class="slow-label">过期提醒</span><div class="pf-input pf-date-trigger" id="hm-item-exp" data-val="" placeholder="可选">轻点选择</div></div>
-      <div class="focus-actions" style="margin-top:6px;"><button class="gold-btn" id="hm-item-add">录入物品</button></div>
+      <div class="slow-field"><span class="slow-label">过期提醒</span><div class="pf-input pf-date-trigger" id="hm-item-exp" data-val="">轻点选择</div></div>
+      <div class="slow-field"><span class="slow-label">图片</span>
+        <button class="ph-img-btn" id="hm-item-img-btn" aria-label="选择图片">${icon('image', 13)} 选择图片</button>
+        <input id="hm-item-img" type="file" accept="image/*" multiple style="display:none">
+      </div>
+      <div class="ph-img-preview" id="hm-item-img-preview">${pendItem.length ? `<div class="lk-insp-grid is-pending" data-hm-item-pending>${_pendingCardsHTML(pendItem, '待录入', today)}</div>` : ''}</div>
+      <div class="focus-actions"><button class="gold-btn" id="hm-item-add">录入物品</button></div>` : ''}
       <div class="slow-record-list" id="hm-items">
-        ${m.records.length ? m.records.map(r => `
-          <div class="slow-record" data-rec-id="${r.id}">
-            <div class="slow-record-main">
-              <div class="slow-record-name">${escapeHTML(r.name || '未命名')} ×${r.qty || 1}</div>
-              <div class="slow-record-meta">
-                <span class="slow-tag">购入 ${escapeHTML(r.buyDate || '')}</span>
-                ${r.expiry ? `<span class="slow-tag">${r.expiry <= today ? '已过期' : '保质期至 ' + r.expiry}</span>` : ''}
-              </div>
+        ${items.map(r => `<div class="slow-record" data-rec-id="${r.id}">
+          ${r.img ? `<img class="slow-record-img" src="${r.img}" alt="${escapeHTML(r.name || '')}" data-view-img="${r.img}">` : ''}
+          <div class="slow-record-main">
+            <div class="slow-record-name">${escapeHTML(r.name || '未命名')} ×${r.qty || 1}</div>
+            <div class="slow-record-meta">
+              <span class="slow-tag">购入 ${escapeHTML(r.buyDate || '')}</span>
+              ${r.expiry ? `<span class="slow-tag">${r.expiry <= today ? '已过期' : '保质期至 ' + r.expiry}</span>` : ''}
             </div>
-            <button class="slow-record-del" data-del-type="hm-item" data-del-id="${r.id}" title="删除">${icon('delete', 12)}</button>
-          </div>`).join('') : ''}
+          </div>
+          <button class="slow-record-del" data-del-type="hm-item" data-del-id="${r.id}" title="删除">${icon('delete', 12)}</button>
+        </div>`).join('')}
       </div>
     </div>
 
@@ -15151,54 +15270,104 @@ function renderHomeOrgPage() {
       <div class="module-card-head">
         <span class="module-card-icon" style="color:${cfg.color}">${icon('note', 14)}</span>
         <span class="soft-card-title" style="margin:0;">整理心得笔记</span>
+        <span class="sk-pending ok">${notes.length} 条</span>
       </div>
-      <div class="slow-field"><span class="slow-label">心得</span><input class="pf-input" id="hm-note-input" placeholder="记下好用的收纳方法或灵感"></div>
-      <div class="focus-actions" style="margin-top:6px;"><button class="gold-btn" id="hm-note-add">保存心得</button></div>
+      ${isToday ? `
+      <div class="slow-field"><span class="slow-label">心得</span><textarea class="pf-input pf-textarea" id="hm-note-input" rows="1" placeholder="记下好用的收纳方法或灵感"></textarea></div>
+      <div class="slow-field"><span class="slow-label">配图</span>
+        <button class="ph-img-btn" id="hm-note-img-btn" aria-label="选择图片">${icon('image', 13)} 选择图片</button>
+        <input id="hm-note-img" type="file" accept="image/*" multiple style="display:none">
+      </div>
+      <div class="ph-img-preview" id="hm-note-img-preview">${pendNote.length ? `<div class="lk-insp-grid is-pending" data-hm-note-pending>${_pendingCardsHTML(pendNote, '待保存', today)}</div>` : ''}</div>
+      <div class="focus-actions"><button class="gold-btn" id="hm-note-add">保存心得</button></div>` : ''}
       <div class="slow-record-list" id="hm-notes">
-        ${(m.notes || []).length ? m.notes.map(r => slowRecordItem(r, 'hm-note', false)).join('') : ''}
+        ${notes.map(r => slowRecordItem(r, 'hm-note', true)).join('')}
       </div>
     </div>
 
-    ${slowStatsCard(cfg, stats, [
-      { value: stats.times, label: '本周整理次数' },
-      { value: stats.minutes, label: '本周分钟' },
-      { value: stats.pts, label: '本周积分' }
-    ])}
-
+    ${slowHeatSectionHTML(m, 'home', '本周整理统计')}
   `;
   content.appendChild(page);
 
-  bindSlowInsightToggle(page);
   bindSlowCheckin(page, cfg, renderHomeOrgPage);
   bindSlowTasks(page, cfg, '#hm-tasks .module-list-item', 'tasks', 'hm-task', renderHomeOrgPage);
+  bindSlowMiniDate(page, 'homeorg', m, renderHomeOrgPage);
+  bindSlowImagePreview(page);
 
-  // v9274：替换浏览器默认日期为工作台触发器
-  bindDateTrigger(page.querySelector('#hm-item-buy'), { initial: today, format: formatDateCN });
-  bindDateTrigger(page.querySelector('#hm-item-exp'), { format: formatDateCN, placeholder: '轻点选择' });
+  if (isToday) {
+    // v9274：替换浏览器默认日期为工作台触发器（普通日期，不显示完成圆点）
+    bindDateTrigger(page.querySelector('#hm-item-buy'), { initial: today, format: formatDateCN, dayStatus: () => null });
+    bindDateTrigger(page.querySelector('#hm-item-exp'), { format: formatDateCN, placeholder: '轻点选择', dayStatus: () => null });
+    bindSlowTextarea(page);
 
-  page.querySelector('#hm-item-add').addEventListener('click', () => {
-    const name = (page.querySelector('#hm-item-name').value || '').trim();
-    if (!name) { toast('先填写物品名称吧'); return; }
-    m.records.unshift({
-      id: uid('hm-i'), name,
-      qty: Number(page.querySelector('#hm-item-qty').value) || 1,
-      buyDate: page.querySelector('#hm-item-buy').dataset.val || today,
-      expiry: page.querySelector('#hm-item-exp').dataset.val || ''
+    // 多图添加：物品 / 心得（与摄影审美同一套）
+    const bindPicker = (btnSel, inputSel, prevSel, attr, storeKey, label) => {
+      const btn = page.querySelector(btnSel);
+      const input = page.querySelector(inputSel);
+      const refresh = () => _renderPendingGrid(page.querySelector(prevSel), '', attr, m[storeKey] || [], label, today, (i) => {
+        m[storeKey].splice(i, 1);
+        saveHomeOrg();
+        refresh();
+      });
+      refresh();
+      if (!btn || !input) return;
+      btn.addEventListener('click', () => input.click());
+      input.addEventListener('change', async () => {
+        const files = Array.prototype.slice.call(input.files || []);
+        if (!files.length) return;
+        m[storeKey] = m[storeKey] || [];
+        for (let i = 0; i < files.length; i++) {
+          try {
+            const url = await fileToResizedDataURL(files[i], 720, 0.6);
+            if (url) m[storeKey].push(url);
+          } catch (e) { /* 跳过 */ }
+        }
+        saveHomeOrg();
+        refresh();
+        input.value = '';
+      });
+    };
+    bindPicker('#hm-item-img-btn', '#hm-item-img', '#hm-item-img-preview', 'data-hm-item-pending', '_pendingItemImgs', '待录入');
+    bindPicker('#hm-note-img-btn', '#hm-note-img', '#hm-note-img-preview', 'data-hm-note-pending', '_pendingNoteImgs', '待保存');
+
+    page.querySelector('#hm-item-add').addEventListener('click', () => {
+      const name = (page.querySelector('#hm-item-name').value || '').trim();
+      if (!name) { toast('先填写物品名称吧'); return; }
+      const qty = Number(page.querySelector('#hm-item-qty').value) || 1;
+      const buyDate = page.querySelector('#hm-item-buy').dataset.val || today;
+      const expiry = page.querySelector('#hm-item-exp').dataset.val || '';
+      const imgs = (m._pendingItemImgs && m._pendingItemImgs.length) ? m._pendingItemImgs.slice() : [''];
+      imgs.forEach(img => m.records.unshift({ id: uid('hm-i'), name, qty, buyDate, expiry, img, date: today }));
+      delete m._pendingItemImgs;
+      saveHomeOrg();
+      renderHomeOrgPage();
+      toast(imgs.length > 1 ? ('已录入 ' + imgs.length + ' 件') : '已录入');
     });
-    saveHomeOrg();
-    renderHomeOrgPage();
-    toast('已录入');
-  });
 
-  page.querySelector('#hm-note-add').addEventListener('click', () => {
-    const text = (page.querySelector('#hm-note-input').value || '').trim();
-    if (!text) { toast('写点什么吧'); return; }
-    if (!m.notes) m.notes = [];
-    m.notes.unshift({ id: uid('hm-n'), title: '整理心得', note: text, date: today });
-    saveHomeOrg();
-    renderHomeOrgPage();
-    toast('已保存');
-  });
+    page.querySelector('#hm-note-add').addEventListener('click', () => {
+      const text = (page.querySelector('#hm-note-input').value || '').trim();
+      if (!text) { toast('写点什么吧'); return; }
+      const imgs = (m._pendingNoteImgs && m._pendingNoteImgs.length) ? m._pendingNoteImgs.slice() : [''];
+      imgs.forEach(img => {
+        if (!m.notes) m.notes = [];
+        m.notes.unshift({ id: uid('hm-n'), title: '整理心得', note: text, date: today, img });
+      });
+      delete m._pendingNoteImgs;
+      saveHomeOrg();
+      renderHomeOrgPage();
+      toast(imgs.length > 1 ? ('已保存 ' + imgs.length + ' 条心得') : '已保存');
+    });
+
+    const addTask = () => {
+      const text = (page.querySelector('#hm-task-input').value || '').trim();
+      if (!text) return;
+      m.tasks.push({ id: uid('hm-t'), text, points: 3, done: false, date: '' });
+      saveHomeOrg();
+      renderHomeOrgPage();
+    };
+    page.querySelector('#hm-task-add').addEventListener('click', addTask);
+    page.querySelector('#hm-task-input').addEventListener('keydown', (e) => { if (e.key === 'Enter') addTask(); });
+  }
 
   page.querySelectorAll('[data-del-type="hm-item"]').forEach(b => {
     b.addEventListener('click', (e) => {
@@ -15214,39 +15383,40 @@ function renderHomeOrgPage() {
       if (i >= 0) { m.notes.splice(i, 1); saveHomeOrg(); renderHomeOrgPage(); }
     });
   });
-
-  const addTask = () => {
-    const text = (page.querySelector('#hm-task-input').value || '').trim();
-    if (!text) return;
-    m.tasks.push({ id: uid('hm-t'), text, points: 3, done: false, date: '' });
-    saveHomeOrg();
-    renderHomeOrgPage();
-  };
-  page.querySelector('#hm-task-add').addEventListener('click', addTask);
-  page.querySelector('#hm-task-input').addEventListener('keydown', (e) => { if (e.key === 'Enter') addTask(); });
 }
 
+// ==================== 音乐练习 ====================
 function renderMusicPage() {
   content.innerHTML = '';
   const cfg = SLOW_MODULE_DEF.music;
   if (!state.music) state.music = JSON.parse(JSON.stringify(DEFAULT_MUSIC));
   const m = state.music;
   const today = getTodayKey();
+  const view = SLOW_VIEW.music || today;
+  const isToday = view === today;
   const stats = slowWeekStats('music');
   const page = document.createElement('div');
-  page.className = 'page';
+  // v9553：参考摄影审美——复用护肤页视觉体系 + 模块色皮肤
+  page.className = 'page skincare-page slow-skin';
+  page.style.cssText = modSkinStyle(cfg.color);
   if (greetLine) greetLine.textContent = '音乐练习';
 
-  function musicSuggest() {
-    if (stats.times >= 3) return '这周练得很勤，记得让嗓子/手指也休息一下 🎵';
-    if (stats.times > 0) return '已经开始了，下次只练一小段，慢一点反而更稳。';
-    return '先只听一首喜欢的曲子，跟着哼两句也算练习。';
-  }
+  const pendRec = m._pendingRecImgs || [];
+  const pendFav = m._pendingFavImgs || [];
+  const records = (m.records || []).filter(r => !r.date || r.date <= view).slice().reverse();
+  const favs = (m.favorites || []).filter(r => !r.date || r.date <= view).slice().reverse();
 
   page.innerHTML = `
-    ${slowPageHead(cfg)}
+    <div class="domain-hero"><div class="domain-head"><div><h3 class="domain-title">音乐练习</h3></div></div></div>
+
+    <div class="sk-mini-date">${skMiniDateHTML(view)}</div>
+    ${isToday
+      ? `<div class="module-rule-banner"><span class="mrb-icon">${icon('info', 12)}</span><span class="mrb-text">不用追求一次练好：每次只练一小段（一句旋律、一个和弦），听鉴赏曲目也算练习。</span></div>`
+      : `<div class="sk-hist-tip">${icon('info', 12)} 正在查看历史记录 · 只读不可更改（如需修改请告知）</div>`}
+
     ${slowCheckinCard(cfg, {
       title: '练习打卡',
+      view,
       fields: [
         { key: 'content', label: '练习项目', placeholder: '例：练歌 / 乐器 / 听鉴赏曲目' },
         { key: 'minutes', label: '练习时长', type: 'number', placeholder: '30' }
@@ -15257,28 +15427,34 @@ function renderMusicPage() {
       <div class="module-card-head">
         <span class="module-card-icon" style="color:${cfg.color}">${icon('list', 14)}</span>
         <span class="soft-card-title" style="margin:0;">练习任务清单</span>
-        <span class="module-card-meta">${m.tasks.filter(t => t.done && t.date === today).length}/${m.tasks.length}</span>
+        <span class="sk-pending ok">${m.tasks.filter(t => t.done && t.date === today).length}/${m.tasks.length}</span>
       </div>
       <div class="module-list" id="mu-tasks">
-        ${m.tasks.map(t => slowTaskItem(t, 'mu-task')).join('') || slowEmpty('还没有练习任务')}
+        ${m.tasks.map(t => slowTaskItem(t, 'mu-task')).join('')}
       </div>
-      <div class="slow-add-row">
+      ${isToday ? `<div class="slow-add-row">
         <input class="pf-input" id="mu-task-input" placeholder="添加练习任务，如：练熟副歌">
         <button class="gold-btn" id="mu-task-add">添加</button>
-      </div>
+      </div>` : ''}
     </div>
 
     <div class="section-card module-card">
       <div class="module-card-head">
         <span class="module-card-icon" style="color:${cfg.color}">${icon('music', 14)}</span>
         <span class="soft-card-title" style="margin:0;">曲目记录库</span>
-        <span class="module-card-meta">${m.records.length} 首</span>
+        <span class="sk-pending ok">${records.length} 首</span>
       </div>
+      ${isToday ? `
       <div class="slow-field"><span class="slow-label">曲目名称</span><input class="pf-input" id="mu-name" placeholder="例：天空之城"></div>
-      <div class="slow-field"><span class="slow-label">练习感受</span><input class="pf-input" id="mu-note" placeholder="哪里还不顺、哪里进步了"></div>
-      <div class="focus-actions" style="margin-top:6px;"><button class="gold-btn" id="mu-add">保存曲目</button></div>
+      <div class="slow-field"><span class="slow-label">练习感受</span><textarea class="pf-input pf-textarea" id="mu-note" rows="1" placeholder="哪里还不顺、哪里进步了"></textarea></div>
+      <div class="slow-field"><span class="slow-label">配图</span>
+        <button class="ph-img-btn" id="mu-img-btn" aria-label="选择图片">${icon('image', 13)} 选择图片</button>
+        <input id="mu-img" type="file" accept="image/*" multiple style="display:none">
+      </div>
+      <div class="ph-img-preview" id="mu-img-preview">${pendRec.length ? `<div class="lk-insp-grid is-pending" data-mu-rec-pending>${_pendingCardsHTML(pendRec, '待保存', today)}</div>` : ''}</div>
+      <div class="focus-actions"><button class="gold-btn" id="mu-add">保存曲目</button></div>` : ''}
       <div class="slow-record-list" id="mu-records">
-        ${m.records.length ? m.records.map(r => slowRecordItem(r, 'mu-record', false)).join('') : slowEmpty('还没有曲目记录')}
+        ${records.map(r => slowRecordItem(r, 'mu-record', true)).join('')}
       </div>
     </div>
 
@@ -15286,66 +15462,111 @@ function renderMusicPage() {
       <div class="module-card-head">
         <span class="module-card-icon" style="color:${cfg.color}">${icon('star', 14)}</span>
         <span class="soft-card-title" style="margin:0;">收藏鉴赏库</span>
-        <span class="module-card-meta">${m.favorites.length} 条</span>
+        <span class="sk-pending ok">${favs.length} 条</span>
       </div>
+      ${isToday ? `
       <div class="slow-field"><span class="slow-label">曲目</span><input class="pf-input" id="mu-fav-name" placeholder="想听 / 想学的曲子"></div>
       <div class="slow-field"><span class="slow-label">作者</span><input class="pf-input" id="mu-fav-artist" placeholder="演奏者 / 歌手（可选）"></div>
-      <div class="slow-field"><span class="slow-label">备注</span><input class="pf-input" id="mu-fav-note" placeholder="为什么想收藏"></div>
-      <div class="focus-actions" style="margin-top:6px;"><button class="gold-btn" id="mu-fav-add">收藏</button></div>
+      <div class="slow-field"><span class="slow-label">备注</span><textarea class="pf-input pf-textarea" id="mu-fav-note" rows="1" placeholder="为什么想收藏"></textarea></div>
+      <div class="slow-field"><span class="slow-label">配图</span>
+        <button class="ph-img-btn" id="mu-fav-img-btn" aria-label="选择图片">${icon('image', 13)} 选择图片</button>
+        <input id="mu-fav-img" type="file" accept="image/*" multiple style="display:none">
+      </div>
+      <div class="ph-img-preview" id="mu-fav-img-preview">${pendFav.length ? `<div class="lk-insp-grid is-pending" data-mu-fav-pending>${_pendingCardsHTML(pendFav, '待收藏', today)}</div>` : ''}</div>
+      <div class="focus-actions"><button class="gold-btn" id="mu-fav-add">收藏</button></div>` : ''}
       <div class="slow-record-list" id="mu-favs">
-        ${m.favorites.length ? m.favorites.map(r => `
-          <div class="slow-record" data-rec-id="${r.id}">
-            <div class="slow-record-main">
-              <div class="slow-record-name">${escapeHTML(r.name || '未命名')}</div>
-              <div class="slow-record-meta">
-                ${r.artist ? `<span class="slow-tag">${escapeHTML(r.artist)}</span>` : ''}
-                ${r.date ? `<span>${escapeHTML(r.date)}</span>` : ''}
-              </div>
-              ${r.note ? `<div class="slow-record-note">${escapeHTML(r.note)}</div>` : ''}
+        ${favs.map(r => `<div class="slow-record" data-rec-id="${r.id}">
+          ${r.img ? `<img class="slow-record-img" src="${r.img}" alt="${escapeHTML(r.name || '')}" data-view-img="${r.img}">` : ''}
+          <div class="slow-record-main">
+            <div class="slow-record-name">${escapeHTML(r.name || '未命名')}</div>
+            <div class="slow-record-meta">
+              ${r.artist ? `<span class="slow-tag">${escapeHTML(r.artist)}</span>` : ''}
+              ${r.date ? `<span>${escapeHTML(r.date)}</span>` : ''}
             </div>
-            <button class="slow-record-del" data-del-type="mu-fav" data-del-id="${r.id}" title="删除">${icon('delete', 12)}</button>
-          </div>`).join('') : slowEmpty('还没有收藏')}
+            ${r.note ? `<div class="slow-record-note">${escapeHTML(r.note)}</div>` : ''}
+          </div>
+          <button class="slow-record-del" data-del-type="mu-fav" data-del-id="${r.id}" title="删除">${icon('delete', 12)}</button>
+        </div>`).join('')}
       </div>
     </div>
 
-    ${slowStatsCard(cfg, stats, [
-      { value: stats.minutes, label: '本周分钟' },
-      { value: stats.times, label: '练习次数' },
-      { value: stats.pts, label: '本周积分' }
-    ])}
+    ${slowHeatSectionHTML(m, 'music', '本周练习统计')}
   `;
   content.appendChild(page);
 
-  bindSlowInsightToggle(page);
   bindSlowCheckin(page, cfg, renderMusicPage);
   bindSlowTasks(page, cfg, '#mu-tasks .module-list-item', 'tasks', 'mu-task', renderMusicPage);
+  bindSlowMiniDate(page, 'music', m, renderMusicPage);
+  bindSlowImagePreview(page);
 
-  page.querySelector('#mu-add').addEventListener('click', () => {
-    const name = (page.querySelector('#mu-name').value || '').trim();
-    if (!name) { toast('先写个曲目名吧'); return; }
-    m.records.unshift({
-      id: uid('mu-r'), name,
-      note: (page.querySelector('#mu-note').value || '').trim(),
-      date: today
-    });
-    saveMusic();
-    renderMusicPage();
-    toast('已保存');
-  });
+  if (isToday) {
+    bindSlowTextarea(page);
 
-  page.querySelector('#mu-fav-add').addEventListener('click', () => {
-    const name = (page.querySelector('#mu-fav-name').value || '').trim();
-    if (!name) { toast('先写个曲目名吧'); return; }
-    m.favorites.unshift({
-      id: uid('mu-f'), name,
-      artist: (page.querySelector('#mu-fav-artist').value || '').trim(),
-      note: (page.querySelector('#mu-fav-note').value || '').trim(),
-      date: today
+    // 多图添加：曲目 / 收藏（与摄影审美同一套）
+    const bindPicker = (btnSel, inputSel, prevSel, attr, storeKey, label) => {
+      const btn = page.querySelector(btnSel);
+      const input = page.querySelector(inputSel);
+      const refresh = () => _renderPendingGrid(page.querySelector(prevSel), '', attr, m[storeKey] || [], label, today, (i) => {
+        m[storeKey].splice(i, 1);
+        saveMusic();
+        refresh();
+      });
+      refresh();
+      if (!btn || !input) return;
+      btn.addEventListener('click', () => input.click());
+      input.addEventListener('change', async () => {
+        const files = Array.prototype.slice.call(input.files || []);
+        if (!files.length) return;
+        m[storeKey] = m[storeKey] || [];
+        for (let i = 0; i < files.length; i++) {
+          try {
+            const url = await fileToResizedDataURL(files[i], 720, 0.6);
+            if (url) m[storeKey].push(url);
+          } catch (e) { /* 跳过 */ }
+        }
+        saveMusic();
+        refresh();
+        input.value = '';
+      });
+    };
+    bindPicker('#mu-img-btn', '#mu-img', '#mu-img-preview', 'data-mu-rec-pending', '_pendingRecImgs', '待保存');
+    bindPicker('#mu-fav-img-btn', '#mu-fav-img', '#mu-fav-img-preview', 'data-mu-fav-pending', '_pendingFavImgs', '待收藏');
+
+    page.querySelector('#mu-add').addEventListener('click', () => {
+      const name = (page.querySelector('#mu-name').value || '').trim();
+      if (!name) { toast('先写个曲目名吧'); return; }
+      const note = (page.querySelector('#mu-note').value || '').trim();
+      const imgs = (m._pendingRecImgs && m._pendingRecImgs.length) ? m._pendingRecImgs.slice() : [''];
+      imgs.forEach(img => m.records.unshift({ id: uid('mu-r'), name, note, date: today, img }));
+      delete m._pendingRecImgs;
+      saveMusic();
+      renderMusicPage();
+      toast(imgs.length > 1 ? ('已保存 ' + imgs.length + ' 首') : '已保存');
     });
-    saveMusic();
-    renderMusicPage();
-    toast('已收藏');
-  });
+
+    page.querySelector('#mu-fav-add').addEventListener('click', () => {
+      const name = (page.querySelector('#mu-fav-name').value || '').trim();
+      if (!name) { toast('先写个曲目名吧'); return; }
+      const artist = (page.querySelector('#mu-fav-artist').value || '').trim();
+      const note = (page.querySelector('#mu-fav-note').value || '').trim();
+      const imgs = (m._pendingFavImgs && m._pendingFavImgs.length) ? m._pendingFavImgs.slice() : [''];
+      imgs.forEach(img => m.favorites.unshift({ id: uid('mu-f'), name, artist, note, date: today, img }));
+      delete m._pendingFavImgs;
+      saveMusic();
+      renderMusicPage();
+      toast(imgs.length > 1 ? ('已收藏 ' + imgs.length + ' 条') : '已收藏');
+    });
+
+    const addTask = () => {
+      const text = (page.querySelector('#mu-task-input').value || '').trim();
+      if (!text) return;
+      m.tasks.push({ id: uid('mu-t'), text, points: 3, done: false, date: '' });
+      saveMusic();
+      renderMusicPage();
+    };
+    page.querySelector('#mu-task-add').addEventListener('click', addTask);
+    page.querySelector('#mu-task-input').addEventListener('keydown', (e) => { if (e.key === 'Enter') addTask(); });
+  }
 
   page.querySelectorAll('[data-del-type="mu-record"]').forEach(b => {
     b.addEventListener('click', (e) => {
@@ -15361,16 +15582,6 @@ function renderMusicPage() {
       if (i >= 0) { m.favorites.splice(i, 1); saveMusic(); renderMusicPage(); }
     });
   });
-
-  const addTask = () => {
-    const text = (page.querySelector('#mu-task-input').value || '').trim();
-    if (!text) return;
-    m.tasks.push({ id: uid('mu-t'), text, points: 3, done: false, date: '' });
-    saveMusic();
-    renderMusicPage();
-  };
-  page.querySelector('#mu-task-add').addEventListener('click', addTask);
-  page.querySelector('#mu-task-input').addEventListener('keydown', (e) => { if (e.key === 'Enter') addTask(); });
 }
 
 // ==================== v9256：全局字体强制规则 ====================

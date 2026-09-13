@@ -10376,3 +10376,132 @@ body.home-bg .topbar {
   resize: none; overflow: hidden; display: block;
   white-space: pre-wrap; word-break: break-word; overflow-wrap: anywhere;
 }
+
+
+/* ============ v9553：.slow-skin —— 把摄影审美的皮肤同步给技能考证/家居整理/音乐练习/旅行体验/地点打卡/爱好拓展（色值由各页 --slc 变量提供） ============ */
+/* ============ v9546 摄影审美：参考护肤页视觉（描边=模块图标色调 / 去橘色 / 字号·高度·间距同步） ============ */
+/* --slc = 模块图标色（保持不变）；--slcb = 其浅色调，用于全部描边；--slcd = 深一档，用于文字/图标强调 */
+.slow-skin { --slc: #7FB0D3; --slcb: #D8E7F4; --slcd: #5E8FB5; --slcbg: #EDF5FB; }
+.slow-skin .slow-insight-toggle { border-color: var(--slcb); color: var(--slcd); }
+.slow-skin .slow-insight-toggle.on { background: var(--slcbg); border-color: var(--slc); color: var(--slcd); }
+/* 规则提示条：描边/底色与图标同色调，图标去橘 */
+.slow-skin .module-rule-banner { background: linear-gradient(135deg, #F7FBFE 0%, var(--slcbg) 100%); border-color: var(--slcb); }
+.slow-skin .module-rule-banner .mrb-icon { color: var(--slc); }
+/* 所有描边统一为图标色调 */
+.slow-skin .pf-input,
+.slow-skin .pf-date-trigger,
+.slow-skin .module-list-item,
+.slow-skin .slow-record,
+.slow-skin .slow-tag,
+.slow-skin .slow-field input[type="file"],
+.slow-skin .slow-field input[type="file"]::file-selector-button { border-color: var(--slcb); }
+.slow-skin .pf-input:focus,
+.slow-skin .pf-date-trigger:hover { border-color: var(--slc); }
+/* 去掉橘色（--primary 系）：主按钮 / 已完成打卡 / 完成勾选圆点 / 积分数字 / 选中标签 → 模块色调 */
+.slow-skin .gold-btn { background: var(--slc); }
+.slow-skin .gold-btn:hover { background: var(--slcd); }
+.slow-skin .slow-check-btn.done { background: var(--slc); border-color: var(--slc); }
+.slow-skin .module-list-item.done .mli-check { background: var(--slc); border-color: var(--slc); }
+.slow-skin .module-list-item .mli-points,
+.slow-skin .module-list-item .mli-pts { color: var(--slcd); }
+.slow-skin .slow-chips .chip.active { background: var(--slcbg); border-color: var(--slc); color: var(--slcd); }
+.slow-skin .slow-chips .chip:hover { border-color: var(--slc); color: var(--slcd); }
+/* 字号同步护肤页：.slow-label 小标题保持 10px 不变，其余按护肤页口径收敛 */
+.slow-skin .module-card-meta { font-size: 9.5px; }
+.slow-skin .slow-record-name { font-size: 11px; }
+.slow-skin .slow-record-meta > span { font-size: 9px; }
+.slow-skin .slow-record-note { font-size: 9.5px; }
+.slow-skin .empty-note { font-size: 10.5px; padding: 7px 0; }
+.slow-skin .slow-title { font-size: 16px; font-weight: 500; }
+/* 行距/列表间距对齐护肤页（7px） */
+.slow-skin .slow-field { margin: 7px 0; }
+.slow-skin .slow-record-list { margin-top: 7px; gap: 7px; }
+.slow-skin .module-list { gap: 7px; }
+.slow-skin .slow-add-row { margin-top: 7px; }
+.slow-skin .sk-week-points { margin-top: 7px; }
+/* v9546 补充：卡内标题/按钮字号与护肤页同口径（护肤卡内标题 = 基准 10px + 圆角 chip 9.5px） */
+.slow-skin .soft-card-title { font-size: 10px; font-weight: 500; margin: 0; }
+.slow-skin .gold-btn { font-size: 11px; }
+/* ============ v9547 摄影审美：按钮/胶囊/照片按钮/标题层级/间距 细化 ============ */
+/* ① 主按钮（完成打卡 / 保存作品 / 收藏素材 / 添加）改成提示条那种「淡淡的蓝」 + 同色系文字 */
+.slow-skin .gold-btn { background: var(--slcbg); color: var(--slcd); border: 1px solid var(--slcb); font-weight: 500; height: 28px; border-radius: var(--radius); }
+.slow-skin .gold-btn:hover { background: #E3EEF8; color: var(--slcd); }
+.slow-skin .slow-check-btn.done { background: var(--slcbg); color: var(--slcd); border-color: var(--slcb); }
+/* ② 标签胶囊：描边粗细/颜色与其它控件一致（1px + 浅蓝），并做成一枚真正的「胶囊」 */
+.slow-skin .slow-chips .chip { border: 0.75px solid var(--slcb); border-radius: 999px; }
+.slow-skin .slow-chips .chip.active { border: 0.75px solid var(--slc); }
+/* ③ 照片：整行按钮（宽度与上下输入框一致），28px 高 + 卡片同款圆角 */
+.slow-skin .ph-img-btn {
+  flex: 1 1 auto; display: inline-flex; align-items: center; justify-content: center; gap: 5px;
+  width: auto; height: 28px; padding: 0 10px; box-sizing: border-box;
+  border: 1px solid var(--slcb); border-radius: var(--radius); background: var(--slcbg); color: var(--slcd);
+  font-size: 11px; font-weight: 500; cursor: pointer; transition: background .15s ease;
+}
+.slow-skin .ph-img-btn:hover { background: #E3EEF8; border-color: var(--slc); }
+/* ④ 卡内标题字号层级 = 「本周练习统计」（12 / 575），下边距 8（护肤卡内标题口径） */
+.slow-skin .module-card-head { margin-bottom: 8px; }
+.slow-skin .soft-card-title { font-size: 12px; font-weight: 575; }
+/* ⑤ 「本周练习统计」左侧图标（标题图标 + 热力图行图标）与页面图标同色 */
+.slow-skin .sk-section-head svg,
+.slow-skin .insp-heatmap-grid .ih-icon { color: var(--slc); }
+/* ⑥ 卡内按钮行 / 间距用护肤页口径（7px） */
+.slow-skin .focus-actions { margin-top: 7px; }
+.slow-skin .sk-hist-tip { margin-top: 7px; }
+/* ============ v9548 摄影审美：待保存图片预览 / 模块间距同步护肤页 ============ */
+/* ① 选中的照片按「穿搭灵感库」同款卡片显示（图片 + 待保存标签 + 日期 + 右上删除），不再显示文件名一串数字 */
+.slow-skin .ph-img-preview { margin-top: 7px; }
+.slow-skin .ph-img-preview:empty { margin-top: 0; }
+.slow-skin .ph-img-preview .lk-insp-grid { margin-top: 0; gap: 7px; }
+/* ② 模块（今日练习打卡 / 作品记录库 / 审美素材收藏 / 练习计划清单 / 本周练习统计）之间 18px
+   —— 对齐护肤页「板块之间 18px」口径（不是卡内 7px、也不是打卡卡之间 10px） */
+.slow-skin .section-card:not(.slow-checkin),
+.slow-skin .sk-section { margin-top: 18px !important; margin-bottom: 0 !important; }
+.slow-skin .slow-checkin { margin-top: 12px !important; margin-bottom: 0 !important; }
+` 优先级高于作用域规则 → 必须 !important 才能改色；
+   字号/字重/字体/位置（10px/500/站酷/margin-left:auto 行尾右对齐）与护肤页打卡任务完全一致，仅颜色换成本页蓝。 */
+.slow-skin .module-list-item .mli-points,
+.slow-skin .module-list-item .mli-pts,
+.slow-skin .mli-points { color: var(--slcd) !important; }
+/* ② 计划清单打卡框：圆形 → 圆角矩形（18px 方框配 5px 圆角），描边/图标用本页蓝（不再用灰米色） */
+.slow-skin .module-list-item .mli-check {
+  border-radius: 5px; border: 1px solid var(--slcb); background: #fff; color: var(--slc);
+}
+.slow-skin .module-list-item .mli-check:hover { border-color: var(--slc); }
+.slow-skin .module-list-item.done .mli-check {
+  border-radius: 5px; border-color: var(--slc); background: var(--slc); color: #fff;
+}
+/* ============ v9550 摄影审美：保存作品 / 收藏素材 按钮右对齐 ============ */
+.slow-skin .focus-actions { justify-content: flex-end; }
+/* ② 心得笔记 / 摘抄感悟：多行文本框 —— 手动换行 + 写满自动折行，高度随行数变化，不出现滚动条 */
+.slow-skin textarea.pf-input.pf-textarea {
+  height: auto; min-height: 32px; padding: 6px 10px; line-height: 1.4;
+  resize: none; overflow: hidden; display: block;
+  white-space: pre-wrap; word-break: break-word; overflow-wrap: anywhere;
+}
+
+/* travel / 爱好拓展 / 地点打卡：原有专属类的橘色与灰调换成本模块色系 */
+.slow-skin .sub-page-head .sub-title { font-size: 16px; font-weight: 500; font-family: var(--font); }
+.slow-skin .module-hero-travel { background: linear-gradient(135deg, #F7FBFE 0%, var(--slcbg) 100%); border-color: var(--slcb); }
+.slow-skin .module-hero-social { background: linear-gradient(135deg, #FBF9FE 0%, var(--slcbg) 100%); border-color: var(--slcb); }
+.slow-skin .module-hero .mh-tag { color: var(--slcd); }
+.slow-skin .module-status { color: var(--slcd); background: var(--slcbg); border-color: var(--slcb); }
+.slow-skin .module-status.done { color: var(--slcd); background: var(--slcbg); border-color: var(--slc); }
+.slow-skin .module-go-btn { border-color: var(--slcb); background: var(--slcbg); color: var(--slcd); }
+.slow-skin .module-go-btn:hover { border-color: var(--slc); }
+.slow-skin .module-add-btn { border-color: var(--slcb); color: var(--slcd); }
+.slow-skin .module-add-btn:hover { border-color: var(--slc); color: var(--slcd); background: var(--slcbg); }
+.slow-skin .module-phase-tab { border-color: var(--slcb); }
+.slow-skin .module-phase-tab:hover { border-color: var(--slc); color: var(--slcd); }
+.slow-skin .module-phase-tab.active { background: var(--slcbg); border-color: var(--slc); color: var(--slcd); box-shadow: none; }
+.slow-skin .module-discovery { border-color: var(--slcb); }
+.slow-skin .module-discovery-dot { background: var(--slc); }
+.slow-skin .ck-check { border-radius: 5px; border-width: 1px; border-color: var(--slcb); }
+.slow-skin .ck-check.on { background: var(--slc); border-color: var(--slc); }
+.slow-skin .ck-place { border-color: var(--slcb); }
+.slow-skin .ck-place.done { background: var(--slcbg); border-color: var(--slcb); }
+.slow-skin .ck-place.done .ck-name { color: var(--slcd); }
+.slow-skin .ck-date { color: var(--slcd); }
+.slow-skin .ck-mood svg { color: var(--slc); }
+.slow-skin .ck-act { border-color: var(--slcb); }
+.slow-skin .ck-act:hover { border-color: var(--slc); color: var(--slcd); }
+.slow-skin .module-tip, .slow-skin .module-goal-text { font-size: 10.5px; }
