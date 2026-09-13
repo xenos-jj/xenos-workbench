@@ -13802,7 +13802,7 @@ function renderOutfitPage() {
         <input class="lk-input" data-outfit-note placeholder="记一句今天穿了什么 / 心情..." value="${escapeHTML(c.outfitNote || '')}" ${isToday ? '' : 'disabled'}>
       </div>
       ${isToday ? `<div class="sk-add-inline" style="margin-top:6px">
-        <button class="lk-mini-btn" data-outfit-upload>${icon('image', 12)} 上传今日穿搭图</button>
+        <button class="lk-mini-btn is-wide" data-outfit-upload>${icon('image', 12)} 上传今日穿搭图</button>
         ${c.outfitImage ? `<img class="lk-thumb" src="${c.outfitImage}" alt=""><button class="lk-mini-btn" data-outfit-img-del>${icon('delete', 11)}</button>` : ''}
       </div>` : ''}
     </div>

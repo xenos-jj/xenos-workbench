@@ -10224,3 +10224,6 @@ body.home-bg .topbar {
 /* 覆盖 lk-tags 默认 flex-wrap；用 grid（列数由 HTML inline 指定 = 风格数量）等分，胶囊等宽、间距均匀 */
 .skincare-page .lk-tags { display: grid; gap: 6px; }
 .skincare-page .lk-tags .lk-tag { width: 100%; text-align: center; box-sizing: border-box; }
+
+/* ============ v9528 穿搭：上传今日穿搭图按钮宽度 = 上方「记一句…」输入框（整行占满） ============ */
+.skincare-page .sk-add-inline .lk-mini-btn.is-wide { flex: 1 1 auto; width: auto; padding: 0 10px; }
