@@ -12576,7 +12576,9 @@ function renderSocialPage() {
   if (greetLine) greetLine.textContent = '爱好拓展';
   const s = state.social || JSON.parse(JSON.stringify(DEFAULT_SOCIAL));
   const today = getTodayKey();
-  const doneToday = s.actions.filter(a => a.done && a.date === today).length;
+  const view = SLOW_VIEW.social || today;
+  const isToday = view === today;
+  const doneToday = s.actions.filter(a => a.done && a.date === view).length;
   const ws = getWeekStart();
   let weekPts = 0;
   for (const k in (s.log || {})) { if (k >= ws && k <= today) weekPts += (s.log[k] || 0); }
@@ -12588,7 +12590,7 @@ function renderSocialPage() {
   }
 
   function renderActionItem(a, delType) {
-    const done = a.done && a.date === today;
+    const done = a.done && a.date === view;
     return `<div class="module-list-item ${done ? 'done' : ''}" data-action-id="${a.id}">
       <button class="mli-check" aria-label="完成">${done ? icon('check', 10) : ''}</button>
       <span class="mli-text">${escapeHTML(a.text)}</span>
@@ -12601,26 +12603,29 @@ function renderSocialPage() {
   }
 
   page.innerHTML = `
-    <div class="sub-page-head">
-      <h3 class="sub-title">爱好拓展 <span class="sub-spark">${icon('sparkle', 14)}</span></h3>
-    </div>
+    <div class="domain-hero"><div class="domain-head"><div><h3 class="domain-title">爱好拓展</h3></div></div></div>
 
-    <!-- v9350：原 hero（爱好滋育）+ 下方原「爱好目标」section 合并为一个完整的「爱好目标」模块（参考 user 给的图2：target 图标 + 标题 + 描述 + 修改目标按钮），删掉原来的空白 hero「爱好滋养」卡 -->
+    <div class="sk-mini-date">${skMiniDateHTML(view)}</div>
+    ${isToday
+      ? `<div class="module-rule-banner"><span class="mrb-icon">${icon('info', 12)}</span><span class="mrb-text">不用追求精通：挑一件让你放松的事，10 分钟也算数；有兴致就多待一会儿，没兴致就先记下来。</span></div>`
+      : `<div class="sk-hist-tip">${icon('info', 12)} 正在查看历史记录 · 只读不可更改（如需修改请告知）</div>`}
+
+    <!-- v9350：原 hero（爱好滋育）+「爱好目标」section 合并为「爱好目标」模块 -->
     <div class="section-card module-card">
       <div class="module-card-head">
         <span class="module-card-icon" style="color:#A99BD6">${icon('target', 14)}</span>
         <span class="soft-card-title" style="margin:0;">爱好目标</span>
       </div>
       <p class="module-goal-text" id="social-goal-text">${escapeHTML(s.goal || DEFAULT_SOCIAL.goal)}</p>
-      <button class="module-edit-goal" id="social-edit-goal">${icon('edit', 11)} 修改目标</button>
+      ${isToday ? `<div class="focus-actions"><button class="gold-btn" id="social-edit-goal">${icon('edit', 11)} 修改目标</button></div>` : ''}
     </div>
 
     <div class="section-card module-card">
       <div class="module-card-head">
         <span class="module-card-icon" style="color:#E8A77C">${icon('heart', 14)}</span>
         <span class="soft-card-title" style="margin:0;">本周行动</span>
-        <span class="module-card-meta">${doneToday}/${s.actions.length}</span>
-        <button class="module-add-btn" id="social-add-action" title="新增">${icon('plus', 12)}</button>
+        <span class="sk-pending ok">${doneToday}/${s.actions.length}</span>
+        ${isToday ? `<button class="module-add-btn" id="social-add-action" title="新增">${icon('plus', 12)}</button>` : ''}
       </div>
       <div class="module-list" id="social-actions">
         ${s.actions.length ? s.actions.map(a => renderActionItem(a, 'social-action')).join('') : '<div class="module-empty">本周还没有行动，状态不好时可以直接跳过～</div>'}
@@ -12629,6 +12634,14 @@ function renderSocialPage() {
   `;
   content.appendChild(page);
 
+  bindSlowMiniDate(page, 'social', s, renderSocialPage, function (k) {
+    // 圆点：当天行动全部完成=橙；当天有积分=绿
+    const pts = Number((s.log || {})[k] || 0);
+    const allDone = s.actions.length > 0 && s.actions.every(a => a.done && a.date === k);
+    if (allDone) return 'orange';
+    return pts > 0 ? 'green' : null;
+  });
+
   page.querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', () => selectItem(b.dataset.go)));
 
   // v9317：原位更新 toggle（v9258.1 标准）—— 仅切换当前行 done 状态，不调 renderSocialPage() 整页重渲染；
@@ -12636,6 +12649,7 @@ function renderSocialPage() {
   page.querySelectorAll('#social-actions .module-list-item').forEach(row => {
     row.addEventListener('click', () => {
       if (row.classList.contains('show-delete')) return;
+      if (!isToday) { toast('历史记录只读'); return; }
       const id = row.dataset.actionId;
       const action = s.actions.find(a => a.id === id);
       if (!action) return;
@@ -12668,7 +12682,8 @@ function renderSocialPage() {
   });
 
   // 新增行动
-  page.querySelector('#social-add-action').addEventListener('click', async () => {
+  const socialAddBtn = page.querySelector('#social-add-action');
+  if (socialAddBtn) socialAddBtn.addEventListener('click', async () => {
     const text = await openModal('新增爱好行动', '', '例如：手绘一张小画');
     if (text === null || !text.trim()) return;
     const pts = await openModal('奖励积分', '6', '输入数字');
@@ -12679,7 +12694,8 @@ function renderSocialPage() {
   });
 
   // 修改目标
-  page.querySelector('#social-edit-goal').addEventListener('click', async () => {
+  const socialGoalBtn = page.querySelector('#social-edit-goal');
+  if (socialGoalBtn) socialGoalBtn.addEventListener('click', async () => {
     const text = await openModal('修改爱好目标', s.goal || DEFAULT_SOCIAL.goal, '请输入新的爱好目标');
     if (text === null) return;
     s.goal = text.trim() || DEFAULT_SOCIAL.goal;
@@ -14543,7 +14559,7 @@ function modSkinStyle(color) {
   return `--slc:${c};--slcb:${_mixHex(c, '#FFFFFF', 0.72)};--slcd:${_mixHex(c, '#000000', 0.18)};--slcbg:${_mixHex(c, '#FFFFFF', 0.88)};`;
 }
 // 各模块「回看日期」（null = 今天）
-const SLOW_VIEW = { photography: null, cert: null, homeorg: null, music: null };
+const SLOW_VIEW = { photography: null, cert: null, homeorg: null, music: null, social: null };
 // 日期选择器圆点：该模块自己的打卡/积分（不与其他模块共享）
 function slowDateStatus(m) {
   return function (k) {
@@ -14553,7 +14569,7 @@ function slowDateStatus(m) {
   };
 }
 // 迷你日期（摄影审美同款）：点日期回看历史、点「今天」返回
-function bindSlowMiniDate(page, key, m, rerender) {
+function bindSlowMiniDate(page, key, m, rerender, statusFn) {
   if (!page || !rerender) return;
   const today = getTodayKey();
   const view = SLOW_VIEW[key] || today;
@@ -14564,7 +14580,7 @@ function bindSlowMiniDate(page, key, m, rerender) {
   const pill = md.querySelector('.sk-md-pill');
   if (pill) pill.addEventListener('click', () => {
     openDatePicker({
-      initial: view, max: today, dayStatus: slowDateStatus(m),
+      initial: view, max: today, dayStatus: typeof statusFn === 'function' ? statusFn : slowDateStatus(m),
       onSelect: (k) => { SLOW_VIEW[key] = k > today ? today : k; rerender(); }
     });
   });
