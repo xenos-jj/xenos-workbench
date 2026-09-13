@@ -10211,8 +10211,11 @@ body.home-bg .topbar {
 /* ① module-card 标题带图标时：inline-flex 垂直居中，图标与文字 gap 6 */
 .skincare-page .module-card-title { display: inline-flex; align-items: center; gap: 6px; }
 .skincare-page .module-card-title svg { color: var(--text-muted); flex-shrink: 0; }
-/* ② 添加行内 季节/场合 选择器高度与 输入框(32px)/收藏按钮 一致，不再 34px 突兀 */
-.skincare-page .sk-add-inline .lk-pick-trigger { height: 32px; padding: 0 10px; font-size: 11px; font-family: var(--font); box-sizing: border-box; flex: 0 0 auto; }
+/* ② 添加行内所有控件（输入框/数字框/季节/场合/分类选择器/图片/收藏/录入按钮）统一高度 30px，
+      与「数量输入框 lk-num（显示 1）」一致 —— 之前误设 32px 反了 */
+.skincare-page .sk-add-inline .lk-input { height: 30px; padding-top: 0; padding-bottom: 0; }
+.skincare-page .sk-add-inline .lk-num { height: 30px; padding-top: 0; padding-bottom: 0; }
+.skincare-page .sk-add-inline .lk-pick-trigger { height: 30px; padding: 0 10px; font-size: 11px; font-family: var(--font); box-sizing: border-box; flex: 0 0 auto; }
 .skincare-page .sk-add-inline .lk-pick-trigger::after { margin-left: 6px; }
-/* ③ 添加行内迷你按钮统一 32px（收藏/上传/录入 与输入框、选择器等高） */
-.skincare-page .sk-add-inline .lk-mini-btn { height: 32px; }
+/* ③ 迷你按钮统一 30px（与输入框、数字框、选择器等高） */
+.skincare-page .sk-add-inline .lk-mini-btn { height: 30px; }
