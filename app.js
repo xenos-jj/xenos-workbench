@@ -13179,18 +13179,22 @@ function renderOutfitPage() {
   page.className = 'page skincare-page looks-sub';
 
   const stylesHTML = (r.styles || []).map(s => `<button class="lk-tag ${c.style === s ? 'on' : ''}" data-outfit-style="${escapeHTML(s)}">${escapeHTML(s)}</button>`).join('');
-  const insps = (r.inspirations || []).slice().reverse().map(i => `<div class="lk-insp">
+  // v9540：灵感库 / 衣橱物品 = 长期累积的集合（添加后一直跟随，不随日期"消失"）
+  // 仅按「添加日期 ≤ 当前查看日期」过滤：今天新加的，回看更早的日期时不出现；从添加那天起（含之后每天）一直显示；列表最新的排在前面
+  const inspList = (r.inspirations || []).filter(i => !i.date || i.date <= view).slice().reverse();
+  const wdList = (r.wardrobe || []).filter(w => !w.date || w.date <= view).slice().reverse();
+  const insps = inspList.map(i => `<div class="lk-insp">
     ${i.image ? `<img class="lk-insp-img" src="${i.image}" alt="">` : `<div class="lk-insp-img lk-insp-empty">${icon('image', 20)}</div>`}
     <div class="lk-insp-meta"><span class="lk-insp-tag">${escapeHTML(i.style || '')}</span><span class="lk-insp-date">${i.date}</span></div>
     ${i.note ? `<p class="lk-insp-note">${escapeHTML(i.note)}</p>` : ''}
     <button class="lk-mini-btn lk-insp-del" data-insp-del="${i.id}" aria-label="删除">${icon('delete', 11)}</button>
   </div>`).join('');
   // v9539：衣橱物品改为「图片卡」样式（与穿搭灵感库 / 上传图片显示一致：图 + 分类标签 + 名称 + 右上删除）
-  const wd = (r.wardrobe || []).map(w => `<div class="lk-insp">
+  const wd = wdList.map(w => `<div class="lk-insp">
     ${w.image ? `<img class="lk-insp-img" src="${w.image}" alt="">` : `<div class="lk-insp-img lk-insp-empty">${icon('image', 20)}</div>`}
     <div class="lk-insp-meta"><span class="lk-insp-tag">${escapeHTML(w.category || '未分类')}</span>${(w.count || 1) > 1 ? `<span class="lk-insp-date">×${w.count}</span>` : ''}</div>
     ${w.name ? `<p class="lk-insp-note">${escapeHTML(w.name)}</p>` : ''}
-    ${isToday ? `<button class="lk-mini-btn lk-insp-del" data-wd-del="${w.id}" aria-label="删除">${icon('delete', 11)}</button>` : ''}
+    <button class="lk-mini-btn lk-insp-del" data-wd-del="${w.id}" aria-label="删除">${icon('delete', 11)}</button>
   </div>`).join('');
 
   // 本周热力图（按是否有穿搭记录）
@@ -13230,7 +13234,7 @@ function renderOutfitPage() {
     </div>
 
     <div class="sk-section">
-      <div class="sk-section-head">${icon('star', 14)} <span>穿搭灵感库</span><span class="sk-pending ok" style="margin-left:auto">${(r.inspirations || []).length} 条</span></div>
+      <div class="sk-section-head">${icon('star', 14)} <span>穿搭灵感库</span><span class="sk-pending ok" style="margin-left:auto">${inspList.length} 条</span></div>
       ${isToday ? `<div class="sk-add-inline"><input class="lk-input" data-insp-style placeholder="风格"><div class="lk-pick-trigger" data-insp-season>${r._pendingInspSeason || '季节'}</div><div class="lk-pick-trigger" data-insp-scene>${r._pendingInspScene || '场合'}</div></div>
       <div class="sk-add-inline"><input class="lk-input" data-insp-note placeholder="备注（可选）"><button class="lk-mini-btn" data-insp-upload>${icon('image', 12)}</button><button class="lk-mini-btn" data-insp-add>${icon('plus', 12)} 收藏</button></div>` : ''}
       ${isToday && r._pendingInspImage ? `<div class="lk-insp-grid is-pending">
@@ -13244,7 +13248,7 @@ function renderOutfitPage() {
     </div>
 
     <div class="sk-section">
-      <div class="sk-section-head">${icon('inbox', 14)} <span>衣橱物品</span><span class="sk-pending ok" style="margin-left:auto">${(r.wardrobe || []).length} 件</span></div>
+      <div class="sk-section-head">${icon('inbox', 14)} <span>衣橱物品</span><span class="sk-pending ok" style="margin-left:auto">${wdList.length} 件</span></div>
       ${isToday ? `<div class="sk-add-inline"><div class="lk-pick-trigger" data-wd-cat>${r._pendingWardrobeCat || '分类'}</div><input class="lk-input" data-wd-name placeholder="名称"><button class="lk-mini-btn" data-wd-upload aria-label="上传图片">${icon('image', 12)}</button><button class="lk-mini-btn" data-wd-add>${icon('plus', 12)} 录入</button></div>` : ''}
       ${isToday && r._pendingWdImage ? `<div class="lk-insp-grid is-pending">
         <div class="lk-insp">
@@ -13355,7 +13359,7 @@ function renderOutfitPage() {
     const cat = r._pendingWardrobeCat || r.wardrobeCats[0];
     const name = page.querySelector('[data-wd-name]').value.trim();
     if (!name) return;
-    r.wardrobe.push({ id: _looksId('wd'), category: cat, name, count: 1, image: r._pendingWdImage || '' });
+    r.wardrobe.push({ id: _looksId('wd'), category: cat, name, count: 1, image: r._pendingWdImage || '', date: today });
     delete r._pendingWardrobeCat; delete r._pendingWdImage;
     saveLooks('outfit');
     renderOutfitPage();
