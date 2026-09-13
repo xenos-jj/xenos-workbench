@@ -3878,7 +3878,7 @@ const PAGE_ROUTES = {
   '爱好拓展': renderSocialPage,
   '护肤': renderSkincarePage,
   // v9513：外貌下的独立页面（仪态/穿搭/妆容）
-  '仪态': renderLooksPosturePage,
+  '仪态': renderPosturePage,
   '穿搭': renderLooksOutfitPage,
   '妆容': renderLooksMakeupPage,
   // v9253：暂时放缓 6 模块（从「我的支线 → 暂时放缓」卡片进入）
@@ -10963,6 +10963,10 @@ document.addEventListener('click', async (e) => {
     const it = g.items.find(x => x.id === id); if (!it) return;
     const v = await openModal('编辑文字', it.text, ''); if (v === null) return;
     it.text = v.trim() || it.text; saveSkincare();
+  } else if (type === 'posture-task') {
+    const t = state.looksPosture.tasks.find(x => x.id === id); if (!t) return;
+    const v = await openModal('编辑文字', t.text, ''); if (v === null) return;
+    t.text = v.trim() || t.text; saveLooks('posture');
   } else if (type === 'slow-task-pts') {
     const key = btn.dataset.editKey;
     const m = state[key]; if (!m) return;
@@ -13505,6 +13509,212 @@ function renderSkincarePage() {
     const pill = md.querySelector('.sk-md-pill');
     if (pill) pill.addEventListener('click', () => {
       openDatePicker({ initial: view, max: today, onSelect: (k) => { skViewDate = k > today ? today : k; renderSkincarePage(); } });
+    });
+  }
+}
+
+// ============ 仪态（低精力版，参考护肤页设计） ============
+// v9522：仪态页 UI 完全参考护肤页（字体/颜色/边框/卡片宽高/打卡形式/日期/周热力图），复用 skincare-page 的 sk-* 样式
+let postureViewDate = null;
+function renderPosturePage() {
+  content.innerHTML = '';
+  const r = state.looksPosture;
+  if (greetLine) greetLine.textContent = '仪态';
+  ensureLooksTab('posture');
+  const today = getTodayKey();
+  const view = postureViewDate || today;
+  const isToday = view === today;
+  const c = r.checkin[view] || {};
+  const td = c.taskDone || {};
+  const tasks = r.tasks || [];
+  const total = tasks.length;
+  const done = tasks.filter(t => td[t.id]).length;
+  const pct = total ? Math.round(done / total * 100) : 0;
+  const allDone = total > 0 && pct >= 100;
+  const viewPts = r.log[view] || 0;
+  const trainings = c.trainings || {};
+  const duration = c.duration || 0;
+
+  const page = document.createElement('div');
+  page.className = 'page skincare-page'; // 复用护肤页全部 sk-* 视觉样式（仪态页参考护肤页设计）
+
+  const taskHTML = tasks.map(t => {
+    const itDone = !!td[t.id];
+    return `<div class="module-list-item ${itDone ? 'done' : ''}" data-item="${escapeHTML(t.id)}">
+      <span class="mli-check">${itDone ? icon('check', 12) : ''}</span>
+      <span class="mli-text">${escapeHTML(t.text)}</span>
+      <span class="mli-pts">+${t.points || 1}</span>
+      ${isToday ? `<div class="module-item-actions">
+        <button class="module-act-btn module-edit-btn" data-edit-type="posture-task" data-edit-id="${escapeHTML(t.id)}" title="编辑">${icon('edit', 11)}</button>
+        <button class="module-act-btn module-del-btn" data-del-type="posture-task" data-del-id="${escapeHTML(t.id)}" title="删除">${icon('delete', 11)}</button>
+      </div>` : ''}
+    </div>`;
+  }).join('');
+
+  const typesHTML = (r.trainingTypes || []).map(t => `<span class="sk-tag-cell">
+    <button class="sk-status-tag ${trainings[t] !== undefined ? 'on' : ''}" data-posture-type="${escapeHTML(t)}">${escapeHTML(t)}</button>
+  </span>`).join('');
+
+  // 本周热力图（仿护肤页「本周护肤统计」，按完成度 lvl0-3）
+  const ws = getWeekStart();
+  const weekDates = [];
+  for (let i = 0; i < 7; i++) {
+    const d2 = new Date(ws); d2.setDate(d2.getDate() + i);
+    weekDates.push(d2.toISOString().slice(0, 10));
+  }
+  const heatDots = weekDates.map((dk) => {
+    const ck = r.checkin[dk] || {};
+    const doneD = Object.keys(ck.taskDone || {}).length;
+    let lvl = 0;
+    if (total && doneD > 0) {
+      const ratio = doneD / total;
+      lvl = ratio >= 1 ? 3 : (ratio >= 0.5 ? 2 : 1);
+    }
+    return `<span class="ih-dot lvl${lvl}"></span>`;
+  }).join('');
+
+  page.innerHTML = `
+    <div class="domain-hero">
+      <div class="domain-head">
+        <div><h3 class="domain-title">仪态</h3></div>
+      </div>
+    </div>
+
+    <div class="sk-mini-date">${skMiniDateHTML(view)}</div>
+    ${isToday ? `<div class="module-rule-banner">
+      <span class="mrb-icon">${icon('info', 12)}</span>
+      <span class="mrb-text">每天几分钟纠正体态就好，久坐后站起来活动一下肩颈，不必强求长时间训练。</span>
+    </div>` : `<div class="sk-hist-tip">${icon('info', 12)} 正在查看历史记录 · 只读不可更改（如需修改请告知）</div>`}
+
+    <div class="sk-day-head">
+      <span class="sk-day-title">${icon('check', 14)} ${isToday ? '今日仪态打卡' : '该日仪态打卡'}</span>
+      <span class="sk-day-pts">+${viewPts} 分</span>
+    </div>
+
+    <div class="module-card">
+      <div class="module-card-head">
+        <span class="module-card-title">体态训练</span>
+        <span class="sk-pending ${allDone ? 'ok' : ''}">完成率 ${pct}%</span>
+      </div>
+      <div class="module-list">
+        ${taskHTML}
+        ${isToday ? `<div class="sk-add-inline">
+          <input class="lk-input" data-posture-add placeholder="加一个训练任务...">
+          <button class="lk-mini-btn" data-posture-add-btn aria-label="添加">${icon('plus', 12)}</button>
+        </div>` : ''}
+      </div>
+    </div>
+
+    <div class="sk-section">
+      <div class="sk-section-head">${icon('star', 14)} <span>今日训练内容</span></div>
+      <div class="sk-status-tags">${typesHTML}</div>
+      <div class="lk-duration">
+        <label>${icon('clock', 12)} 训练时长</label>
+        <input type="number" min="0" max="120" class="lk-num" data-posture-min value="${duration}" ${isToday ? '' : 'disabled'}><span>分钟</span>
+      </div>
+    </div>
+
+    ${isToday ? `<div class="soft-card sk-note-card">
+      <div class="soft-card-title">${icon('edit', 16)} 仪态小记</div>
+      <div class="sk-notes" id="posture-notes" contenteditable="true" data-placeholder="记下今天体态练习的感受，或想改的小习惯～">${escapeHTML(r.notes || '')}</div>
+    </div>` : ''}
+
+    <div class="sk-section">
+      <div class="sk-section-head">${icon('chart', 14)} <span>本周仪态统计</span><div class="insp-heat-legend sk-week-legend"><i class="ht-low"></i><i class="ht-mid"></i><i class="ht-high"></i>完成度 低 → 高</div></div>
+      <div class="insp-heatmap-grid">
+        <div class="ih-row ih-header-row"><span></span>${['周一', '周二', '周三', '周四', '周五', '周六', '周日'].map(l => `<span class="ih-day">${l}</span>`).join('')}</div>
+        <div class="ih-row"><span class="ih-icon">${icon('star', 12)}</span>${heatDots}</div>
+      </div>
+    </div>
+  `;
+  content.appendChild(page);
+
+  // 删除训练任务（局部绑定，仿护肤页）
+  page.querySelectorAll('.module-del-btn[data-del-type="posture-task"]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault(); e.stopPropagation();
+      if (!isToday) return;
+      const id = btn.dataset.delId;
+      const it = r.tasks.find(x => x.id === id);
+      if (it && td[id]) { delete td[id]; }
+      r.tasks = r.tasks.filter(x => x.id !== id);
+      saveLooks('posture');
+      renderPosturePage();
+    });
+  });
+
+  // 勾选/取消勾选训练任务
+  page.querySelectorAll('.module-list-item').forEach(el => {
+    el.addEventListener('click', () => {
+      if (!isToday) return;
+      if (el.classList.contains('show-delete')) return;
+      const t = r.tasks.find(x => x.id === el.dataset.item);
+      if (!t) return;
+      const cc = r.checkin[today] = r.checkin[today] || { taskDone: {} };
+      if (!cc.taskDone) cc.taskDone = {};
+      if (cc.taskDone[t.id]) { delete cc.taskDone[t.id]; addLooksPoints('posture', -(t.points || 1)); }
+      else { cc.taskDone[t.id] = true; addLooksPoints('posture', t.points || 1); }
+      cc.done = !!(cc.taskDone && Object.keys(cc.taskDone).length) || !!(cc.trainings && Object.keys(cc.trainings).length);
+      saveLooks('posture');
+      renderPosturePage();
+    });
+  });
+
+  // 加训练任务
+  const addRow = page.querySelector('.sk-add-inline');
+  if (addRow) {
+    const inp = addRow.querySelector('[data-posture-add]');
+    const btn = addRow.querySelector('[data-posture-add-btn]');
+    const doAdd = () => {
+      const text = (inp.value || '').trim();
+      if (!text) return;
+      r.tasks.push({ id: 'po-' + Date.now().toString(36), text, points: 1 });
+      saveLooks('posture');
+      renderPosturePage();
+    };
+    if (btn) btn.addEventListener('click', doAdd);
+    if (inp) inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') doAdd(); });
+  }
+
+  // 训练内容（多选标签）
+  page.querySelectorAll('[data-posture-type]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (!isToday) return;
+      const cc = r.checkin[today] = r.checkin[today] || { taskDone: {} };
+      cc.trainings = cc.trainings || {};
+      const type = btn.dataset.postureType;
+      if (cc.trainings[type] !== undefined) delete cc.trainings[type];
+      else cc.trainings[type] = 0;
+      cc.done = !!(cc.taskDone && Object.keys(cc.taskDone).length) || !!Object.keys(cc.trainings).length;
+      saveLooks('posture');
+      renderPosturePage();
+    });
+  });
+
+  // 训练时长
+  const minInp = page.querySelector('[data-posture-min]');
+  if (minInp) minInp.addEventListener('change', () => {
+    if (!isToday) return;
+    const cc = r.checkin[today] = r.checkin[today] || { taskDone: {} };
+    cc.duration = Math.max(0, parseInt(minInp.value, 10) || 0);
+    saveLooks('posture');
+  });
+
+  // 仪态小记（contenteditable 实时保存）
+  const noteEl = page.querySelector('#posture-notes');
+  if (noteEl) noteEl.addEventListener('input', (e) => {
+    r.notes = (e.target.innerText || '').replace(/\n+$/, '');
+    saveLooks('posture');
+  });
+
+  // 迷你日期（仿护肤页：任意历史回看，未来禁入，非今日只读）
+  const md = page.querySelector('.sk-mini-date');
+  if (md) {
+    const tb = md.querySelector('.sk-md-today');
+    if (tb) tb.addEventListener('click', () => { postureViewDate = null; renderPosturePage(); });
+    const pill = md.querySelector('.sk-md-pill');
+    if (pill) pill.addEventListener('click', () => {
+      openDatePicker({ initial: view, max: today, onSelect: (k) => { postureViewDate = k > today ? today : k; renderPosturePage(); } });
     });
   }
 }
