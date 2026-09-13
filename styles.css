@@ -10244,3 +10244,9 @@ body.home-bg .topbar {
 .skincare-page .sk-status-tags.is-grid { display: grid; gap: 7px; }
 .skincare-page .sk-status-tags.is-grid .sk-tag-cell { display: flex; min-width: 0; }
 .skincare-page .sk-status-tags.is-grid .sk-status-tag { width: 100%; text-align: center; box-sizing: border-box; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-left: 6px; padding-right: 6px; }
+
+
+/* ============ v9535 添加行控件高度 28px（加号 / 收藏 / 录入 / 图片按钮 + 季节·场合·分类选择器） ============ */
+/* 作用域 .skincare-page → 护肤 / 仪态 / 穿搭 / 妆容 四页同步；行本身 align-items:center，故各控件垂直中心同一线 */
+.skincare-page .sk-add-inline .lk-mini-btn { height: 28px; }
+.skincare-page .sk-add-inline .lk-pick-trigger { height: 28px; }
