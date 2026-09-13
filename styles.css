@@ -8326,9 +8326,11 @@ select.pf-input {
 .insp-line-head { display: flex; align-items: center; gap: 5px; font-size: 9.5px; color: var(--text); font-weight: 600; margin-bottom: 2px; padding-left: 2px; font-family: var(--font-small); }
 .insp-line-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--dot-color, var(--border)); }
 .insp-line-wrap { margin: 0 -2px; }
-.insp-line-legend { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; padding: 0 2px 4px; }
+/* v9545：每周数据变化胶囊——一排 4 个等宽均匀分布；第二排与前排按列对齐，不超出边框 */
+.insp-line-legend { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 8px; padding: 0 2px 4px; }
 /* 默认（未选中）：彩色描边边框 + 透明底 + 灰色文字 + 灰色圆点；选中（active）：填充模块淡彩色底 + 模块色文字与圆点 */
-.insp-line-legend-item { display: inline-flex; align-items: center; gap: 4px; padding: 4px 8px; border-radius: 999px; border: 1px solid var(--mc, var(--border-soft)); background: transparent; color: #9a8c7d; font-size: 10px; cursor: pointer; opacity: 0.82; transition: all .15s ease; }
+.insp-line-legend-item { display: inline-flex; align-items: center; justify-content: center; gap: 4px; width: 100%; min-width: 0; box-sizing: border-box; padding: 4px 6px; border-radius: 999px; border: 1px solid var(--mc, var(--border-soft)); background: transparent; color: #9a8c7d; font-size: 10px; cursor: pointer; opacity: 0.82; transition: all .15s ease; }
+.insp-line-legend-item > span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .insp-line-legend-item .insp-line-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--mc, var(--border-soft)); }
 .insp-line-legend-item.active { color: var(--mc, var(--text)); opacity: 1; box-shadow: 0 2px 6px rgba(0,0,0,0.05); font-weight: 500; }
 .insp-line-legend-item.active .insp-line-dot { background: var(--mc, var(--text)); }

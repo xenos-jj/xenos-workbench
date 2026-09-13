@@ -311,8 +311,23 @@ function getWeekStart(offsetWeeks = 0) {
   return shiftDate(getTodayKey(), -dow + offsetWeeks * 7);
 }
 
+// v9545：洞察页自定义卡片——默认勾选前 6 个（卡片区 2 列 × 3 排），上限 6 个
+const INSIGHT_MAX_CARDS = 6;
+const INSIGHT_DIY_INIT_KEY = 'xenos-insight-diy-init';
+function insightDefaultModuleIds() {
+  return INSIGHT_MODULES.filter(m => !INSIGHT_HIDDEN_MODULES.includes(m.id)).slice(0, INSIGHT_MAX_CARDS).map(m => m.id);
+}
 function getInsightModules() {
-  return loadJSON('xenos-insight-modules', []);
+  const saved = loadJSON('xenos-insight-modules', null);
+  const list = Array.isArray(saved) ? saved.filter(id => INSIGHT_MODULES.some(m => m.id === id)) : [];
+  // 本版首次运行：从未设置过 → 默认勾选 6 个；已有自定义 → 保留其选择（均截到 6 个）；之后尊重用户（含全部取消）
+  if (localStorage.getItem(INSIGHT_DIY_INIT_KEY) !== '1') {
+    const def = list.length ? list.slice(0, INSIGHT_MAX_CARDS) : insightDefaultModuleIds();
+    saveInsightModules(def);
+    localStorage.setItem(INSIGHT_DIY_INIT_KEY, '1');
+    return def;
+  }
+  return list.slice(0, INSIGHT_MAX_CARDS);
 }
 function saveInsightModules(ids) {
   saveJSON('xenos-insight-modules', ids);
@@ -13786,7 +13801,12 @@ function openInsightDIY() {
     cb.checked = sel.includes(cb.dataset.id);
     cb.addEventListener('change', () => {
       let cur = getInsightModules().filter(id => INSIGHT_MODULES.some(m => m.id === id));
-      if (cb.checked) { if (!cur.includes(cb.dataset.id)) cur.push(cb.dataset.id); }
+      if (cb.checked) {
+        if (!cur.includes(cb.dataset.id)) {
+          if (cur.length >= INSIGHT_MAX_CARDS) { cb.checked = false; toast('最多勾选 ' + INSIGHT_MAX_CARDS + ' 个（三排）', 'info'); return; }
+          cur.push(cb.dataset.id);
+        }
+      }
       else { const i = cur.indexOf(cb.dataset.id); if (i >= 0) cur.splice(i, 1); }
       saveInsightModules(cur);
       renderContent();
@@ -13846,7 +13866,9 @@ function renderWeeklyIngredientStatsFlatHTML(weekStart) {
     + '</div>'
     + (suggestHTML ? '<div class="diet-flat-wi-suggest">' + suggestHTML + '</div>' : '');
 }
-let insightChartShown = []; // 折线图图例筛选状态：仅控制曲线显隐，会话内稳定、不持久化，加载时为空（全部标签未选中）
+let insightChartShown = []; // 折线图图例筛选状态：仅控制曲线显隐，会话内稳定、不持久化
+// v9545：默认选中前 6 条曲线（与自定义卡片同口径），仅会话首次渲染时初始化，之后尊重用户勾选
+let insightChartShownInited = false;
 let insightChartSVG = null;      // 折线图 SVG 节点实例：数据指纹未变时跨渲染复用同一节点，画布容器不变、线条实例唯一
 let insightChartFingerprint = ''; // 图表数据指纹（各曲线 id+值序列+日期标签），用于判断能否复用 SVG 实例
 function renderInsightPage() {
@@ -13865,6 +13887,10 @@ function renderInsightPage() {
   // 卡片/热力图/建议始终展示全部已开启模块（enabled）；图例仅作为折线图曲线筛选器，二者解耦
   const visibleStats = allStats.filter(s => enabled.includes(s.id));
   // hiddenIds 仅由图例筛选状态决定：未选中的标签 → 对应曲线隐藏；默认全部未选中（空图表）
+  if (!insightChartShownInited) {
+    insightChartShown = allStats.slice(0, INSIGHT_MAX_CARDS).map(s => s.id);
+    insightChartShownInited = true;
+  }
   const hiddenIds = new Set(allStats.filter(s => !insightChartShown.includes(s.id)).map(s => s.id));
   const rangeText = weekStart.slice(5) + ' ~ ' + sunday.slice(5);
 
