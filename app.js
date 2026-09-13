@@ -13120,12 +13120,11 @@ function renderOutfitPage() {
     ${isToday ? `<div class="module-rule-banner"><span class="mrb-icon">${icon('info', 12)}</span><span class="mrb-text">每天记一句今天穿了什么就好，慢慢攒出自己的风格，不必每天都换新搭配。</span></div>` : `<div class="sk-hist-tip">${icon('info', 12)} 正在查看历史记录 · 只读不可更改（如需修改请告知）</div>`}
 
     <div class="sk-day-head">
-      <span class="sk-day-title">${icon('check', 14)} ${isToday ? '今日穿搭记录' : '该日穿搭记录'}</span>
+      <span class="sk-day-title">${icon('shirt', 14)} ${isToday ? '今日穿搭记录' : '该日穿搭记录'}</span>
       <span class="sk-day-pts">${c.style ? '+' + (r.log[view] || 0) + ' 分' : '未记录'}</span>
     </div>
 
     <div class="module-card">
-      <div class="module-card-head"><span class="module-card-title">${icon('shirt', 14)} 今日穿搭记录</span><span class="sk-pending ${c.style ? 'ok' : ''}">${c.style ? '已记录' : '待记录'}</span></div>
       <div class="lk-sub-title">风格</div>
       <div class="lk-tags" style="grid-template-columns: repeat(${(r.styles || []).length}, 1fr)">${stylesHTML}</div>
       <div class="sk-add-inline" style="margin-top:8px">
