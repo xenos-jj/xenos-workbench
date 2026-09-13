@@ -5692,6 +5692,8 @@ function bindDateTrigger(el, opts) {
     const v = el.dataset.date || '';
     if (opts.format) { el.textContent = v ? opts.format(v) : (opts.placeholder || '轻点选择日期'); }
     else { el.textContent = v || opts.placeholder || '轻点选择日期'; }
+    // v9551：无值时标记 is-empty → 占位文案用输入框 placeholder 同色（--text-muted）
+    el.classList.toggle('is-empty', !v);
   }
   el.addEventListener('click', () => {
     openDatePicker({
@@ -14729,7 +14731,7 @@ function renderPhotographyPage() {
         <input id="ph-img" type="file" accept="image/*" multiple style="display:none">
       </div>
       <div class="ph-img-preview" id="ph-img-preview">${phPend.length ? `<div class="lk-insp-grid is-pending" data-ph-pending>${_pendingCardsHTML(phPend, '待保存', today)}</div>` : ''}</div>
-      <div class="slow-field"><span class="slow-label">心得笔记</span><input class="pf-input" id="ph-note" placeholder="这张照片我想表达什么"></div>
+      <div class="slow-field"><span class="slow-label">心得笔记</span><textarea class="pf-input pf-textarea" id="ph-note" rows="1" placeholder="这张照片我想表达什么"></textarea></div>
       <div class="focus-actions"><button class="gold-btn" id="ph-add">保存作品</button></div>` : ''}
       <div class="slow-record-list" id="ph-records">
         ${m.records.map(r => slowRecordItem(r, 'ph-record', true)).join('')}
@@ -14745,7 +14747,7 @@ function renderPhotographyPage() {
       ${isToday ? `
       <div class="slow-field"><span class="slow-label">素材标题</span><input class="pf-input" id="ph-fav-title" placeholder="例：某摄影师的光影处理"></div>
       <div class="slow-field"><span class="slow-label">分类</span><input class="pf-input" id="ph-fav-cat" placeholder="例：光影 / 构图 / 色彩"></div>
-      <div class="slow-field"><span class="slow-label">摘抄感悟</span><input class="pf-input" id="ph-fav-note" placeholder="这段打动我的地方是…"></div>
+      <div class="slow-field"><span class="slow-label">摘抄感悟</span><textarea class="pf-input pf-textarea" id="ph-fav-note" rows="1" placeholder="这段打动我的地方是…"></textarea></div>
       <div class="focus-actions"><button class="gold-btn" id="ph-fav-add">收藏素材</button></div>` : ''}
       <div class="slow-record-list" id="ph-favs">
         ${m.favorites.map(r => slowRecordItem(r, 'ph-fav', false)).join('')}
@@ -14804,6 +14806,17 @@ function renderPhotographyPage() {
     // 只有今日可增删改；历史视图只读
     bindSlowTasks(page, cfg, '#ph-tasks .module-list-item', 'tasks', 'ph-task', renderPhotographyPage);
     bindDateTrigger(page.querySelector('#ph-date'), { initial: today, format: formatDateCN, dayStatus: () => null });
+
+    // v9551：心得笔记 / 摘抄感悟 —— 可手动换行（Enter）、写满自动折行，高度随行数变化，无滚动条
+    const autoGrow = (el) => {
+      el.style.height = 'auto';
+      el.style.height = Math.max(32, el.scrollHeight + 2) + 'px';
+    };
+    page.querySelectorAll('textarea.pf-textarea').forEach(ta => {
+      ta.addEventListener('input', () => autoGrow(ta));
+      ta.addEventListener('keydown', (e) => { if (e.key === 'Enter') setTimeout(() => autoGrow(ta), 0); });
+      autoGrow(ta);
+    });
 
     // 照片：图标按钮唤起文件选择（与穿搭页图标按钮同款）
     const imgBtn = page.querySelector('#ph-img-btn');

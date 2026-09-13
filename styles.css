@@ -10365,3 +10365,14 @@ body.home-bg .topbar {
 
 /* ============ v9550 摄影审美：保存作品 / 收藏素材 按钮右对齐 ============ */
 .slow-photo .focus-actions { justify-content: flex-end; }
+
+
+/* ============ v9551 摄影审美：日期占位色 + 心得/摘抄自动换行长高 ============ */
+/* ① 日期触发器无值时（还没选日期）的文案颜色 = 输入框 placeholder 同色（--text-muted） */
+.pf-date-trigger.is-empty { color: var(--text-muted); }
+/* ② 心得笔记 / 摘抄感悟：多行文本框 —— 手动换行 + 写满自动折行，高度随行数变化，不出现滚动条 */
+.slow-photo textarea.pf-input.pf-textarea {
+  height: auto; min-height: 32px; padding: 6px 10px; line-height: 1.4;
+  resize: none; overflow: hidden; display: block;
+  white-space: pre-wrap; word-break: break-word; overflow-wrap: anywhere;
+}
