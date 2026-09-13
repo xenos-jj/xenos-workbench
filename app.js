@@ -11087,9 +11087,10 @@ function branchIconSkincare(color = '#B07A9E') {
   </svg>`;
 }
 function branchIconMakeup(color = '#C4798C') {
-  return `<svg class="br-icon-svg" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M8 2h8v4H8z" fill="${color}" fill-opacity="0.2" stroke="${color}" stroke-width="1"/>
-    <path d="M9 6h6v16H9z" fill="none" stroke="${color}" stroke-width="1"/>
+  // v9544：改用妆容页「妆容类型」同款图标（斜口红笔，= ICONS.brush 的图形），颜色跟随支线卡片色
+  return `<svg class="br-icon-svg" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" fill="none" stroke="${color}" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="9" y="2" width="6" height="10" rx="1.5" transform="rotate(45 12 7)"/>
+    <path d="M6.5 13.5L3 17l2.5 2.5L9.5 16"/>
   </svg>`;
 }
 function branchIconPosture(color = '#7A9C7A') {
