@@ -5326,10 +5326,44 @@ function getDayStatus(key) {
   return 'green';
 }
 
+// v9538：4 个外观页各自独立的「当日状态」（日期选择器圆点数据源，互不共享、也不与全局聚合混用）
+// 护肤：当日有勾选步骤（dayIds）或当日 log 有完成数 → 满=完成全部步骤（orange），部分=green
+function skDayStatus(key) {
+  const sc = state.skincare || {};
+  const ids = (sc.dayIds || {})[key];
+  const n = ids ? Object.keys(ids).length : 0;
+  const rec = (sc.log || {})[key] || null;
+  const done = rec ? Number(rec.done || 0) : 0;
+  const total = rec ? Number(rec.total || 0) : 0;
+  const cnt = n || done;
+  if (!cnt) return null;
+  if (total > 0 && done >= total) return 'orange';
+  return 'green';
+}
+// 仪态/穿搭/妆容：只读各自的 checkin（looksPosture / looksOutfit / looksMakeup）
+function looksDayStatus(tab) {
+  return function (key) {
+    const r = getLooksRef(tab) || {};
+    const c = (r.checkin || {})[key];
+    if (!c) return null;
+    if (tab === 'outfit') return (c.style || c.done || c.outfitImage) ? 'orange' : null;
+    if (tab === 'makeup') return (c.makeupType || c.done) ? 'orange' : null;
+    // 仪态：按训练任务完成比例（全完成=orange，部分=green）
+    const cnt = Object.keys(c.taskDone || {}).length;
+    const trainings = (c.trainings && Object.keys(c.trainings).length) || 0;
+    if (!(c.done || cnt || trainings)) return null;
+    const total = (r.tasks || []).length || 0;
+    if (total > 0 && cnt >= total) return 'orange';
+    return 'green';
+  };
+}
+
 function openDatePicker(opts) {
   opts = opts || {};
   const initial = opts.initial || getTodayKey();
   const maxKey = opts.max || null;
+  // v9538：可传入页面自有的「当日状态」函数（如护肤/仪态/穿搭/妆容各自独立），缺省用全局聚合 getDayStatus
+  const statusFn = (typeof opts.dayStatus === 'function') ? opts.dayStatus : getDayStatus;
   let view = parseDateKey(initial);
   let selectedKey = initial;
 
@@ -5392,7 +5426,8 @@ function openDatePicker(opts) {
       if (c.key === selectedKey) cls += ' selected';
       if (c.key === getTodayKey()) cls += ' today';
       if (maxKey && c.key > maxKey) cls += ' disabled';
-      const dot = getDayStatus(c.key) ? `<span class="dp-dot dp-${getDayStatus(c.key)}"></span>` : '';
+      const st = statusFn(c.key);
+      const dot = st ? `<span class="dp-dot dp-${st}"></span>` : '';
       return `<button class="${cls}" data-dp-key="${c.key}">${c.day}${dot}</button>`;
     }).join('');
   }
@@ -12916,7 +12951,7 @@ function renderSkincarePage() {
     if (tb) tb.addEventListener('click', () => { skViewDate = null; renderSkincarePage(); });
     const pill = md.querySelector('.sk-md-pill');
     if (pill) pill.addEventListener('click', () => {
-      openDatePicker({ initial: view, max: today, onSelect: (k) => { skViewDate = k > today ? today : k; renderSkincarePage(); } });
+      openDatePicker({ initial: view, max: today, dayStatus: skDayStatus, onSelect: (k) => { skViewDate = k > today ? today : k; renderSkincarePage(); } });
     });
   }
 }
@@ -13122,7 +13157,7 @@ function renderPosturePage() {
     if (tb) tb.addEventListener('click', () => { postureViewDate = null; renderPosturePage(); });
     const pill = md.querySelector('.sk-md-pill');
     if (pill) pill.addEventListener('click', () => {
-      openDatePicker({ initial: view, max: today, onSelect: (k) => { postureViewDate = k > today ? today : k; renderPosturePage(); } });
+      openDatePicker({ initial: view, max: today, dayStatus: looksDayStatus('posture'), onSelect: (k) => { postureViewDate = k > today ? today : k; renderPosturePage(); } });
     });
   }
 }
@@ -13312,7 +13347,7 @@ function renderOutfitPage() {
     const tb = md.querySelector('.sk-md-today');
     if (tb) tb.addEventListener('click', () => { outfitViewDate = null; renderOutfitPage(); });
     const pill = md.querySelector('.sk-md-pill');
-    if (pill) pill.addEventListener('click', () => { openDatePicker({ initial: view, max: today, onSelect: (k) => { outfitViewDate = k > today ? today : k; renderOutfitPage(); } }); });
+    if (pill) pill.addEventListener('click', () => { openDatePicker({ initial: view, max: today, dayStatus: looksDayStatus('outfit'), onSelect: (k) => { outfitViewDate = k > today ? today : k; renderOutfitPage(); } }); });
   }
 }
 
@@ -13462,7 +13497,7 @@ function renderMakeupPage() {
     const tb = md.querySelector('.sk-md-today');
     if (tb) tb.addEventListener('click', () => { makeupViewDate = null; renderMakeupPage(); });
     const pill = md.querySelector('.sk-md-pill');
-    if (pill) pill.addEventListener('click', () => { openDatePicker({ initial: view, max: today, onSelect: (k) => { makeupViewDate = k > today ? today : k; renderMakeupPage(); } }); });
+    if (pill) pill.addEventListener('click', () => { openDatePicker({ initial: view, max: today, dayStatus: looksDayStatus('makeup'), onSelect: (k) => { makeupViewDate = k > today ? today : k; renderMakeupPage(); } }); });
   }
 }
 
