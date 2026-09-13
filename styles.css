@@ -10206,3 +10206,13 @@ body.home-bg .topbar {
   -webkit-tap-highlight-color: transparent;
   -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
 }
+
+/* ============ v9524 穿搭/妆容页：标题图标对齐 + 选择器/按钮高度统一 ============ */
+/* ① module-card 标题带图标时：inline-flex 垂直居中，图标与文字 gap 6 */
+.skincare-page .module-card-title { display: inline-flex; align-items: center; gap: 6px; }
+.skincare-page .module-card-title svg { color: var(--text-muted); flex-shrink: 0; }
+/* ② 添加行内 季节/场合 选择器高度与 输入框(32px)/收藏按钮 一致，不再 34px 突兀 */
+.skincare-page .sk-add-inline .lk-pick-trigger { height: 32px; padding: 0 10px; font-size: 11px; font-family: var(--font); box-sizing: border-box; flex: 0 0 auto; }
+.skincare-page .sk-add-inline .lk-pick-trigger::after { margin-left: 6px; }
+/* ③ 添加行内迷你按钮统一 32px（收藏/上传/录入 与输入框、选择器等高） */
+.skincare-page .sk-add-inline .lk-mini-btn { height: 32px; }

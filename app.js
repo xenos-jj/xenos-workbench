@@ -13761,7 +13761,7 @@ function renderOutfitPage() {
   const page = document.createElement('div');
   page.className = 'page skincare-page';
 
-  const stylesHTML = (r.styles || []).map(s => `<span class="sk-tag-cell"><button class="sk-status-tag ${c.style === s ? 'on' : ''}" data-outfit-style="${escapeHTML(s)}">${escapeHTML(s)}</button></span>`).join('');
+  const stylesHTML = (r.styles || []).map(s => `<button class="lk-tag ${c.style === s ? 'on' : ''}" data-outfit-style="${escapeHTML(s)}">${escapeHTML(s)}</button>`).join('');
   const insps = (r.inspirations || []).slice().reverse().map(i => `<div class="lk-insp">
     ${i.image ? `<img class="lk-insp-img" src="${i.image}" alt="">` : `<div class="lk-insp-img lk-insp-empty">${icon('image', 20)}</div>`}
     <div class="lk-insp-meta"><span class="lk-insp-tag">${escapeHTML(i.style || '')}</span><span class="lk-insp-date">${i.date}</span></div>
@@ -13792,9 +13792,9 @@ function renderOutfitPage() {
     </div>
 
     <div class="module-card">
-      <div class="module-card-head"><span class="module-card-title">今日穿搭</span><span class="sk-pending ${c.style ? 'ok' : ''}">${c.style ? '已记录' : '待记录'}</span></div>
-      <div class="sk-section-head" style="margin-top:0">${icon('shirt', 14)} <span>风格</span></div>
-      <div class="sk-status-tags">${stylesHTML}</div>
+      <div class="module-card-head"><span class="module-card-title">${icon('shirt', 14)} 今日穿搭记录</span><span class="sk-pending ${c.style ? 'ok' : ''}">${c.style ? '已记录' : '待记录'}</span></div>
+      <div class="lk-sub-title">风格</div>
+      <div class="lk-tags">${stylesHTML}</div>
       <div class="sk-add-inline" style="margin-top:8px">
         <input class="lk-input" data-outfit-note placeholder="记一句今天穿了什么 / 心情..." value="${escapeHTML(c.outfitNote || '')}" ${isToday ? '' : 'disabled'}>
       </div>
@@ -13805,14 +13805,14 @@ function renderOutfitPage() {
     </div>
 
     <div class="module-card">
-      <div class="module-card-head"><span class="module-card-title">穿搭灵感库</span><span class="sk-pending ok">${(r.inspirations || []).length} 条</span></div>
+      <div class="module-card-head"><span class="module-card-title">${icon('star', 14)} 穿搭灵感库</span><span class="sk-pending ok">${(r.inspirations || []).length} 条</span></div>
       ${isToday ? `<div class="sk-add-inline"><input class="lk-input" data-insp-style placeholder="风格"><div class="lk-pick-trigger" data-insp-season>${r._pendingInspSeason || '季节'}</div><div class="lk-pick-trigger" data-insp-scene>${r._pendingInspScene || '场合'}</div></div>
       <div class="sk-add-inline"><input class="lk-input" data-insp-note placeholder="备注（可选）"><button class="lk-mini-btn" data-insp-upload>${icon('image', 12)}</button><button class="lk-mini-btn" data-insp-add>${icon('plus', 12)} 收藏</button></div>` : ''}
       <div class="lk-insp-grid">${insps || '<p class="lk-empty">还没有灵感，收藏一组喜欢的搭配吧</p>'}</div>
     </div>
 
-    <div class="module-card">
-      <div class="module-card-head"><span class="module-card-title">衣橱物品</span><span class="sk-pending ok">${(r.wardrobe || []).length} 件</span></div>
+    <div class="sk-section">
+      <div class="sk-section-head">${icon('inbox', 14)} <span>衣橱物品</span><span class="sk-pending ok" style="margin-left:auto">${(r.wardrobe || []).length} 件</span></div>
       ${isToday ? `<div class="sk-add-inline"><div class="lk-pick-trigger" data-wd-cat>${r._pendingWardrobeCat || '分类'}</div><input class="lk-input" data-wd-name placeholder="名称"><input type="number" min="1" class="lk-num" data-wd-cnt value="1" style="max-width:56px"><button class="lk-mini-btn" data-wd-add>${icon('plus', 12)} 录入</button></div>` : ''}
       <div class="lk-wd-list">${wd || '<p class="lk-empty">衣橱还是空的，记下常用单品</p>'}</div>
     </div>
@@ -13986,12 +13986,12 @@ function renderMakeupPage() {
     </div>
 
     <div class="module-card">
-      <div class="module-card-head"><span class="module-card-title">妆容类型</span><span class="sk-pending ${c.makeupType ? 'ok' : ''}">${c.makeupType || '待选择'}</span></div>
+      <div class="module-card-head"><span class="module-card-title">${icon('brush', 14)} 妆容类型</span><span class="sk-pending ${c.makeupType ? 'ok' : ''}">${c.makeupType || '待选择'}</span></div>
       <div class="sk-status-tags">${typesHTML}</div>
     </div>
 
     <div class="module-card">
-      <div class="module-card-head"><span class="module-card-title">妆容步骤清单</span><span class="sk-pending ${allDone ? 'ok' : ''}">完成率 ${pct}%</span></div>
+      <div class="module-card-head"><span class="module-card-title">${icon('list', 14)} 妆容步骤清单</span><span class="sk-pending ${allDone ? 'ok' : ''}">完成率 ${pct}%</span></div>
       <div class="module-list">
         ${stepsHTML}
         ${isToday ? `<div class="sk-add-inline"><input class="lk-input" data-makeup-add placeholder="加一个步骤..."><button class="lk-mini-btn" data-makeup-add-btn aria-label="添加">${icon('plus', 12)}</button></div>` : ''}
@@ -13999,13 +13999,13 @@ function renderMakeupPage() {
     </div>
 
     <div class="module-card">
-      <div class="module-card-head"><span class="module-card-title">妆容用品记录</span><span class="sk-pending ok">${(r.products || []).length} 件</span></div>
+      <div class="module-card-head"><span class="module-card-title">${icon('gift', 14)} 妆容用品记录</span><span class="sk-pending ok">${(r.products || []).length} 件</span></div>
       ${isToday ? `<div class="sk-add-inline"><input class="lk-input" data-prod-name placeholder="如：粉底液 / 某品牌口红"><button class="lk-mini-btn" data-prod-add>${icon('plus', 12)} 记录</button></div>` : ''}
       <div class="lk-prod-list">${products || '<p class="lk-empty">还没记过用品，记一下常用化妆品方便补货</p>'}</div>
     </div>
 
     <div class="module-card">
-      <div class="module-card-head"><span class="module-card-title">妆容灵感收藏</span><span class="sk-pending ok">${(r.inspirations || []).length} 条</span></div>
+      <div class="module-card-head"><span class="module-card-title">${icon('star', 14)} 妆容灵感收藏</span><span class="sk-pending ok">${(r.inspirations || []).length} 条</span></div>
       ${isToday ? `<div class="sk-add-inline"><input class="lk-input" data-minsp-type placeholder="妆容"><select class="lk-input" data-minsp-scene>${r.scenes.map(s => `<option>${s}</option>`).join('')}</select></div>
       <div class="sk-add-inline"><input class="lk-input" data-minsp-note placeholder="备注"><button class="lk-mini-btn" data-minsp-upload>${icon('image', 12)}</button><button class="lk-mini-btn" data-minsp-add>${icon('plus', 12)} 收藏</button></div>` : ''}
       <div class="lk-insp-grid">${insps || '<p class="lk-empty">收藏喜欢的妆容，慢慢攒成灵感库</p>'}</div>
