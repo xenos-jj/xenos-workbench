@@ -3220,6 +3220,13 @@ function cycleMood() {
   renderTopbar();
 }
 
+// v9543：打卡积分变动后只刷新顶栏右上的积分 chip（不重绘整条顶栏，避免覆盖各页自定义的顶栏标题）
+function refreshTopbarPoints() {
+  if (!topbarChips) return;
+  const btn = topbarChips.querySelector('[data-chip="level"]');
+  if (btn) btn.textContent = 'Lv.' + getLevelInfo().level + ' ' + getAvailablePoints() + '分';
+}
+
 function readFileAsDataURL(file) {
   return new Promise((resolve) => {
     const reader = new FileReader();
@@ -8877,6 +8884,7 @@ function addLooksPoints(tab, pts) {
   state.points = (state.points || 0) + pts;
   savePoints();
   saveLooks(tab);
+  refreshTopbarPoints();   // v9543：勾选/取消后同步顶栏积分
 }
 // 通用 id
 function _looksId(prefix) { return prefix + '-' + Date.now().toString(36) + '-' + Math.floor(Math.random() * 1000).toString(36); }
@@ -12828,6 +12836,7 @@ function renderSkincarePage() {
       }
       g.items = g.items.filter(x => x.id !== btn.dataset.delId);
       saveSkincare();
+      refreshTopbarPoints();   // v9543：删除已勾选步骤后同步顶栏积分
       renderSkincarePage();
     });
   });
@@ -12844,6 +12853,7 @@ function renderSkincarePage() {
       const todayDone = sc.routine.reduce((a, gr) => a + gr.items.filter(x => x.done).length, 0);
       sc.log[today] = { done: todayDone, total: sc.routine.reduce((a, gr) => a + gr.items.length, 0) };
       saveSkincare();
+      refreshTopbarPoints();   // v9543：护肤勾选/取消后同步顶栏积分
       renderSkincarePage();
     });
   });
@@ -13052,7 +13062,7 @@ function renderPosturePage() {
 
     <div class="sk-section">
       <div class="sk-section-head">${icon('star', 14)} <span>今日训练内容</span></div>
-      <div class="sk-status-tags">${typesHTML}</div>
+      <div class="sk-status-tags is-grid" style="grid-template-columns: repeat(${(r.trainingTypes || []).length}, 1fr)">${typesHTML}</div>
       <div class="lk-duration">
         <label>${icon('clock', 12)} 训练时长</label>
         <input type="number" min="0" max="120" class="lk-num" data-posture-min value="${duration}" ${isToday ? '' : 'disabled'}><span>分钟</span>
