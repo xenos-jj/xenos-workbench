@@ -3879,8 +3879,8 @@ const PAGE_ROUTES = {
   '护肤': renderSkincarePage,
   // v9513：外貌下的独立页面（仪态/穿搭/妆容）
   '仪态': renderPosturePage,
-  '穿搭': renderLooksOutfitPage,
-  '妆容': renderLooksMakeupPage,
+  '穿搭': renderOutfitPage,
+  '妆容': renderMakeupPage,
   // v9253：暂时放缓 6 模块（从「我的支线 → 暂时放缓」卡片进入）
   '摄影审美': renderPhotographyPage,
   '技能考证': renderCertPage,
@@ -10967,6 +10967,10 @@ document.addEventListener('click', async (e) => {
     const t = state.looksPosture.tasks.find(x => x.id === id); if (!t) return;
     const v = await openModal('编辑文字', t.text, ''); if (v === null) return;
     t.text = v.trim() || t.text; saveLooks('posture');
+  } else if (type === 'makeup-task') {
+    const t = state.looksMakeup.tasks.find(x => x.id === id); if (!t) return;
+    const v = await openModal('编辑文字', t.text, ''); if (v === null) return;
+    t.text = v.trim() || t.text; saveLooks('makeup');
   } else if (type === 'slow-task-pts') {
     const key = btn.dataset.editKey;
     const m = state[key]; if (!m) return;
@@ -11033,6 +11037,30 @@ if (localStorage.getItem('xenos-looks-sub-reset-v9517') === null) {
     saveLooks(pair[0]);
   });
   localStorage.setItem('xenos-looks-sub-reset-v9517', '1');
+}
+// v9523：穿搭/妆容/仪态 之前并未真正打卡，清空残留 checkin+log 并重建 domains.looks.log（只保留护肤 dayIds），
+// 使日期选择器/周统计不再显示这三模块的历史完成圆点。
+if (localStorage.getItem('xenos-looks-clean-v9523') === null) {
+  [['posture', 'looksPosture'], ['outfit', 'looksOutfit'], ['makeup', 'looksMakeup']].forEach(function (pair) {
+    const sk = pair[1];
+    if (state[sk]) { state[sk].checkin = {}; state[sk].log = {}; }
+    saveLooks(pair[0]);
+  });
+  if (state.domains && state.domains.looks) {
+    const dayIds = (state.skincare && state.skincare.dayIds) || {};
+    const newLog = {};
+    Object.keys(dayIds).forEach(function (k) {
+      const cnt = Object.keys(dayIds[k] || {}).length;
+      if (cnt > 0) newLog[k] = cnt;
+    });
+    const today = getTodayKey();
+    let todayDone = 0;
+    (state.skincare && state.skincare.routine || []).forEach(function (g) { (g.items || []).forEach(function (it) { if (it.done) todayDone++; }); });
+    if (todayDone > 0) newLog[today] = todayDone;
+    state.domains.looks.log = newLog;
+    saveDomains();
+  }
+  localStorage.setItem('xenos-looks-clean-v9523', '1');
 }
 migrateData();
 resetPlansForNewDay();
@@ -13716,6 +13744,373 @@ function renderPosturePage() {
     if (pill) pill.addEventListener('click', () => {
       openDatePicker({ initial: view, max: today, onSelect: (k) => { postureViewDate = k > today ? today : k; renderPosturePage(); } });
     });
+  }
+}
+
+// ============ 穿搭（低精力版，参考护肤页设计） ============
+let outfitViewDate = null;
+function renderOutfitPage() {
+  content.innerHTML = '';
+  const r = state.looksOutfit;
+  if (greetLine) greetLine.textContent = '穿搭';
+  ensureLooksTab('outfit');
+  const today = getTodayKey();
+  const view = outfitViewDate || today;
+  const isToday = view === today;
+  const c = r.checkin[view] || {};
+  const page = document.createElement('div');
+  page.className = 'page skincare-page';
+
+  const stylesHTML = (r.styles || []).map(s => `<span class="sk-tag-cell"><button class="sk-status-tag ${c.style === s ? 'on' : ''}" data-outfit-style="${escapeHTML(s)}">${escapeHTML(s)}</button></span>`).join('');
+  const insps = (r.inspirations || []).slice().reverse().map(i => `<div class="lk-insp">
+    ${i.image ? `<img class="lk-insp-img" src="${i.image}" alt="">` : `<div class="lk-insp-img lk-insp-empty">${icon('image', 20)}</div>`}
+    <div class="lk-insp-meta"><span class="lk-insp-tag">${escapeHTML(i.style || '')}</span><span class="lk-insp-date">${i.date}</span></div>
+    ${i.note ? `<p class="lk-insp-note">${escapeHTML(i.note)}</p>` : ''}
+    <button class="lk-mini-btn lk-insp-del" data-insp-del="${i.id}" aria-label="删除">${icon('delete', 11)}</button>
+  </div>`).join('');
+  const wd = (r.wardrobe || []).map(w => `<div class="lk-wd-row"><span class="lk-wd-cat">${escapeHTML(w.category)}</span><span class="lk-wd-name">${escapeHTML(w.name)}</span><span class="lk-wd-cnt">×${w.count || 1}</span><button class="lk-mini-btn" data-wd-del="${w.id}">${icon('delete', 11)}</button></div>`).join('');
+
+  // 本周热力图（按是否有穿搭记录）
+  const ws = getWeekStart();
+  const weekDates = [];
+  for (let i = 0; i < 7; i++) { const d2 = new Date(ws); d2.setDate(d2.getDate() + i); weekDates.push(d2.toISOString().slice(0, 10)); }
+  const heatDots = weekDates.map((dk) => {
+    const ck = r.checkin[dk] || {};
+    const has = !!(ck.style || ck.done || ck.outfitNote || ck.outfitImage);
+    return `<span class="ih-dot ${has ? 'lvl3' : 'lvl0'}"></span>`;
+  }).join('');
+
+  page.innerHTML = `
+    <div class="domain-hero"><div class="domain-head"><div><h3 class="domain-title">穿搭</h3></div></div></div>
+
+    <div class="sk-mini-date">${skMiniDateHTML(view)}</div>
+    ${isToday ? `<div class="module-rule-banner"><span class="mrb-icon">${icon('info', 12)}</span><span class="mrb-text">每天记一句今天穿了什么就好，慢慢攒出自己的风格，不必每天都换新搭配。</span></div>` : `<div class="sk-hist-tip">${icon('info', 12)} 正在查看历史记录 · 只读不可更改（如需修改请告知）</div>`}
+
+    <div class="sk-day-head">
+      <span class="sk-day-title">${icon('check', 14)} ${isToday ? '今日穿搭记录' : '该日穿搭记录'}</span>
+      <span class="sk-day-pts">${c.style ? '+' + (r.log[view] || 0) + ' 分' : '未记录'}</span>
+    </div>
+
+    <div class="module-card">
+      <div class="module-card-head"><span class="module-card-title">今日穿搭</span><span class="sk-pending ${c.style ? 'ok' : ''}">${c.style ? '已记录' : '待记录'}</span></div>
+      <div class="sk-section-head" style="margin-top:0">${icon('shirt', 14)} <span>风格</span></div>
+      <div class="sk-status-tags">${stylesHTML}</div>
+      <div class="sk-add-inline" style="margin-top:8px">
+        <input class="lk-input" data-outfit-note placeholder="记一句今天穿了什么 / 心情..." value="${escapeHTML(c.outfitNote || '')}" ${isToday ? '' : 'disabled'}>
+      </div>
+      ${isToday ? `<div class="sk-add-inline" style="margin-top:6px">
+        <button class="lk-mini-btn" data-outfit-upload>${icon('image', 12)} 上传今日穿搭图</button>
+        ${c.outfitImage ? `<img class="lk-thumb" src="${c.outfitImage}" alt=""><button class="lk-mini-btn" data-outfit-img-del>${icon('delete', 11)}</button>` : ''}
+      </div>` : ''}
+    </div>
+
+    <div class="module-card">
+      <div class="module-card-head"><span class="module-card-title">穿搭灵感库</span><span class="sk-pending ok">${(r.inspirations || []).length} 条</span></div>
+      ${isToday ? `<div class="sk-add-inline"><input class="lk-input" data-insp-style placeholder="风格"><div class="lk-pick-trigger" data-insp-season>${r._pendingInspSeason || '季节'}</div><div class="lk-pick-trigger" data-insp-scene>${r._pendingInspScene || '场合'}</div></div>
+      <div class="sk-add-inline"><input class="lk-input" data-insp-note placeholder="备注（可选）"><button class="lk-mini-btn" data-insp-upload>${icon('image', 12)}</button><button class="lk-mini-btn" data-insp-add>${icon('plus', 12)} 收藏</button></div>` : ''}
+      <div class="lk-insp-grid">${insps || '<p class="lk-empty">还没有灵感，收藏一组喜欢的搭配吧</p>'}</div>
+    </div>
+
+    <div class="module-card">
+      <div class="module-card-head"><span class="module-card-title">衣橱物品</span><span class="sk-pending ok">${(r.wardrobe || []).length} 件</span></div>
+      ${isToday ? `<div class="sk-add-inline"><div class="lk-pick-trigger" data-wd-cat>${r._pendingWardrobeCat || '分类'}</div><input class="lk-input" data-wd-name placeholder="名称"><input type="number" min="1" class="lk-num" data-wd-cnt value="1" style="max-width:56px"><button class="lk-mini-btn" data-wd-add>${icon('plus', 12)} 录入</button></div>` : ''}
+      <div class="lk-wd-list">${wd || '<p class="lk-empty">衣橱还是空的，记下常用单品</p>'}</div>
+    </div>
+
+    <div class="sk-section">
+      <div class="sk-section-head">${icon('chart', 14)} <span>本周穿搭统计</span><div class="insp-heat-legend sk-week-legend"><i class="ht-low"></i><i class="ht-mid"></i><i class="ht-high"></i>完成度 低 → 高</div></div>
+      <div class="insp-heatmap-grid">
+        <div class="ih-row ih-header-row"><span></span>${['周一', '周二', '周三', '周四', '周五', '周六', '周日'].map(l => `<span class="ih-day">${l}</span>`).join('')}</div>
+        <div class="ih-row"><span class="ih-icon">${icon('shirt', 12)}</span>${heatDots}</div>
+      </div>
+    </div>
+  `;
+  content.appendChild(page);
+
+  // 风格标签（单选，仿护肤页皮肤状态）
+  page.querySelectorAll('[data-outfit-style]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (!isToday) return;
+      const cc = r.checkin[today] = r.checkin[today] || {};
+      const s = btn.dataset.outfitStyle;
+      if (cc.style === s) { delete cc.style; cc.done = false; addLooksPoints('outfit', -2); }
+      else { if (!cc.style) addLooksPoints('outfit', 2); cc.style = s; cc.done = true; }
+      saveLooks('outfit');
+      renderOutfitPage();
+    });
+  });
+  // 笔记
+  const note = page.querySelector('[data-outfit-note]');
+  if (note) note.addEventListener('change', () => {
+    const cc = r.checkin[today] = r.checkin[today] || {};
+    cc.outfitNote = note.value;
+    saveLooks('outfit');
+  });
+  // 上传图 / 删图
+  const outfitUpload = page.querySelector('[data-outfit-upload]');
+  if (outfitUpload) outfitUpload.addEventListener('click', () => _looksPickImage(720, 0.7, (url) => {
+    const cc = r.checkin[today] = r.checkin[today] || {};
+    cc.outfitImage = url;
+    saveLooks('outfit');
+    renderOutfitPage();
+  }));
+  const outfitImgDel = page.querySelector('[data-outfit-img-del]');
+  if (outfitImgDel) outfitImgDel.addEventListener('click', () => {
+    const cc = r.checkin[today] || {};
+    delete cc.outfitImage;
+    saveLooks('outfit');
+    renderOutfitPage();
+  });
+  // 灵感：季节/场合/上传/收藏/删除
+  const inspSeasonTrig = page.querySelector('[data-insp-season]');
+  if (inspSeasonTrig) inspSeasonTrig.addEventListener('click', async () => {
+    const opts = r.seasons.map(s => ({ label: s, value: s }));
+    const prev = r._pendingInspSeason || r.seasons[0];
+    const v = await openOptionPicker('选择季节', opts, prev);
+    if (v != null) { r._pendingInspSeason = v; inspSeasonTrig.textContent = v; }
+  });
+  const inspSceneTrig = page.querySelector('[data-insp-scene]');
+  if (inspSceneTrig) inspSceneTrig.addEventListener('click', async () => {
+    const opts = r.scenes.map(s => ({ label: s, value: s }));
+    const prev = r._pendingInspScene || r.scenes[0];
+    const v = await openOptionPicker('选择场合', opts, prev);
+    if (v != null) { r._pendingInspScene = v; inspSceneTrig.textContent = v; }
+  });
+  const inspUpload = page.querySelector('[data-insp-upload]');
+  if (inspUpload) inspUpload.addEventListener('click', () => _looksPickImage(720, 0.65, (url) => { r._pendingInspImage = url; toast('图已选，点「收藏」保存', 'info'); }));
+  const inspAdd = page.querySelector('[data-insp-add]');
+  if (inspAdd) inspAdd.addEventListener('click', () => {
+    const style = page.querySelector('[data-insp-style]').value.trim();
+    const season = r._pendingInspSeason || r.seasons[0];
+    const scene = r._pendingInspScene || r.scenes[0];
+    const note2 = page.querySelector('[data-insp-note]').value.trim();
+    if (!style) { toast('填一下风格', 'info'); return; }
+    r.inspirations.push({ id: _looksId('insp'), style, season, scene, note: note2, date: today, image: r._pendingInspImage || '' });
+    delete r._pendingInspImage; delete r._pendingInspSeason; delete r._pendingInspScene;
+    saveLooks('outfit');
+    renderOutfitPage();
+  });
+  page.querySelectorAll('[data-insp-del]').forEach(b => b.addEventListener('click', () => {
+    r.inspirations = r.inspirations.filter(x => x.id !== b.dataset.inspDel);
+    saveLooks('outfit'); renderOutfitPage();
+  }));
+  // 衣橱
+  const wdCatTrig = page.querySelector('[data-wd-cat]');
+  if (wdCatTrig) wdCatTrig.addEventListener('click', async () => {
+    const opts = r.wardrobeCats.map(c => ({ label: c, value: c }));
+    const prev = r._pendingWardrobeCat || r.wardrobeCats[0];
+    const v = await openOptionPicker('衣橱分类', opts, prev);
+    if (v != null) { r._pendingWardrobeCat = v; wdCatTrig.textContent = v; }
+  });
+  const wdAdd = page.querySelector('[data-wd-add]');
+  if (wdAdd) wdAdd.addEventListener('click', () => {
+    const cat = r._pendingWardrobeCat || r.wardrobeCats[0];
+    const name = page.querySelector('[data-wd-name]').value.trim();
+    const cnt = Math.max(1, parseInt(page.querySelector('[data-wd-cnt]').value, 10) || 1);
+    if (!name) return;
+    r.wardrobe.push({ id: _looksId('wd'), category: cat, name, count: cnt });
+    delete r._pendingWardrobeCat;
+    saveLooks('outfit');
+    renderOutfitPage();
+  });
+  page.querySelectorAll('[data-wd-del]').forEach(b => b.addEventListener('click', () => {
+    r.wardrobe = r.wardrobe.filter(x => x.id !== b.dataset.wdDel);
+    saveLooks('outfit'); renderOutfitPage();
+  }));
+  // 迷你日期
+  const md = page.querySelector('.sk-mini-date');
+  if (md) {
+    const tb = md.querySelector('.sk-md-today');
+    if (tb) tb.addEventListener('click', () => { outfitViewDate = null; renderOutfitPage(); });
+    const pill = md.querySelector('.sk-md-pill');
+    if (pill) pill.addEventListener('click', () => { openDatePicker({ initial: view, max: today, onSelect: (k) => { outfitViewDate = k > today ? today : k; renderOutfitPage(); } }); });
+  }
+}
+
+// ============ 妆容（低精力版，参考护肤页设计） ============
+let makeupViewDate = null;
+function renderMakeupPage() {
+  content.innerHTML = '';
+  const r = state.looksMakeup;
+  if (greetLine) greetLine.textContent = '妆容';
+  ensureLooksTab('makeup');
+  const today = getTodayKey();
+  const view = makeupViewDate || today;
+  const isToday = view === today;
+  const c = r.checkin[view] || {};
+  const td = c.taskDone || {};
+  const tasks = r.tasks || [];
+  const total = tasks.length;
+  const done = tasks.filter(t => td[t.id]).length;
+  const pct = total ? Math.round(done / total * 100) : 0;
+  const allDone = total > 0 && pct >= 100;
+  const page = document.createElement('div');
+  page.className = 'page skincare-page';
+
+  const typesHTML = (r.types || []).map(t => `<span class="sk-tag-cell"><button class="sk-status-tag ${c.makeupType === t ? 'on' : ''}" data-makeup-type="${escapeHTML(t)}">${escapeHTML(t)}</button></span>`).join('');
+  const stepsHTML = tasks.map(t => { const itDone = !!td[t.id]; return `<div class="module-list-item ${itDone ? 'done' : ''}" data-item="${escapeHTML(t.id)}">
+    <span class="mli-check">${itDone ? icon('check', 12) : ''}</span><span class="mli-text">${escapeHTML(t.text)}</span><span class="mli-pts">+${t.points || 1}</span>
+    ${isToday ? `<div class="module-item-actions">
+      <button class="module-act-btn module-edit-btn" data-edit-type="makeup-task" data-edit-id="${escapeHTML(t.id)}" title="编辑">${icon('edit', 11)}</button>
+      <button class="module-act-btn module-del-btn" data-del-type="makeup-task" data-del-id="${escapeHTML(t.id)}" title="删除">${icon('delete', 11)}</button>
+    </div>` : ''}
+  </div>`; }).join('');
+  const products = (r.products || []).map(p => `<div class="lk-prod"><span class="lk-prod-name">${escapeHTML(p.name)}</span><button class="lk-mini-btn" data-prod-del="${p.id}">${icon('delete', 11)}</button></div>`).join('');
+  const insps = (r.inspirations || []).slice().reverse().map(i => `<div class="lk-insp">
+    ${i.image ? `<img class="lk-insp-img" src="${i.image}" alt="">` : `<div class="lk-insp-img lk-insp-empty">${icon('image', 20)}</div>`}
+    <div class="lk-insp-meta"><span class="lk-insp-tag">${escapeHTML(i.type || '')}</span><span class="lk-insp-date">${i.date}</span></div>
+    ${i.note ? `<p class="lk-insp-note">${escapeHTML(i.note)}</p>` : ''}
+    <button class="lk-mini-btn lk-insp-del" data-minsp-del="${i.id}">${icon('delete', 11)}</button>
+  </div>`).join('');
+
+  const ws = getWeekStart();
+  const weekDates = [];
+  for (let i = 0; i < 7; i++) { const d2 = new Date(ws); d2.setDate(d2.getDate() + i); weekDates.push(d2.toISOString().slice(0, 10)); }
+  const heatDots = weekDates.map((dk) => {
+    const ck = r.checkin[dk] || {};
+    const doneD = Object.keys(ck.taskDone || {}).length;
+    let lvl = 0;
+    if (ck.makeupType || doneD > 0) lvl = (total && doneD >= total) ? 3 : (doneD > 0 ? 2 : 1);
+    return `<span class="ih-dot lvl${lvl}"></span>`;
+  }).join('');
+
+  page.innerHTML = `
+    <div class="domain-hero"><div class="domain-head"><div><h3 class="domain-title">妆容</h3></div></div></div>
+
+    <div class="sk-mini-date">${skMiniDateHTML(view)}</div>
+    ${isToday ? `<div class="module-rule-banner"><span class="mrb-icon">${icon('info', 12)}</span><span class="mrb-text">化不化妆都行，重点是取悦自己。想练手就对着镜子多试几次，不强迫每天全妆。</span></div>` : `<div class="sk-hist-tip">${icon('info', 12)} 正在查看历史记录 · 只读不可更改（如需修改请告知）</div>`}
+
+    <div class="sk-day-head">
+      <span class="sk-day-title">${icon('check', 14)} ${isToday ? '今日妆容打卡' : '该日妆容打卡'}</span>
+      <span class="sk-day-pts">+${r.log[view] || 0} 分</span>
+    </div>
+
+    <div class="module-card">
+      <div class="module-card-head"><span class="module-card-title">妆容类型</span><span class="sk-pending ${c.makeupType ? 'ok' : ''}">${c.makeupType || '待选择'}</span></div>
+      <div class="sk-status-tags">${typesHTML}</div>
+    </div>
+
+    <div class="module-card">
+      <div class="module-card-head"><span class="module-card-title">妆容步骤清单</span><span class="sk-pending ${allDone ? 'ok' : ''}">完成率 ${pct}%</span></div>
+      <div class="module-list">
+        ${stepsHTML}
+        ${isToday ? `<div class="sk-add-inline"><input class="lk-input" data-makeup-add placeholder="加一个步骤..."><button class="lk-mini-btn" data-makeup-add-btn aria-label="添加">${icon('plus', 12)}</button></div>` : ''}
+      </div>
+    </div>
+
+    <div class="module-card">
+      <div class="module-card-head"><span class="module-card-title">妆容用品记录</span><span class="sk-pending ok">${(r.products || []).length} 件</span></div>
+      ${isToday ? `<div class="sk-add-inline"><input class="lk-input" data-prod-name placeholder="如：粉底液 / 某品牌口红"><button class="lk-mini-btn" data-prod-add>${icon('plus', 12)} 记录</button></div>` : ''}
+      <div class="lk-prod-list">${products || '<p class="lk-empty">还没记过用品，记一下常用化妆品方便补货</p>'}</div>
+    </div>
+
+    <div class="module-card">
+      <div class="module-card-head"><span class="module-card-title">妆容灵感收藏</span><span class="sk-pending ok">${(r.inspirations || []).length} 条</span></div>
+      ${isToday ? `<div class="sk-add-inline"><input class="lk-input" data-minsp-type placeholder="妆容"><select class="lk-input" data-minsp-scene>${r.scenes.map(s => `<option>${s}</option>`).join('')}</select></div>
+      <div class="sk-add-inline"><input class="lk-input" data-minsp-note placeholder="备注"><button class="lk-mini-btn" data-minsp-upload>${icon('image', 12)}</button><button class="lk-mini-btn" data-minsp-add>${icon('plus', 12)} 收藏</button></div>` : ''}
+      <div class="lk-insp-grid">${insps || '<p class="lk-empty">收藏喜欢的妆容，慢慢攒成灵感库</p>'}</div>
+    </div>
+
+    <div class="sk-section">
+      <div class="sk-section-head">${icon('chart', 14)} <span>本周妆容统计</span><div class="insp-heat-legend sk-week-legend"><i class="ht-low"></i><i class="ht-mid"></i><i class="ht-high"></i>完成度 低 → 高</div></div>
+      <div class="insp-heatmap-grid">
+        <div class="ih-row ih-header-row"><span></span>${['周一', '周二', '周三', '周四', '周五', '周六', '周日'].map(l => `<span class="ih-day">${l}</span>`).join('')}</div>
+        <div class="ih-row"><span class="ih-icon">${icon('brush', 12)}</span>${heatDots}</div>
+      </div>
+    </div>
+  `;
+  content.appendChild(page);
+
+  // 妆容类型（单选）
+  page.querySelectorAll('[data-makeup-type]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (!isToday) return;
+      const cc = r.checkin[today] = r.checkin[today] || {};
+      const prev = cc.makeupType;
+      if (cc.makeupType === btn.dataset.makeupType) { delete cc.makeupType; if (prev) addLooksPoints('makeup', -2); cc.done = !!Object.keys(cc.taskDone || {}).length; }
+      else { cc.makeupType = btn.dataset.makeupType; if (!prev) addLooksPoints('makeup', 2); cc.done = true; }
+      saveLooks('makeup');
+      renderMakeupPage();
+    });
+  });
+  // 步骤勾选
+  page.querySelectorAll('.module-list-item').forEach(el => {
+    el.addEventListener('click', () => {
+      if (!isToday) return;
+      if (el.classList.contains('show-delete')) return;
+      const t = r.tasks.find(x => x.id === el.dataset.item);
+      if (!t) return;
+      const cc = r.checkin[today] = r.checkin[today] || { taskDone: {} };
+      if (!cc.taskDone) cc.taskDone = {};
+      if (cc.taskDone[t.id]) { delete cc.taskDone[t.id]; addLooksPoints('makeup', -(t.points || 1)); }
+      else { cc.taskDone[t.id] = true; addLooksPoints('makeup', t.points || 1); }
+      cc.done = !!(cc.taskDone && Object.keys(cc.taskDone).length) || !!cc.makeupType;
+      saveLooks('makeup');
+      renderMakeupPage();
+    });
+  });
+  // 删除步骤
+  page.querySelectorAll('.module-del-btn[data-del-type="makeup-task"]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault(); e.stopPropagation();
+      if (!isToday) return;
+      const id = btn.dataset.delId;
+      if (td[id]) delete td[id];
+      r.tasks = r.tasks.filter(x => x.id !== id);
+      saveLooks('makeup');
+      renderMakeupPage();
+    });
+  });
+  // 加步骤
+  const addRow = page.querySelector('[data-makeup-add]');
+  if (addRow) {
+    const btn = page.querySelector('[data-makeup-add-btn]');
+    const doAdd = () => {
+      const text = addRow.value.trim();
+      if (!text) return;
+      r.tasks.push({ id: 'mk-' + Date.now().toString(36), text, points: 1 });
+      saveLooks('makeup');
+      renderMakeupPage();
+    };
+    if (btn) btn.addEventListener('click', doAdd);
+    addRow.addEventListener('keydown', (e) => { if (e.key === 'Enter') doAdd(); });
+  }
+  // 用品
+  const prodAdd = page.querySelector('[data-prod-add]');
+  if (prodAdd) prodAdd.addEventListener('click', () => {
+    const name = page.querySelector('[data-prod-name]').value.trim();
+    if (!name) return;
+    r.products.push({ id: _looksId('prod'), name });
+    saveLooks('makeup'); renderMakeupPage();
+  });
+  page.querySelectorAll('[data-prod-del]').forEach(b => b.addEventListener('click', () => {
+    r.products = r.products.filter(x => x.id !== b.dataset.prodDel);
+    saveLooks('makeup'); renderMakeupPage();
+  }));
+  // 灵感
+  const minspUpload = page.querySelector('[data-minsp-upload]');
+  if (minspUpload) minspUpload.addEventListener('click', () => _looksPickImage(720, 0.65, (url) => { r._pendingMinspImage = url; toast('图已选，点「收藏」保存', 'info'); }));
+  const minspAdd = page.querySelector('[data-minsp-add]');
+  if (minspAdd) minspAdd.addEventListener('click', () => {
+    const type = page.querySelector('[data-minsp-type]').value.trim();
+    const scene = page.querySelector('[data-minsp-scene]').value;
+    const note2 = page.querySelector('[data-minsp-note]').value.trim();
+    if (!type) { toast('填一下妆容类型', 'info'); return; }
+    r.inspirations.push({ id: _looksId('minsp'), type, scene, note: note2, date: today, image: r._pendingMinspImage || '' });
+    delete r._pendingMinspImage;
+    saveLooks('makeup'); renderMakeupPage();
+  });
+  page.querySelectorAll('[data-minsp-del]').forEach(b => b.addEventListener('click', () => {
+    r.inspirations = r.inspirations.filter(x => x.id !== b.dataset.minspDel);
+    saveLooks('makeup'); renderMakeupPage();
+  }));
+  // 迷你日期
+  const md = page.querySelector('.sk-mini-date');
+  if (md) {
+    const tb = md.querySelector('.sk-md-today');
+    if (tb) tb.addEventListener('click', () => { makeupViewDate = null; renderMakeupPage(); });
+    const pill = md.querySelector('.sk-md-pill');
+    if (pill) pill.addEventListener('click', () => { openDatePicker({ initial: view, max: today, onSelect: (k) => { makeupViewDate = k > today ? today : k; renderMakeupPage(); } }); });
   }
 }
 
