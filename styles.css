@@ -10310,20 +10310,20 @@ body.home-bg .topbar {
 
 /* ============ v9547 摄影审美：按钮/胶囊/照片按钮/标题层级/间距 细化 ============ */
 /* ① 主按钮（完成打卡 / 保存作品 / 收藏素材 / 添加）改成提示条那种「淡淡的蓝」 + 同色系文字 */
-.slow-photo .gold-btn { background: var(--slcbg); color: var(--slcd); border: 1px solid var(--slcb); font-weight: 500; }
+.slow-photo .gold-btn { background: var(--slcbg); color: var(--slcd); border: 1px solid var(--slcb); font-weight: 500; height: 28px; border-radius: var(--radius); }
 .slow-photo .gold-btn:hover { background: #E3EEF8; color: var(--slcd); }
 .slow-photo .slow-check-btn.done { background: var(--slcbg); color: var(--slcd); border-color: var(--slcb); }
 /* ② 标签胶囊：描边粗细/颜色与其它控件一致（1px + 浅蓝），并做成一枚真正的「胶囊」 */
-.slow-photo .slow-chips .chip { border: 1px solid var(--slcb); border-radius: 999px; }
-.slow-photo .slow-chips .chip.active { border: 1px solid var(--slc); }
-/* ③ 照片：改成穿搭页那种图标按钮（不再是 input 套一个「选择文件」按钮的卡片） */
+.slow-photo .slow-chips .chip { border: 0.75px solid var(--slcb); border-radius: 999px; }
+.slow-photo .slow-chips .chip.active { border: 0.75px solid var(--slc); }
+/* ③ 照片：整行按钮（宽度与上下输入框一致），28px 高 + 卡片同款圆角 */
 .slow-photo .ph-img-btn {
-  flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center;
-  width: 40px; height: 32px; padding: 0; box-sizing: border-box;
-  border: 1px solid var(--slcb); border-radius: 8px; background: #fff; color: var(--slc); cursor: pointer;
+  flex: 1 1 auto; display: inline-flex; align-items: center; justify-content: center; gap: 5px;
+  width: auto; height: 28px; padding: 0 10px; box-sizing: border-box;
+  border: 1px solid var(--slcb); border-radius: var(--radius); background: var(--slcbg); color: var(--slcd);
+  font-size: 11px; font-weight: 500; cursor: pointer; transition: background .15s ease;
 }
-.slow-photo .ph-img-btn:hover { border-color: var(--slc); background: var(--slcbg); }
-.slow-photo .ph-img-name { flex: 1; min-width: 0; font-size: 9.5px; color: var(--text-muted); font-family: var(--font-small); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.slow-photo .ph-img-btn:hover { background: #E3EEF8; border-color: var(--slc); }
 /* ④ 卡内标题字号层级 = 「本周练习统计」（12 / 575），下边距 8（护肤卡内标题口径） */
 .slow-photo .module-card-head { margin-bottom: 8px; }
 .slow-photo .soft-card-title { font-size: 12px; font-weight: 575; }
@@ -10333,3 +10333,15 @@ body.home-bg .topbar {
 /* ⑥ 卡内按钮行 / 间距用护肤页口径（7px） */
 .slow-photo .focus-actions { margin-top: 7px; }
 .slow-photo .sk-hist-tip { margin-top: 7px; }
+
+
+/* ============ v9548 摄影审美：待保存图片预览 / 模块间距同步护肤页 ============ */
+/* ① 选中的照片按「穿搭灵感库」同款卡片显示（图片 + 待保存标签 + 日期 + 右上删除），不再显示文件名一串数字 */
+.slow-photo .ph-img-preview { margin-top: 7px; }
+.slow-photo .ph-img-preview:empty { margin-top: 0; }
+.slow-photo .ph-img-preview .lk-insp-grid { margin-top: 0; gap: 7px; }
+/* ② 模块（今日练习打卡 / 作品记录库 / 审美素材收藏 / 练习计划清单 / 本周练习统计）之间 18px
+   —— 对齐护肤页「板块之间 18px」口径（不是卡内 7px、也不是打卡卡之间 10px） */
+.slow-photo .section-card:not(.slow-checkin),
+.slow-photo .sk-section { margin-top: 18px !important; margin-bottom: 0 !important; }
+.slow-photo .slow-checkin { margin-top: 12px !important; margin-bottom: 0 !important; }

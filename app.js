@@ -5697,6 +5697,8 @@ function bindDateTrigger(el, opts) {
     openDatePicker({
       initial: el.dataset.date || opts.initial || getTodayKey(),
       max: opts.max || '',
+      // v9548：可选——传 () => null 时该处日历为「普通日期」，不显示完成圆点
+      dayStatus: opts.dayStatus,
       onSelect: (k) => {
         el.dataset.date = k;
         render();
@@ -14697,14 +14699,18 @@ function renderPhotographyPage() {
       </div>
       <div class="slow-field"><span class="slow-label">拍摄时间</span><div class="pf-input pf-date-trigger" id="ph-date" data-val="${today}">${formatDateCN(today)}</div></div>
       <div class="slow-field"><span class="slow-label">照片</span>
-        <button class="ph-img-btn" id="ph-img-btn" aria-label="选择照片">${icon('image', 13)}</button>
-        <span class="ph-img-name" id="ph-img-name"></span>
+        <button class="ph-img-btn" id="ph-img-btn" aria-label="选择照片">${icon('image', 13)} 选择照片</button>
         <input id="ph-img" type="file" accept="image/*" style="display:none">
       </div>
+      <div class="ph-img-preview" id="ph-img-preview">${m._pendingImg ? `<div class="lk-insp-grid is-pending"><div class="lk-insp">
+        <img class="lk-insp-img" src="${m._pendingImg}" alt="">
+        <div class="lk-insp-meta"><span class="lk-insp-tag">待保存</span><span class="lk-insp-date">${today}</span></div>
+        <button class="lk-mini-btn lk-insp-del" data-ph-pending-del aria-label="删除">${icon('delete', 11)}</button>
+      </div></div>` : ''}</div>
       <div class="slow-field"><span class="slow-label">心得笔记</span><input class="pf-input" id="ph-note" placeholder="这张照片我想表达什么"></div>
       <div class="focus-actions"><button class="gold-btn" id="ph-add">保存作品</button></div>` : ''}
       <div class="slow-record-list" id="ph-records">
-        ${m.records.length ? m.records.map(r => slowRecordItem(r, 'ph-record', true)).join('') : slowEmpty('还没有作品记录，先存一张吧')}
+        ${m.records.map(r => slowRecordItem(r, 'ph-record', true)).join('')}
       </div>
     </div>
 
@@ -14720,7 +14726,7 @@ function renderPhotographyPage() {
       <div class="slow-field"><span class="slow-label">摘抄感悟</span><input class="pf-input" id="ph-fav-note" placeholder="这段打动我的地方是…"></div>
       <div class="focus-actions"><button class="gold-btn" id="ph-fav-add">收藏素材</button></div>` : ''}
       <div class="slow-record-list" id="ph-favs">
-        ${m.favorites.length ? m.favorites.map(r => slowRecordItem(r, 'ph-fav', false)).join('') : slowEmpty('还没有收藏素材')}
+        ${m.favorites.map(r => slowRecordItem(r, 'ph-fav', false)).join('')}
       </div>
     </div>
 
@@ -14745,7 +14751,6 @@ function renderPhotographyPage() {
         <div class="ih-row ih-header-row"><span></span>${['周一', '周二', '周三', '周四', '周五', '周六', '周日'].map(l => `<span class="ih-day">${l}</span>`).join('')}</div>
         <div class="ih-row"><span class="ih-icon">${icon('camera', 12)}</span>${heatDots}</div>
       </div>
-      <div class="sk-week-points">本周练习 <b>${stats.times}</b> 次 · 累计作品 <b>${m.records.length}</b> 张 · 本周积分 <b>${stats.pts}</b> 分</div>
     </div>
 
   `;
@@ -14776,17 +14781,25 @@ function renderPhotographyPage() {
   if (isToday) {
     // 只有今日可增删改；历史视图只读
     bindSlowTasks(page, cfg, '#ph-tasks .module-list-item', 'tasks', 'ph-task', renderPhotographyPage);
-    bindDateTrigger(page.querySelector('#ph-date'), { initial: today, format: formatDateCN });
+    bindDateTrigger(page.querySelector('#ph-date'), { initial: today, format: formatDateCN, dayStatus: () => null });
 
     // 照片：图标按钮唤起文件选择（与穿搭页图标按钮同款）
     const imgBtn = page.querySelector('#ph-img-btn');
     const imgInput = page.querySelector('#ph-img');
     if (imgBtn && imgInput) {
       imgBtn.addEventListener('click', () => imgInput.click());
-      imgInput.addEventListener('change', () => {
-        const nameEl = page.querySelector('#ph-img-name');
+      imgInput.addEventListener('change', async () => {
         const f = imgInput.files && imgInput.files[0];
-        if (nameEl) nameEl.textContent = f ? f.name : '';
+        if (!f) return;
+        try {
+          const url = await fileToResizedDataURL(f, 720, 0.6);
+          if (url) {
+            m._pendingImg = url;
+            savePhotography();
+            renderPhotographyPage();
+            toast('图已选，点「保存作品」入库', 'info');
+          }
+        } catch (e) { toast('图片处理失败，换一张试试', 'info'); }
       });
     }
 
@@ -14804,16 +14817,13 @@ function renderPhotographyPage() {
     if (phAdd) phAdd.addEventListener('click', async () => {
       const title = (page.querySelector('#ph-title').value || '').trim();
       if (!title) { toast('先给作品起个名字吧'); return; }
-      const fileInput = page.querySelector('#ph-img');
-      let img = '';
-      if (fileInput && fileInput.files && fileInput.files[0]) {
-        try { img = await fileToResizedDataURL(fileInput.files[0], 720, 0.6); } catch (e) { img = ''; }
-      }
+      const img = m._pendingImg || '';
       m.records.unshift({
         id: uid('ph-r'), title, tag: curTag,
         date: page.querySelector('#ph-date').dataset.val || today,
         img, note: (page.querySelector('#ph-note').value || '').trim()
       });
+      delete m._pendingImg;
       savePhotography();
       renderPhotographyPage();
       toast('作品已保存');
@@ -14850,6 +14860,13 @@ function renderPhotographyPage() {
   }
 
   // 删除作品 / 收藏（集合类模块：任何日期都可删）
+  const phPendingDel = page.querySelector('[data-ph-pending-del]');
+  if (phPendingDel) phPendingDel.addEventListener('click', (e) => {
+    e.stopPropagation();
+    delete m._pendingImg;
+    savePhotography();
+    renderPhotographyPage();
+  });
   page.querySelectorAll('[data-del-type="ph-record"]').forEach(b => {
     b.addEventListener('click', (e) => {
       e.stopPropagation();
