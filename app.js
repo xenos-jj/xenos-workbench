@@ -1584,7 +1584,10 @@ function loadDomains() {
   });
   return result;
 }
-function saveDomains() { saveJSON('xenos-domains', state.domains); }
+function saveDomains() {
+  saveJSON('xenos-domains', state.domains);
+  syncTopbarPoints();   // v9552：领域日志（每日打卡）变动后同步顶栏积分
+}
 
 function loadPlanHistory() { return loadJSON('xenos-plan-history', {}); }
 function savePlanHistory() { saveJSON('xenos-plan-history', state.planHistory || {}); }
@@ -2695,8 +2698,15 @@ function loadPoints() {
   return 0;
 }
 
+// v9552：任何积分变动后同步顶栏积分显示（打卡/取消打卡/兑换/领域日志/暂缓模块）
+// 顶栏只刷新积分那一个 chip，不整体重绘（整体重绘会把顶栏标题覆盖成问候语，而外观页/暂缓页是用它显示页名的）
+function syncTopbarPoints() {
+  try { refreshTopbarPoints(); } catch (e) { /* 初始化早期顶栏尚未就绪，忽略 */ }
+}
+
 function savePoints() {
   localStorage.setItem('xenos-points', String(state.points));
+  syncTopbarPoints();
 }
 
 function loadExpenseCategories() {
@@ -9674,6 +9684,14 @@ function openPointBreakdownModal() {
     { name: '英语学习', icon: 'language', value: getLanguagePoints() },
     { name: '奖励池兑换', icon: 'gift', value: -getSpentPoints(), spent: true }
   ];
+  // v9552：把「没有归入上面任何一项」的积分汇总成「其他」——让明细各项之和能与总积分对上。
+  // （例如还没做分类页面的模块、暂缓模块的打卡积分等；等那些页面做好后再拆细。）
+  const listed = items.filter(it => !it.spent).reduce((sum, it) => sum + (Number(it.value) || 0), 0);
+  const rest = getTotalEarnedPoints() - listed;
+  if (rest > 0) {
+    const spentIdx = items.findIndex(it => it.spent);
+    items.splice(spentIdx < 0 ? items.length : spentIdx, 0, { name: '其他', icon: 'sparkle', value: rest });
+  }
   const body = items.map(it => `
     <div class="point-row">
       <div class="point-icon">${icon(it.icon, 15)}</div>
