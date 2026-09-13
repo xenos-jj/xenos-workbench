@@ -13394,7 +13394,10 @@ function renderMakeupPage() {
 
   const typesHTML = (r.types || []).map(t => `<span class="sk-tag-cell"><button class="sk-status-tag ${c.makeupType === t ? 'on' : ''}" data-makeup-type="${escapeHTML(t)}">${escapeHTML(t)}</button></span>`).join('');
   const products = (r.products || []).map(p => `<div class="lk-prod"><span class="lk-prod-name">${escapeHTML(p.name)}</span><button class="lk-mini-btn" data-prod-del="${p.id}">${icon('delete', 11)}</button></div>`).join('');
-  const insps = (r.inspirations || []).slice().reverse().map(i => `<div class="lk-insp">
+  // v9541：妆容灵感收藏 = 长期累积集合（与穿搭灵感库同逻辑）
+  // 按「添加日期 ≤ 当前查看日期」过滤（今天新加的回看更早日期不出现，从添加日起一直跟随），最新在前；不参与本周统计/日期圆点
+  const inspList = (r.inspirations || []).filter(i => !i.date || i.date <= view).slice().reverse();
+  const insps = inspList.map(i => `<div class="lk-insp">
     ${i.image ? `<img class="lk-insp-img" src="${i.image}" alt="">` : `<div class="lk-insp-img lk-insp-empty">${icon('image', 20)}</div>`}
     <div class="lk-insp-meta"><span class="lk-insp-tag">${escapeHTML(i.type || '')}</span><span class="lk-insp-date">${i.date}</span></div>
     ${i.note ? `<p class="lk-insp-note">${escapeHTML(i.note)}</p>` : ''}
@@ -13433,7 +13436,7 @@ function renderMakeupPage() {
     </div>
 
     <div class="sk-section">
-      <div class="sk-section-head">${icon('star', 14)} <span>妆容灵感收藏</span><span class="sk-pending ok" style="margin-left:auto">${(r.inspirations || []).length} 条</span></div>
+      <div class="sk-section-head">${icon('star', 14)} <span>妆容灵感收藏</span><span class="sk-pending ok" style="margin-left:auto">${inspList.length} 条</span></div>
       ${isToday ? `<div class="sk-add-inline"><div class="lk-pick-trigger" data-minsp-type-trig>${r._pendingMinspType || '妆容类型'}</div><div class="lk-pick-trigger" data-minsp-scene>${r._pendingMinspScene || '场合'}</div></div>
       <div class="sk-add-inline"><input class="lk-input" data-minsp-note placeholder="备注（可选）"><button class="lk-mini-btn" data-minsp-upload>${icon('image', 12)}</button><button class="lk-mini-btn" data-minsp-add>${icon('plus', 12)} 收藏</button></div>` : ''}
       ${isToday && r._pendingMinspImage ? `<div class="lk-insp-grid is-pending">
