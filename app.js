@@ -12613,7 +12613,7 @@ function renderSocialPage() {
     <div class="section-card module-card">
       <div class="module-card-head">
         <span class="module-card-icon" style="color:#E8A77C">${icon('heart', 14)}</span>
-        <span class="soft-card-title" style="margin:0;">本周行动</span>
+        <span class="soft-card-title" style="margin:0;">爱好行动</span>
         <span class="sk-pending ok">${doneToday}/${s.actions.length}</span>
         ${isToday ? `<button class="module-add-btn" id="social-add-action" title="新增">${icon('plus', 12)}</button>` : ''}
       </div>
