@@ -10250,3 +10250,10 @@ body.home-bg .topbar {
 /* 作用域 .skincare-page → 护肤 / 仪态 / 穿搭 / 妆容 四页同步；行本身 align-items:center，故各控件垂直中心同一线 */
 .skincare-page .sk-add-inline .lk-mini-btn { height: 28px; }
 .skincare-page .sk-add-inline .lk-pick-trigger { height: 28px; }
+
+
+/* ============ v9537 穿搭【风格】卡：风格胶囊 ↔「上传今日穿搭图」间距 = 7px ============ */
+/* 根因：.skincare-page .sk-add-inline 带 margin:0 !important（v9452 的对齐规格），会把行内 style 的 margin-top 吃掉，
+   删掉「记一句…」输入框后该行紧贴胶囊，只剩行内垂直居中的 ~2px 留白（user 反馈「顶多2-3px」）。
+   这里用更高优先级 + !important 明确给回 7px；并把该行 min-height 收到与按钮同高（28px），使「间距」= 实际可见间距。 */
+.skincare-page .lk-tags + .sk-add-inline { margin-top: 7px !important; min-height: 28px; }
