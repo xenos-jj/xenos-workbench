@@ -10361,3 +10361,7 @@ body.home-bg .topbar {
 .slow-photo .module-list-item.done .mli-check {
   border-radius: 5px; border-color: var(--slc); background: var(--slc); color: #fff;
 }
+
+
+/* ============ v9550 摄影审美：保存作品 / 收藏素材 按钮右对齐 ============ */
+.slow-photo .focus-actions { justify-content: flex-end; }

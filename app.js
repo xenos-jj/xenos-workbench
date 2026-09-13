@@ -5368,7 +5368,7 @@ function looksDayStatus(tab) {
     const r = getLooksRef(tab) || {};
     const c = (r.checkin || {})[key];
     if (!c) return null;
-    if (tab === 'outfit') return (c.style || c.done || c.outfitImage) ? 'orange' : null;
+    if (tab === 'outfit') return (c.style || c.done || c.outfitImage || (c.outfitImages && c.outfitImages.length)) ? 'orange' : null;
     if (tab === 'makeup') return (c.makeupType || c.done) ? 'orange' : null;
     // 仪态：按训练任务完成比例（全完成=orange，部分=green）
     const cnt = Object.keys(c.taskDone || {}).length;
@@ -8907,46 +8907,60 @@ function addLooksPoints(tab, pts) {
 function _looksId(prefix) { return prefix + '-' + Date.now().toString(36) + '-' + Math.floor(Math.random() * 1000).toString(36); }
 // v9534：图片选择（穿搭今日图 / 穿搭灵感 / 妆容灵感）——
 // 修复 v9529 移除外貌页时误删该函数导致「图片添加按钮点击无反应」（ReferenceError）
-function _looksPickImage(maxW, quality, cb) {
+function _looksPickImages(maxW, quality, cb) {
   const inp = document.createElement('input');
   inp.type = 'file';
   inp.accept = 'image/*';
+  inp.multiple = true;                    // v9550：可一次多选，张数不限
   inp.style.display = 'none';
   const drop = () => { if (inp.parentNode) inp.parentNode.removeChild(inp); };
   inp.addEventListener('cancel', drop);   // 用户取消选择（支持的浏览器）
   inp.addEventListener('change', async () => {
-    const f = inp.files && inp.files[0];
-    if (!f) { drop(); return; }
-    try {
-      const url = await fileToResizedDataURL(f, maxW || 720, quality || 0.65);
-      if (url && typeof cb === 'function') cb(url);
-    } catch (e) {
-      toast('图片处理失败，换一张试试', 'info');
+    const files = Array.prototype.slice.call(inp.files || []);
+    if (!files.length) { drop(); return; }
+    const urls = [];
+    for (let i = 0; i < files.length; i++) {
+      try {
+        const u = await fileToResizedDataURL(files[i], maxW || 720, quality || 0.65);
+        if (u) urls.push(u);
+      } catch (e) { /* 单张失败跳过 */ }
     }
     drop();
+    if (urls.length && typeof cb === 'function') cb(urls);
+    else if (!urls.length) toast('图片处理失败，换一张试试', 'info');
   });
   document.body.appendChild(inp);
   inp.click();
 }
-// v9534：灵感「待收藏」图片预览卡（原位插入，不整页重绘，保留已输入的风格/备注/选择器状态）
-function _showLooksPendingPreview(page, url, label, dateStr, delAttr, onDel, anchorSel) {
-  if (!page || !url) return;
-  page.querySelectorAll('.lk-insp-grid.is-pending').forEach(el => el.remove());
-  const wrap = document.createElement('div');
-  wrap.className = 'lk-insp-grid is-pending';
-  wrap.innerHTML = `<div class="lk-insp">
-    <img class="lk-insp-img" src="${url}" alt="">
+// 兼容旧调用（单张）
+function _looksPickImage(maxW, quality, cb) {
+  _looksPickImages(maxW, quality, (urls) => { if (urls && urls[0] && typeof cb === 'function') cb(urls[0]); });
+}
+// v9550：多张「待保存」预览卡（原位渲染，不整页重绘 → 不会丢掉已经输入的文本/选择器状态）
+function _pendingCardsHTML(urls, label, dateStr) {
+  return (urls || []).map(u => `<div class="lk-insp">
+    <img class="lk-insp-img" src="${u}" alt="">
     <div class="lk-insp-meta"><span class="lk-insp-tag">${escapeHTML(label)}</span><span class="lk-insp-date">${escapeHTML(String(dateStr))}</span></div>
-    <button class="lk-mini-btn lk-insp-del" ${delAttr} aria-label="删除">${icon('delete', 11)}</button>
-  </div>`;
-  // 插入位置：优先用调用方指定的锚点（同一页可能有多个 .lk-insp-grid，如「灵感库」+「衣橱」）
-  const anchor = anchorSel ? page.querySelector(anchorSel) : null;
-  const grids = page.querySelectorAll('.lk-insp-grid');
-  const saved = anchor || grids[grids.length - 1];
-  if (saved && saved.parentNode) saved.parentNode.insertBefore(wrap, saved);
-  else page.appendChild(wrap);
-  const btn = wrap.querySelector('[' + delAttr + ']');
-  if (btn) btn.addEventListener('click', () => { if (onDel) onDel(); wrap.remove(); });
+    <button class="lk-mini-btn lk-insp-del" aria-label="删除">${icon('delete', 11)}</button>
+  </div>`).join('');
+}
+// 渲染/刷新「待保存」预览容器（anchorSel = 已保存列表的选择器；attr = 容器标记；onDel(i) = 删除第 i 张）
+function _renderPendingGrid(page, anchorSel, attr, urls, label, dateStr, onDel) {
+  if (!page) return;
+  let box = page.querySelector('[' + attr + ']');
+  if (!urls || !urls.length) { if (box) box.remove(); return; }
+  if (!box) {
+    box = document.createElement('div');
+    box.className = 'lk-insp-grid is-pending';
+    box.setAttribute(attr, '');
+    const anchor = anchorSel ? page.querySelector(anchorSel) : null;
+    if (anchor && anchor.parentNode) anchor.parentNode.insertBefore(box, anchor);
+    else page.appendChild(box);
+  }
+  box.innerHTML = _pendingCardsHTML(urls, label, dateStr);
+  box.querySelectorAll('.lk-insp-del').forEach((btn, i) => {
+    btn.addEventListener('click', () => { if (onDel) onDel(i); });
+  });
 }
 function dateKey(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
 
@@ -10528,13 +10542,8 @@ if ('serviceWorker' in navigator && navigator.serviceWorker) {
       .then((reg) => { reg.update(); })
       .catch(() => {});
   });
-  // 新版本 service worker 接管后自动刷新一次，确保用户立即看到最新内容
-  let refreshing = false;
-  navigator.serviceWorker.addEventListener('controllerchange', () => {
-    if (refreshing) return;
-    refreshing = true;
-    location.reload();
-  });
+  // v9550：取消「新 SW 接管后自动刷新」——user 要求：我没有主动刷新工作台时，不要自己刷新。
+  // 新版本会在用户下次打开/刷新的那次导航（SW 导航请求为 network-first）自然生效。
 }
 
 // =========================================================
@@ -13206,6 +13215,11 @@ function renderOutfitPage() {
   const page = document.createElement('div');
   page.className = 'page skincare-page looks-sub';
 
+  // v9550：今日穿搭图 / 灵感库 / 衣橱 均支持多图（新字段为数组，兼容旧的单图字段）
+  const outfitImgs = (c.outfitImages && c.outfitImages.length) ? c.outfitImages : (c.outfitImage ? [c.outfitImage] : []);
+  const inspPend = (r._pendingInspImages && r._pendingInspImages.length) ? r._pendingInspImages : (r._pendingInspImage ? [r._pendingInspImage] : []);
+  const wdPend = (r._pendingWdImages && r._pendingWdImages.length) ? r._pendingWdImages : (r._pendingWdImage ? [r._pendingWdImage] : []);
+
   const stylesHTML = (r.styles || []).map(s => `<button class="lk-tag ${c.style === s ? 'on' : ''}" data-outfit-style="${escapeHTML(s)}">${escapeHTML(s)}</button>`).join('');
   // v9540：灵感库 / 衣橱物品 = 长期累积的集合（添加后一直跟随，不随日期"消失"）
   // 仅按「添加日期 ≤ 当前查看日期」过滤：今天新加的，回看更早的日期时不出现；从添加那天起（含之后每天）一直显示；列表最新的排在前面
@@ -13252,12 +13266,12 @@ function renderOutfitPage() {
       ${isToday ? `<div class="sk-add-inline" style="margin-top:7px">
         <button class="lk-mini-btn is-wide" data-outfit-upload>${icon('image', 12)} 上传今日穿搭图</button>
       </div>` : ''}
-      ${c.outfitImage ? `<div class="lk-insp-grid">
-        <div class="lk-insp">
-          <img class="lk-insp-img" src="${c.outfitImage}" alt="">
+      ${outfitImgs.length ? `<div class="lk-insp-grid">
+        ${outfitImgs.map((u, i) => `<div class="lk-insp">
+          <img class="lk-insp-img" src="${u}" alt="">
           <div class="lk-insp-meta"><span class="lk-insp-tag">今日穿搭</span><span class="lk-insp-date">${view}</span></div>
-          ${isToday ? `<button class="lk-mini-btn lk-insp-del" data-outfit-img-del aria-label="删除">${icon('delete', 11)}</button>` : ''}
-        </div>
+          ${isToday ? `<button class="lk-mini-btn lk-insp-del" data-outfit-img-del="${i}" aria-label="删除">${icon('delete', 11)}</button>` : ''}
+        </div>`).join('')}
       </div>` : ''}
     </div>
 
@@ -13265,26 +13279,14 @@ function renderOutfitPage() {
       <div class="sk-section-head">${icon('star', 14)} <span>穿搭灵感库</span><span class="sk-pending ok" style="margin-left:auto">${inspList.length} 条</span></div>
       ${isToday ? `<div class="sk-add-inline"><input class="lk-input" data-insp-style placeholder="风格"><div class="lk-pick-trigger" data-insp-season>${r._pendingInspSeason || '季节'}</div><div class="lk-pick-trigger" data-insp-scene>${r._pendingInspScene || '场合'}</div></div>
       <div class="sk-add-inline"><input class="lk-input" data-insp-note placeholder="备注（可选）"><button class="lk-mini-btn" data-insp-upload>${icon('image', 12)}</button><button class="lk-mini-btn" data-insp-add>${icon('plus', 12)} 收藏</button></div>` : ''}
-      ${isToday && r._pendingInspImage ? `<div class="lk-insp-grid is-pending">
-        <div class="lk-insp">
-          <img class="lk-insp-img" src="${r._pendingInspImage}" alt="">
-          <div class="lk-insp-meta"><span class="lk-insp-tag">待收藏</span><span class="lk-insp-date">${today}</span></div>
-          <button class="lk-mini-btn lk-insp-del" data-insp-pending-del aria-label="删除">${icon('delete', 11)}</button>
-        </div>
-      </div>` : ''}
+      ${isToday && inspPend.length ? `<div class="lk-insp-grid is-pending" data-insp-pending>${_pendingCardsHTML(inspPend, '待收藏', today)}</div>` : ''}
       <div class="lk-insp-grid" data-insp-grid>${insps || '<p class="lk-empty">还没有灵感，收藏一组喜欢的搭配吧</p>'}</div>
     </div>
 
     <div class="sk-section">
       <div class="sk-section-head">${icon('inbox', 14)} <span>衣橱物品</span><span class="sk-pending ok" style="margin-left:auto">${wdList.length} 件</span></div>
       ${isToday ? `<div class="sk-add-inline"><div class="lk-pick-trigger" data-wd-cat>${r._pendingWardrobeCat || '分类'}</div><input class="lk-input" data-wd-name placeholder="名称"><button class="lk-mini-btn" data-wd-upload aria-label="上传图片">${icon('image', 12)}</button><button class="lk-mini-btn" data-wd-add>${icon('plus', 12)} 录入</button></div>` : ''}
-      ${isToday && r._pendingWdImage ? `<div class="lk-insp-grid is-pending">
-        <div class="lk-insp">
-          <img class="lk-insp-img" src="${r._pendingWdImage}" alt="">
-          <div class="lk-insp-meta"><span class="lk-insp-tag">待录入</span><span class="lk-insp-date">${today}</span></div>
-          <button class="lk-mini-btn lk-insp-del" data-wd-pending-del aria-label="删除">${icon('delete', 11)}</button>
-        </div>
-      </div>` : ''}
+      ${isToday && wdPend.length ? `<div class="lk-insp-grid is-pending" data-wd-pending>${_pendingCardsHTML(wdPend, '待录入', today)}</div>` : ''}
       <div class="lk-insp-grid" data-wd-grid>${wd || '<p class="lk-empty">衣橱还是空的，记下常用单品</p>'}</div>
     </div>
 
@@ -13312,19 +13314,25 @@ function renderOutfitPage() {
   });
   // 上传图 / 删图
   const outfitUpload = page.querySelector('[data-outfit-upload]');
-  if (outfitUpload) outfitUpload.addEventListener('click', () => _looksPickImage(720, 0.7, (url) => {
+  if (outfitUpload) outfitUpload.addEventListener('click', () => _looksPickImages(720, 0.7, (urls) => {
     const cc = r.checkin[today] = r.checkin[today] || {};
-    cc.outfitImage = url;
-    saveLooks('outfit');
-    renderOutfitPage();
-  }));
-  const outfitImgDel = page.querySelector('[data-outfit-img-del]');
-  if (outfitImgDel) outfitImgDel.addEventListener('click', () => {
-    const cc = r.checkin[today] || {};
+    const base = (cc.outfitImages && cc.outfitImages.length) ? cc.outfitImages : (cc.outfitImage ? [cc.outfitImage] : []);
+    cc.outfitImages = base.concat(urls);
     delete cc.outfitImage;
     saveLooks('outfit');
     renderOutfitPage();
-  });
+    toast('已添加 ' + urls.length + ' 张', 'info');
+  }));
+  page.querySelectorAll('[data-outfit-img-del]').forEach(btn => btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const cc = r.checkin[view] = r.checkin[view] || {};
+    const arr = (cc.outfitImages && cc.outfitImages.length) ? cc.outfitImages.slice() : (cc.outfitImage ? [cc.outfitImage] : []);
+    arr.splice(Number(btn.dataset.outfitImgDel), 1);
+    cc.outfitImages = arr;
+    delete cc.outfitImage;
+    saveLooks('outfit');
+    renderOutfitPage();
+  }));
   // 灵感：季节/场合/上传/收藏/删除
   const inspSeasonTrig = page.querySelector('[data-insp-season]');
   if (inspSeasonTrig) inspSeasonTrig.addEventListener('click', async () => {
@@ -13340,11 +13348,19 @@ function renderOutfitPage() {
     const v = await openOptionPicker('选择场合', opts, prev);
     if (v != null) { r._pendingInspScene = v; inspSceneTrig.textContent = v; }
   });
+  // v9550：待收藏预览（多张，可逐张删除；原位渲染不重绘，保留已输入的风格/备注）
+  const refreshInspPend = () => _renderPendingGrid(page, '[data-insp-grid]', 'data-insp-pending', r._pendingInspImages || [], '待收藏', today, (i) => {
+    r._pendingInspImages.splice(i, 1);
+    saveLooks('outfit');
+    refreshInspPend();
+  });
+  refreshInspPend();
   const inspUpload = page.querySelector('[data-insp-upload]');
-  if (inspUpload) inspUpload.addEventListener('click', () => _looksPickImage(720, 0.65, (url) => {
-    r._pendingInspImage = url;
-    _showLooksPendingPreview(page, url, '待收藏', today, 'data-insp-pending-del', () => { delete r._pendingInspImage; }, '[data-insp-grid]');
-    toast('图已选，点「收藏」保存', 'info');
+  if (inspUpload) inspUpload.addEventListener('click', () => _looksPickImages(720, 0.65, (urls) => {
+    r._pendingInspImages = (r._pendingInspImages || []).concat(urls);
+    delete r._pendingInspImage;
+    refreshInspPend();
+    toast('已选 ' + r._pendingInspImages.length + ' 张，点「收藏」保存', 'info');
   }));
   const inspAdd = page.querySelector('[data-insp-add]');
   if (inspAdd) inspAdd.addEventListener('click', () => {
@@ -13353,14 +13369,12 @@ function renderOutfitPage() {
     const scene = r._pendingInspScene || r.scenes[0];
     const note2 = page.querySelector('[data-insp-note]').value.trim();
     if (!style) { toast('填一下风格', 'info'); return; }
-    r.inspirations.push({ id: _looksId('insp'), style, season, scene, note: note2, date: today, image: r._pendingInspImage || '' });
-    delete r._pendingInspImage; delete r._pendingInspSeason; delete r._pendingInspScene;
+    const imgs = (r._pendingInspImages && r._pendingInspImages.length) ? r._pendingInspImages.slice() : (r._pendingInspImage ? [r._pendingInspImage] : ['']);
+    imgs.forEach(image => r.inspirations.push({ id: _looksId('insp'), style, season, scene, note: note2, date: today, image }));
+    delete r._pendingInspImages; delete r._pendingInspImage; delete r._pendingInspSeason; delete r._pendingInspScene;
     saveLooks('outfit');
     renderOutfitPage();
   });
-  // v9534：待收藏预览图删除
-  const inspPendingDel = page.querySelector('[data-insp-pending-del]');
-  if (inspPendingDel) inspPendingDel.addEventListener('click', () => { delete r._pendingInspImage; renderOutfitPage(); });
   page.querySelectorAll('[data-insp-del]').forEach(b => b.addEventListener('click', () => {
     r.inspirations = r.inspirations.filter(x => x.id !== b.dataset.inspDel);
     saveLooks('outfit'); renderOutfitPage();
@@ -13374,21 +13388,28 @@ function renderOutfitPage() {
     if (v != null) { r._pendingWardrobeCat = v; wdCatTrig.textContent = v; }
   });
   // v9539：衣橱图片上传（替换原数量输入框）——与灵感库同一套添图逻辑（待录入预览卡 + 录入时写入 image）
+  // v9550：待录入预览（多张）
+  const refreshWdPend = () => _renderPendingGrid(page, '[data-wd-grid]', 'data-wd-pending', r._pendingWdImages || [], '待录入', today, (i) => {
+    r._pendingWdImages.splice(i, 1);
+    saveLooks('outfit');
+    refreshWdPend();
+  });
+  refreshWdPend();
   const wdUpload = page.querySelector('[data-wd-upload]');
-  if (wdUpload) wdUpload.addEventListener('click', () => _looksPickImage(720, 0.65, (url) => {
-    r._pendingWdImage = url;
-    _showLooksPendingPreview(page, url, '待录入', today, 'data-wd-pending-del', () => { delete r._pendingWdImage; }, '[data-wd-grid]');
-    toast('图已选，点「录入」保存', 'info');
+  if (wdUpload) wdUpload.addEventListener('click', () => _looksPickImages(720, 0.65, (urls) => {
+    r._pendingWdImages = (r._pendingWdImages || []).concat(urls);
+    delete r._pendingWdImage;
+    refreshWdPend();
+    toast('已选 ' + r._pendingWdImages.length + ' 张，点「录入」保存', 'info');
   }));
-  const wdPendingDel = page.querySelector('[data-wd-pending-del]');
-  if (wdPendingDel) wdPendingDel.addEventListener('click', () => { delete r._pendingWdImage; renderOutfitPage(); });
   const wdAdd = page.querySelector('[data-wd-add]');
   if (wdAdd) wdAdd.addEventListener('click', () => {
     const cat = r._pendingWardrobeCat || r.wardrobeCats[0];
     const name = page.querySelector('[data-wd-name]').value.trim();
     if (!name) return;
-    r.wardrobe.push({ id: _looksId('wd'), category: cat, name, count: 1, image: r._pendingWdImage || '', date: today });
-    delete r._pendingWardrobeCat; delete r._pendingWdImage;
+    const imgs = (r._pendingWdImages && r._pendingWdImages.length) ? r._pendingWdImages.slice() : (r._pendingWdImage ? [r._pendingWdImage] : ['']);
+    imgs.forEach(image => r.wardrobe.push({ id: _looksId('wd'), category: cat, name, count: 1, image, date: today }));
+    delete r._pendingWardrobeCat; delete r._pendingWdImages; delete r._pendingWdImage;
     saveLooks('outfit');
     renderOutfitPage();
   });
@@ -13419,6 +13440,9 @@ function renderMakeupPage() {
   const c = r.checkin[view] || {};
   const page = document.createElement('div');
   page.className = 'page skincare-page looks-sub';
+
+  // v9550：灵感收藏支持多图（新字段为数组，兼容旧的单图字段）
+  const minspPend = (r._pendingMinspImages && r._pendingMinspImages.length) ? r._pendingMinspImages : (r._pendingMinspImage ? [r._pendingMinspImage] : []);
 
   const typesHTML = (r.types || []).map(t => `<span class="sk-tag-cell"><button class="sk-status-tag ${c.makeupType === t ? 'on' : ''}" data-makeup-type="${escapeHTML(t)}">${escapeHTML(t)}</button></span>`).join('');
   // v9542：妆容用品记录 = 长期累积集合（与灵感收藏/衣橱同逻辑）：按「添加日期 ≤ 查看日期」过滤，最新在前
@@ -13469,13 +13493,7 @@ function renderMakeupPage() {
       <div class="sk-section-head">${icon('star', 14)} <span>妆容灵感收藏</span><span class="sk-pending ok" style="margin-left:auto">${inspList.length} 条</span></div>
       ${isToday ? `<div class="sk-add-inline"><div class="lk-pick-trigger" data-minsp-type-trig>${r._pendingMinspType || '妆容类型'}</div><div class="lk-pick-trigger" data-minsp-scene>${r._pendingMinspScene || '场合'}</div></div>
       <div class="sk-add-inline"><input class="lk-input" data-minsp-note placeholder="备注（可选）"><button class="lk-mini-btn" data-minsp-upload>${icon('image', 12)}</button><button class="lk-mini-btn" data-minsp-add>${icon('plus', 12)} 收藏</button></div>` : ''}
-      ${isToday && r._pendingMinspImage ? `<div class="lk-insp-grid is-pending">
-        <div class="lk-insp">
-          <img class="lk-insp-img" src="${r._pendingMinspImage}" alt="">
-          <div class="lk-insp-meta"><span class="lk-insp-tag">待收藏</span><span class="lk-insp-date">${today}</span></div>
-          <button class="lk-mini-btn lk-insp-del" data-minsp-pending-del aria-label="删除">${icon('delete', 11)}</button>
-        </div>
-      </div>` : ''}
+      ${isToday && minspPend.length ? `<div class="lk-insp-grid is-pending" data-minsp-pending>${_pendingCardsHTML(minspPend, '待收藏', today)}</div>` : ''}
       <div class="lk-insp-grid" data-minsp-grid>${insps || '<p class="lk-empty">收藏喜欢的妆容，慢慢攒成灵感库</p>'}</div>
     </div>
 
@@ -13528,11 +13546,19 @@ function renderMakeupPage() {
     const v = await openOptionPicker('选择场合', opts, prev);
     if (v != null) { r._pendingMinspScene = v; minspSceneTrig.textContent = v; }
   });
+  // v9550：待收藏预览（多张）
+  const refreshMinspPend = () => _renderPendingGrid(page, '[data-minsp-grid]', 'data-minsp-pending', r._pendingMinspImages || [], '待收藏', today, (i) => {
+    r._pendingMinspImages.splice(i, 1);
+    saveLooks('makeup');
+    refreshMinspPend();
+  });
+  refreshMinspPend();
   const minspUpload = page.querySelector('[data-minsp-upload]');
-  if (minspUpload) minspUpload.addEventListener('click', () => _looksPickImage(720, 0.65, (url) => {
-    r._pendingMinspImage = url;
-    _showLooksPendingPreview(page, url, '待收藏', today, 'data-minsp-pending-del', () => { delete r._pendingMinspImage; }, '[data-minsp-grid]');
-    toast('图已选，点「收藏」保存', 'info');
+  if (minspUpload) minspUpload.addEventListener('click', () => _looksPickImages(720, 0.65, (urls) => {
+    r._pendingMinspImages = (r._pendingMinspImages || []).concat(urls);
+    delete r._pendingMinspImage;
+    refreshMinspPend();
+    toast('已选 ' + r._pendingMinspImages.length + ' 张，点「收藏」保存', 'info');
   }));
   const minspAdd = page.querySelector('[data-minsp-add]');
   if (minspAdd) minspAdd.addEventListener('click', () => {
@@ -13540,13 +13566,11 @@ function renderMakeupPage() {
     const scene = r._pendingMinspScene || (r.scenes || [])[0];
     const note2 = page.querySelector('[data-minsp-note]').value.trim();
     if (!type) { toast('选一下妆容类型', 'info'); return; }
-    r.inspirations.push({ id: _looksId('minsp'), type, scene, note: note2, date: today, image: r._pendingMinspImage || '' });
-    delete r._pendingMinspImage; delete r._pendingMinspType; delete r._pendingMinspScene;
+    const imgs = (r._pendingMinspImages && r._pendingMinspImages.length) ? r._pendingMinspImages.slice() : (r._pendingMinspImage ? [r._pendingMinspImage] : ['']);
+    imgs.forEach(image => r.inspirations.push({ id: _looksId('minsp'), type, scene, note: note2, date: today, image }));
+    delete r._pendingMinspImages; delete r._pendingMinspImage; delete r._pendingMinspType; delete r._pendingMinspScene;
     saveLooks('makeup'); renderMakeupPage();
   });
-  // v9534：待收藏预览图删除
-  const minspPendingDel = page.querySelector('[data-minsp-pending-del]');
-  if (minspPendingDel) minspPendingDel.addEventListener('click', () => { delete r._pendingMinspImage; renderMakeupPage(); });
   page.querySelectorAll('[data-minsp-del]').forEach(b => b.addEventListener('click', () => {
     r.inspirations = r.inspirations.filter(x => x.id !== b.dataset.minspDel);
     saveLooks('makeup'); renderMakeupPage();
@@ -14649,6 +14673,8 @@ function renderPhotographyPage() {
   const view = photoViewDate || today;
   const isToday = view === today;
   const stats = slowWeekStats('photography');
+  // v9550：照片可多选多放（新字段为数组，兼容旧的单图字段）
+  const phPend = (m._pendingImgs && m._pendingImgs.length) ? m._pendingImgs : (m._pendingImg ? [m._pendingImg] : []);
   const page = document.createElement('div');
   // v9546：参考护肤页视觉——复用 skincare-page 的卡片/间距/字号体系，描边用模块图标色调（浅蓝），去掉橘色
   page.className = 'page skincare-page slow-photo';
@@ -14700,13 +14726,9 @@ function renderPhotographyPage() {
       <div class="slow-field"><span class="slow-label">拍摄时间</span><div class="pf-input pf-date-trigger" id="ph-date" data-val="${today}">${formatDateCN(today)}</div></div>
       <div class="slow-field"><span class="slow-label">照片</span>
         <button class="ph-img-btn" id="ph-img-btn" aria-label="选择照片">${icon('image', 13)} 选择照片</button>
-        <input id="ph-img" type="file" accept="image/*" style="display:none">
+        <input id="ph-img" type="file" accept="image/*" multiple style="display:none">
       </div>
-      <div class="ph-img-preview" id="ph-img-preview">${m._pendingImg ? `<div class="lk-insp-grid is-pending"><div class="lk-insp">
-        <img class="lk-insp-img" src="${m._pendingImg}" alt="">
-        <div class="lk-insp-meta"><span class="lk-insp-tag">待保存</span><span class="lk-insp-date">${today}</span></div>
-        <button class="lk-mini-btn lk-insp-del" data-ph-pending-del aria-label="删除">${icon('delete', 11)}</button>
-      </div></div>` : ''}</div>
+      <div class="ph-img-preview" id="ph-img-preview">${phPend.length ? `<div class="lk-insp-grid is-pending" data-ph-pending>${_pendingCardsHTML(phPend, '待保存', today)}</div>` : ''}</div>
       <div class="slow-field"><span class="slow-label">心得笔记</span><input class="pf-input" id="ph-note" placeholder="这张照片我想表达什么"></div>
       <div class="focus-actions"><button class="gold-btn" id="ph-add">保存作品</button></div>` : ''}
       <div class="slow-record-list" id="ph-records">
@@ -14786,20 +14808,29 @@ function renderPhotographyPage() {
     // 照片：图标按钮唤起文件选择（与穿搭页图标按钮同款）
     const imgBtn = page.querySelector('#ph-img-btn');
     const imgInput = page.querySelector('#ph-img');
+    // v9550：待保存预览多张可逐张删除（原位渲染，不整页重绘，保留标题/心得等已输入内容）
+    const refreshPhPend = () => _renderPendingGrid(page.querySelector('#ph-img-preview'), '', 'data-ph-pending', m._pendingImgs || [], '待保存', today, (i) => {
+      m._pendingImgs.splice(i, 1);
+      savePhotography();
+      refreshPhPend();
+    });
+    refreshPhPend();
     if (imgBtn && imgInput) {
       imgBtn.addEventListener('click', () => imgInput.click());
       imgInput.addEventListener('change', async () => {
-        const f = imgInput.files && imgInput.files[0];
-        if (!f) return;
-        try {
-          const url = await fileToResizedDataURL(f, 720, 0.6);
-          if (url) {
-            m._pendingImg = url;
-            savePhotography();
-            renderPhotographyPage();
-            toast('图已选，点「保存作品」入库', 'info');
-          }
-        } catch (e) { toast('图片处理失败，换一张试试', 'info'); }
+        const files = Array.prototype.slice.call(imgInput.files || []);
+        if (!files.length) return;
+        m._pendingImgs = m._pendingImgs || [];
+        for (let i = 0; i < files.length; i++) {
+          try {
+            const url = await fileToResizedDataURL(files[i], 720, 0.6);
+            if (url) m._pendingImgs.push(url);
+          } catch (e) { /* 单张失败跳过 */ }
+        }
+        savePhotography();
+        refreshPhPend();
+        imgInput.value = '';   // 允许再次选择同一批文件
+        if (m._pendingImgs.length) toast('已选 ' + m._pendingImgs.length + ' 张，点「保存作品」入库', 'info');
       });
     }
 
@@ -14817,16 +14848,15 @@ function renderPhotographyPage() {
     if (phAdd) phAdd.addEventListener('click', async () => {
       const title = (page.querySelector('#ph-title').value || '').trim();
       if (!title) { toast('先给作品起个名字吧'); return; }
-      const img = m._pendingImg || '';
-      m.records.unshift({
-        id: uid('ph-r'), title, tag: curTag,
-        date: page.querySelector('#ph-date').dataset.val || today,
-        img, note: (page.querySelector('#ph-note').value || '').trim()
-      });
-      delete m._pendingImg;
+      // v9550：多张照片时每张各存一条作品记录；没选图则存一条无图记录
+      const imgs = (m._pendingImgs && m._pendingImgs.length) ? m._pendingImgs.slice() : (m._pendingImg ? [m._pendingImg] : ['']);
+      const dateVal = page.querySelector('#ph-date').dataset.val || today;
+      const noteVal = (page.querySelector('#ph-note').value || '').trim();
+      imgs.forEach(img => m.records.unshift({ id: uid('ph-r'), title, tag: curTag, date: dateVal, img, note: noteVal }));
+      delete m._pendingImgs; delete m._pendingImg;
       savePhotography();
       renderPhotographyPage();
-      toast('作品已保存');
+      toast(imgs.length > 1 ? ('已保存 ' + imgs.length + ' 张作品') : '作品已保存');
     });
 
     // 收藏素材
@@ -14860,13 +14890,6 @@ function renderPhotographyPage() {
   }
 
   // 删除作品 / 收藏（集合类模块：任何日期都可删）
-  const phPendingDel = page.querySelector('[data-ph-pending-del]');
-  if (phPendingDel) phPendingDel.addEventListener('click', (e) => {
-    e.stopPropagation();
-    delete m._pendingImg;
-    savePhotography();
-    renderPhotographyPage();
-  });
   page.querySelectorAll('[data-del-type="ph-record"]').forEach(b => {
     b.addEventListener('click', (e) => {
       e.stopPropagation();
