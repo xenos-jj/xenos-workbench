@@ -3946,7 +3946,9 @@ function loadLazyPage(name, cb) {
   if (!cfg) { if (cb) cb(); return; }
   if (_lazyLoaded[name]) { if (cb) cb(); return; }
   const s = document.createElement('script');
-  s.src = cfg.file + '?v=261';
+  // v9560：懒加载模块 URL 戳与 sw.js STATIC 保持一致（原来写死 ?v=261，与缓存键不匹配 →
+  // 每次打开都要重新联网下载模块文件；对齐后由 SW 缓存直接命中，打开即显示）
+  s.src = cfg.file + '?v=560';
   s.onload = () => { _lazyLoaded[name] = true; if (cb) cb(); };
   s.onerror = () => { _lazyFailed[name] = true; if (cb) cb(); };
   document.head.appendChild(s);
