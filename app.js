@@ -12193,11 +12193,13 @@ function renderTravelPage() {
   const t = state.travel || JSON.parse(JSON.stringify(DEFAULT_TRAVEL));
   const ph = t.phases[t.phase] || t.phases.adapt || Object.values(t.phases)[0];
   const today = getTodayKey();
+  const view = SLOW_VIEW.travel || today;
+  const isToday = view === today;
   const ws = getWeekStart();
   let weekPts = 0;
   for (const k in (t.log || {})) { if (k >= ws && k <= today) weekPts += (t.log[k] || 0); }
   const departed = ph.places.filter(p => p.status === '已出发').length;
-  const actionsDone = ph.actions.filter(a => a.done && a.date === today).length;
+  const actionsDone = ph.actions.filter(a => a.done && a.date === view).length;
   const ckCats = (t.checkin && Array.isArray(t.checkin.categories)) ? t.checkin.categories : [];
   const checkedCount = ckCats.reduce((n, c) => n + c.places.filter(p => p.checked).length, 0);
   const totalPlaces = ckCats.reduce((n, c) => n + c.places.length, 0);
@@ -12226,7 +12228,7 @@ function renderTravelPage() {
   }
 
   function renderActionItem(a, delType) {
-    const done = a.done && a.date === today;
+    const done = a.done && a.date === view;
     return `<div class="module-list-item ${done ? 'done' : ''}" data-action-id="${a.id}">
       <button class="mli-check" aria-label="完成">${done ? icon('check', 10) : ''}</button>
       <span class="mli-text">${escapeHTML(a.text)}</span>
@@ -12247,15 +12249,18 @@ function renderTravelPage() {
   }
 
   page.innerHTML = `
-    <div class="sub-page-head">
-      <h3 class="sub-title">旅行体验 <span class="sub-spark">${icon('sparkle', 14)}</span></h3>
-    </div>
+    <div class="domain-hero"><div class="domain-head"><div><h3 class="domain-title">旅行体验</h3></div></div></div>
+
+    <div class="sk-mini-date">${skMiniDateHTML(view)}</div>
+    ${isToday
+      ? `<div class="module-rule-banner"><span class="mrb-icon">${icon('info', 12)}</span><span class="mrb-text">${escapeHTML(t.rule || '所有出门按当天往返、随时折返、不强制次数；状态不好可跳过本周，没有惩罚。')}</span></div>`
+      : `<div class="sk-hist-tip">${icon('info', 12)} 正在查看历史记录 · 只读不可更改（如需修改请告知）</div>`}
 
     <div class="section-card module-card">
       <div class="module-card-head">
         <span class="module-card-icon" style="color:#7FB0D3">${icon('mountain', 14)}</span>
         <span class="soft-card-title" style="margin:0;">想去的地方</span>
-        <button class="module-add-btn" id="travel-add-place" title="新增">${icon('plus', 12)}</button>
+        ${isToday ? `<button class="module-add-btn" id="travel-add-place" title="新增">${icon('plus', 12)}</button>` : ''}
       </div>
       <div class="module-list" id="travel-places">
         ${ph.places.length ? ph.places.map(renderPlaceItem).join('') : '<div class="module-empty">还没有想去的地方，先收藏一个家附近的小角落吧～</div>'}
@@ -12267,7 +12272,7 @@ function renderTravelPage() {
       <div class="module-card-head">
         <span class="module-card-icon" style="color:#D6A67A">${icon('target', 14)}</span>
         <span class="soft-card-title" style="margin:0;">本周行动</span>
-        <span class="module-card-meta">${actionsDone}/${ph.actions.length}</span>
+        <span class="sk-pending ok">${actionsDone}/${ph.actions.length}</span>
       </div>
       <div class="module-list" id="travel-actions">
         ${ph.actions.map(a => renderActionItem(a, 'travel-action')).join('')}
@@ -12278,7 +12283,7 @@ function renderTravelPage() {
       <div class="module-card-head">
         <span class="module-card-icon" style="color:#8FB0A0">${icon('camera', 14)}</span>
         <span class="soft-card-title" style="margin:0;">旅行灵感</span>
-        <button class="module-add-btn" id="travel-add-discovery" title="记录一个小发现">${icon('plus', 12)}</button>
+        ${isToday ? `<button class="module-add-btn" id="travel-add-discovery" title="记录一个小发现">${icon('plus', 12)}</button>` : ''}
       </div>
       <p class="module-tip">${escapeHTML(ph.inspirationGuide || '每次出门后，记录 1 个让你舒服的小发现。')}</p>
       <div class="module-discovery-list" id="travel-discoveries">
@@ -12298,6 +12303,17 @@ function renderTravelPage() {
   `;
   content.appendChild(page);
 
+  bindSlowMiniDate(page, 'travel', t, renderTravelPage, function (k) {
+    const pts = Number((t.log || {})[k] || 0);
+    const dayActions = [];
+    Object.keys(t.phases || {}).forEach(function (pk) {
+      ((t.phases[pk] || {}).actions || []).forEach(function (a) { dayActions.push(a); });
+    });
+    const allDone = dayActions.length > 0 && dayActions.every(a => a.done && a.date === k);
+    if (allDone) return 'orange';
+    return pts > 0 ? 'green' : null;
+  });
+
   page.querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', () => selectItem(b.dataset.go)));
 
   // 想去的地方：状态切换 待规划 ↔ 已出发（有积分则计入）
@@ -12305,6 +12321,7 @@ function renderTravelPage() {
     el.addEventListener('click', (e) => {
       e.stopPropagation();
       if (el.closest('.module-list-item').classList.contains('show-delete')) return;
+      if (!isToday) { toast('历史记录只读'); return; }
       const id = el.dataset.placeId;
       const place = ph.places.find(p => p.id === id);
       if (!place) return;
@@ -12325,6 +12342,7 @@ function renderTravelPage() {
   page.querySelectorAll('#travel-actions .module-list-item').forEach(row => {
     row.addEventListener('click', () => {
       if (row.classList.contains('show-delete')) return;
+      if (!isToday) { toast('历史记录只读'); return; }
       const id = row.dataset.actionId;
       const action = ph.actions.find(a => a.id === id);
       if (!action) return;
@@ -12341,7 +12359,8 @@ function renderTravelPage() {
   });
 
   // 新增想去的地方
-  page.querySelector('#travel-add-place').addEventListener('click', async () => {
+  const travelAddPlaceBtn = page.querySelector('#travel-add-place');
+  if (travelAddPlaceBtn) travelAddPlaceBtn.addEventListener('click', async () => {
     const name = await openModal('新增想去的地方', '', '例如：小区周边漫步');
     if (name === null || !name.trim()) return;
     const note = await openModal('备注（可选）', '', '简单描述一下，降低门槛');
@@ -12351,7 +12370,8 @@ function renderTravelPage() {
   });
 
   // 新增小发现（旅行灵感）
-  page.querySelector('#travel-add-discovery').addEventListener('click', async () => {
+  const travelAddDiscBtn = page.querySelector('#travel-add-discovery');
+  if (travelAddDiscBtn) travelAddDiscBtn.addEventListener('click', async () => {
     const v = await openModal('记录一个小发现', '', '楼下石榴树结果了 / 便利店新上了汽水…');
     if (v === null || !v.trim()) return;
     ph.discoveries.push({ id: uid('td'), text: v.trim() });
@@ -14556,7 +14576,7 @@ function modSkinStyle(color) {
   return `--slc:${c};--slcb:${_mixHex(c, '#FFFFFF', 0.72)};--slcd:${_mixHex(c, '#000000', 0.18)};--slcbg:${_mixHex(c, '#FFFFFF', 0.88)};`;
 }
 // 各模块「回看日期」（null = 今天）
-const SLOW_VIEW = { photography: null, cert: null, homeorg: null, music: null, social: null };
+const SLOW_VIEW = { photography: null, cert: null, homeorg: null, music: null, social: null, travel: null };
 // 日期选择器圆点：该模块自己的打卡/积分（不与其他模块共享）
 function slowDateStatus(m) {
   return function (k) {
