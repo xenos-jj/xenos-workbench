@@ -13804,8 +13804,8 @@ function renderOutfitPage() {
       </div>` : ''}
     </div>
 
-    <div class="module-card">
-      <div class="module-card-head"><span class="module-card-title">${icon('star', 14)} 穿搭灵感库</span><span class="sk-pending ok">${(r.inspirations || []).length} 条</span></div>
+    <div class="sk-section">
+      <div class="sk-section-head">${icon('star', 14)} <span>穿搭灵感库</span><span class="sk-pending ok" style="margin-left:auto">${(r.inspirations || []).length} 条</span></div>
       ${isToday ? `<div class="sk-add-inline"><input class="lk-input" data-insp-style placeholder="风格"><div class="lk-pick-trigger" data-insp-season>${r._pendingInspSeason || '季节'}</div><div class="lk-pick-trigger" data-insp-scene>${r._pendingInspScene || '场合'}</div></div>
       <div class="sk-add-inline"><input class="lk-input" data-insp-note placeholder="备注（可选）"><button class="lk-mini-btn" data-insp-upload>${icon('image', 12)}</button><button class="lk-mini-btn" data-insp-add>${icon('plus', 12)} 收藏</button></div>` : ''}
       <div class="lk-insp-grid">${insps || '<p class="lk-empty">还没有灵感，收藏一组喜欢的搭配吧</p>'}</div>
