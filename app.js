@@ -12610,16 +12610,6 @@ function renderSocialPage() {
       ? `<div class="module-rule-banner"><span class="mrb-icon">${icon('info', 12)}</span><span class="mrb-text">不用追求精通：挑一件让你放松的事，10 分钟也算数；有兴致就多待一会儿，没兴致就先记下来。</span></div>`
       : `<div class="sk-hist-tip">${icon('info', 12)} 正在查看历史记录 · 只读不可更改（如需修改请告知）</div>`}
 
-    <!-- v9350：原 hero（爱好滋育）+「爱好目标」section 合并为「爱好目标」模块 -->
-    <div class="section-card module-card">
-      <div class="module-card-head">
-        <span class="module-card-icon" style="color:#A99BD6">${icon('target', 14)}</span>
-        <span class="soft-card-title" style="margin:0;">爱好目标</span>
-      </div>
-      <p class="module-goal-text" id="social-goal-text">${escapeHTML(s.goal || DEFAULT_SOCIAL.goal)}</p>
-      ${isToday ? `<div class="focus-actions"><button class="gold-btn" id="social-edit-goal">${icon('edit', 11)} 修改目标</button></div>` : ''}
-    </div>
-
     <div class="section-card module-card">
       <div class="module-card-head">
         <span class="module-card-icon" style="color:#E8A77C">${icon('heart', 14)}</span>
@@ -12689,16 +12679,6 @@ function renderSocialPage() {
     const pts = await openModal('奖励积分', '6', '输入数字');
     const points = Number(pts);
     s.actions.push({ id: uid('sa'), text: text.trim(), points: Number.isFinite(points) && points > 0 ? points : 5, done: false });
-    saveSocial();
-    renderSocialPage();
-  });
-
-  // 修改目标
-  const socialGoalBtn = page.querySelector('#social-edit-goal');
-  if (socialGoalBtn) socialGoalBtn.addEventListener('click', async () => {
-    const text = await openModal('修改爱好目标', s.goal || DEFAULT_SOCIAL.goal, '请输入新的爱好目标');
-    if (text === null) return;
-    s.goal = text.trim() || DEFAULT_SOCIAL.goal;
     saveSocial();
     renderSocialPage();
   });
