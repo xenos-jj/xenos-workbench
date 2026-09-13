@@ -10345,3 +10345,19 @@ body.home-bg .topbar {
 .slow-photo .section-card:not(.slow-checkin),
 .slow-photo .sk-section { margin-top: 18px !important; margin-bottom: 0 !important; }
 .slow-photo .slow-checkin { margin-top: 12px !important; margin-bottom: 0 !important; }
+
+
+/* ============ v9549 摄影审美：积分去橘 + 计划清单打卡框改矩形蓝色 ============ */
+/* ① 积分：全局规则 `.mli-points{color:var(--primary-dark)!important}` 优先级高于作用域规则 → 必须 !important 才能改色；
+   字号/字重/字体/位置（10px/500/站酷/margin-left:auto 行尾右对齐）与护肤页打卡任务完全一致，仅颜色换成本页蓝。 */
+.slow-photo .module-list-item .mli-points,
+.slow-photo .module-list-item .mli-pts,
+.slow-photo .mli-points { color: var(--slcd) !important; }
+/* ② 计划清单打卡框：圆形 → 圆角矩形（18px 方框配 5px 圆角），描边/图标用本页蓝（不再用灰米色） */
+.slow-photo .module-list-item .mli-check {
+  border-radius: 5px; border: 1px solid var(--slcb); background: #fff; color: var(--slc);
+}
+.slow-photo .module-list-item .mli-check:hover { border-color: var(--slc); }
+.slow-photo .module-list-item.done .mli-check {
+  border-radius: 5px; border-color: var(--slc); background: var(--slc); color: #fff;
+}
