@@ -13393,7 +13393,9 @@ function renderMakeupPage() {
   page.className = 'page skincare-page looks-sub';
 
   const typesHTML = (r.types || []).map(t => `<span class="sk-tag-cell"><button class="sk-status-tag ${c.makeupType === t ? 'on' : ''}" data-makeup-type="${escapeHTML(t)}">${escapeHTML(t)}</button></span>`).join('');
-  const products = (r.products || []).map(p => `<div class="lk-prod"><span class="lk-prod-name">${escapeHTML(p.name)}</span><button class="lk-mini-btn" data-prod-del="${p.id}">${icon('delete', 11)}</button></div>`).join('');
+  // v9542：妆容用品记录 = 长期累积集合（与灵感收藏/衣橱同逻辑）：按「添加日期 ≤ 查看日期」过滤，最新在前
+  const prodList = (r.products || []).filter(p => !p.date || p.date <= view).slice().reverse();
+  const products = prodList.map(p => `<div class="lk-prod"><span class="lk-prod-name">${escapeHTML(p.name)}</span><button class="lk-mini-btn" data-prod-del="${p.id}">${icon('delete', 11)}</button></div>`).join('');
   // v9541：妆容灵感收藏 = 长期累积集合（与穿搭灵感库同逻辑）
   // 按「添加日期 ≤ 当前查看日期」过滤（今天新加的回看更早日期不出现，从添加日起一直跟随），最新在前；不参与本周统计/日期圆点
   const inspList = (r.inspirations || []).filter(i => !i.date || i.date <= view).slice().reverse();
@@ -13430,7 +13432,7 @@ function renderMakeupPage() {
     </div>
 
     <div class="sk-section">
-      <div class="sk-section-head">${icon('gift', 14)} <span>妆容用品记录</span><span class="sk-pending ok" style="margin-left:auto">${(r.products || []).length} 件</span></div>
+      <div class="sk-section-head">${icon('gift', 14)} <span>妆容用品记录</span><span class="sk-pending ok" style="margin-left:auto">${prodList.length} 件</span></div>
       ${isToday ? `<div class="sk-add-inline"><input class="lk-input" data-prod-name placeholder="如：粉底液 / 某品牌口红"><button class="lk-mini-btn" data-prod-add>${icon('plus', 12)} 记录</button></div>` : ''}
       <div class="lk-prod-list">${products || '<p class="lk-empty">还没记过用品，记一下常用化妆品方便补货</p>'}</div>
     </div>
@@ -13476,7 +13478,7 @@ function renderMakeupPage() {
   if (prodAdd) prodAdd.addEventListener('click', () => {
     const name = page.querySelector('[data-prod-name]').value.trim();
     if (!name) return;
-    r.products.push({ id: _looksId('prod'), name });
+    r.products.push({ id: _looksId('prod'), name, date: today });
     saveLooks('makeup'); renderMakeupPage();
   });
   page.querySelectorAll('[data-prod-del]').forEach(b => b.addEventListener('click', () => {
