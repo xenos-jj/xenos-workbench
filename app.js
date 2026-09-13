@@ -8904,7 +8904,7 @@ function _looksPickImage(maxW, quality, cb) {
   inp.click();
 }
 // v9534：灵感「待收藏」图片预览卡（原位插入，不整页重绘，保留已输入的风格/备注/选择器状态）
-function _showLooksPendingPreview(page, url, label, dateStr, delAttr, onDel) {
+function _showLooksPendingPreview(page, url, label, dateStr, delAttr, onDel, anchorSel) {
   if (!page || !url) return;
   page.querySelectorAll('.lk-insp-grid.is-pending').forEach(el => el.remove());
   const wrap = document.createElement('div');
@@ -8914,8 +8914,10 @@ function _showLooksPendingPreview(page, url, label, dateStr, delAttr, onDel) {
     <div class="lk-insp-meta"><span class="lk-insp-tag">${escapeHTML(label)}</span><span class="lk-insp-date">${escapeHTML(String(dateStr))}</span></div>
     <button class="lk-mini-btn lk-insp-del" ${delAttr} aria-label="删除">${icon('delete', 11)}</button>
   </div>`;
+  // 插入位置：优先用调用方指定的锚点（同一页可能有多个 .lk-insp-grid，如「灵感库」+「衣橱」）
+  const anchor = anchorSel ? page.querySelector(anchorSel) : null;
   const grids = page.querySelectorAll('.lk-insp-grid');
-  const saved = grids[grids.length - 1];
+  const saved = anchor || grids[grids.length - 1];
   if (saved && saved.parentNode) saved.parentNode.insertBefore(wrap, saved);
   else page.appendChild(wrap);
   const btn = wrap.querySelector('[' + delAttr + ']');
@@ -13183,7 +13185,13 @@ function renderOutfitPage() {
     ${i.note ? `<p class="lk-insp-note">${escapeHTML(i.note)}</p>` : ''}
     <button class="lk-mini-btn lk-insp-del" data-insp-del="${i.id}" aria-label="删除">${icon('delete', 11)}</button>
   </div>`).join('');
-  const wd = (r.wardrobe || []).map(w => `<div class="lk-wd-row"><span class="lk-wd-cat">${escapeHTML(w.category)}</span><span class="lk-wd-name">${escapeHTML(w.name)}</span><span class="lk-wd-cnt">×${w.count || 1}</span><button class="lk-mini-btn" data-wd-del="${w.id}">${icon('delete', 11)}</button></div>`).join('');
+  // v9539：衣橱物品改为「图片卡」样式（与穿搭灵感库 / 上传图片显示一致：图 + 分类标签 + 名称 + 右上删除）
+  const wd = (r.wardrobe || []).map(w => `<div class="lk-insp">
+    ${w.image ? `<img class="lk-insp-img" src="${w.image}" alt="">` : `<div class="lk-insp-img lk-insp-empty">${icon('image', 20)}</div>`}
+    <div class="lk-insp-meta"><span class="lk-insp-tag">${escapeHTML(w.category || '未分类')}</span>${(w.count || 1) > 1 ? `<span class="lk-insp-date">×${w.count}</span>` : ''}</div>
+    ${w.name ? `<p class="lk-insp-note">${escapeHTML(w.name)}</p>` : ''}
+    ${isToday ? `<button class="lk-mini-btn lk-insp-del" data-wd-del="${w.id}" aria-label="删除">${icon('delete', 11)}</button>` : ''}
+  </div>`).join('');
 
   // 本周热力图（按是否有穿搭记录）
   const ws = getWeekStart();
@@ -13232,13 +13240,20 @@ function renderOutfitPage() {
           <button class="lk-mini-btn lk-insp-del" data-insp-pending-del aria-label="删除">${icon('delete', 11)}</button>
         </div>
       </div>` : ''}
-      <div class="lk-insp-grid">${insps || '<p class="lk-empty">还没有灵感，收藏一组喜欢的搭配吧</p>'}</div>
+      <div class="lk-insp-grid" data-insp-grid>${insps || '<p class="lk-empty">还没有灵感，收藏一组喜欢的搭配吧</p>'}</div>
     </div>
 
     <div class="sk-section">
       <div class="sk-section-head">${icon('inbox', 14)} <span>衣橱物品</span><span class="sk-pending ok" style="margin-left:auto">${(r.wardrobe || []).length} 件</span></div>
-      ${isToday ? `<div class="sk-add-inline"><div class="lk-pick-trigger" data-wd-cat>${r._pendingWardrobeCat || '分类'}</div><input class="lk-input" data-wd-name placeholder="名称"><input type="number" min="1" class="lk-num" data-wd-cnt value="1" style="max-width:56px"><button class="lk-mini-btn" data-wd-add>${icon('plus', 12)} 录入</button></div>` : ''}
-      <div class="lk-wd-list">${wd || '<p class="lk-empty">衣橱还是空的，记下常用单品</p>'}</div>
+      ${isToday ? `<div class="sk-add-inline"><div class="lk-pick-trigger" data-wd-cat>${r._pendingWardrobeCat || '分类'}</div><input class="lk-input" data-wd-name placeholder="名称"><button class="lk-mini-btn" data-wd-upload aria-label="上传图片">${icon('image', 12)}</button><button class="lk-mini-btn" data-wd-add>${icon('plus', 12)} 录入</button></div>` : ''}
+      ${isToday && r._pendingWdImage ? `<div class="lk-insp-grid is-pending">
+        <div class="lk-insp">
+          <img class="lk-insp-img" src="${r._pendingWdImage}" alt="">
+          <div class="lk-insp-meta"><span class="lk-insp-tag">待录入</span><span class="lk-insp-date">${today}</span></div>
+          <button class="lk-mini-btn lk-insp-del" data-wd-pending-del aria-label="删除">${icon('delete', 11)}</button>
+        </div>
+      </div>` : ''}
+      <div class="lk-insp-grid" data-wd-grid>${wd || '<p class="lk-empty">衣橱还是空的，记下常用单品</p>'}</div>
     </div>
 
     <div class="sk-section">
@@ -13296,7 +13311,7 @@ function renderOutfitPage() {
   const inspUpload = page.querySelector('[data-insp-upload]');
   if (inspUpload) inspUpload.addEventListener('click', () => _looksPickImage(720, 0.65, (url) => {
     r._pendingInspImage = url;
-    _showLooksPendingPreview(page, url, '待收藏', today, 'data-insp-pending-del', () => { delete r._pendingInspImage; });
+    _showLooksPendingPreview(page, url, '待收藏', today, 'data-insp-pending-del', () => { delete r._pendingInspImage; }, '[data-insp-grid]');
     toast('图已选，点「收藏」保存', 'info');
   }));
   const inspAdd = page.querySelector('[data-insp-add]');
@@ -13326,14 +13341,22 @@ function renderOutfitPage() {
     const v = await openOptionPicker('衣橱分类', opts, prev);
     if (v != null) { r._pendingWardrobeCat = v; wdCatTrig.textContent = v; }
   });
+  // v9539：衣橱图片上传（替换原数量输入框）——与灵感库同一套添图逻辑（待录入预览卡 + 录入时写入 image）
+  const wdUpload = page.querySelector('[data-wd-upload]');
+  if (wdUpload) wdUpload.addEventListener('click', () => _looksPickImage(720, 0.65, (url) => {
+    r._pendingWdImage = url;
+    _showLooksPendingPreview(page, url, '待录入', today, 'data-wd-pending-del', () => { delete r._pendingWdImage; }, '[data-wd-grid]');
+    toast('图已选，点「录入」保存', 'info');
+  }));
+  const wdPendingDel = page.querySelector('[data-wd-pending-del]');
+  if (wdPendingDel) wdPendingDel.addEventListener('click', () => { delete r._pendingWdImage; renderOutfitPage(); });
   const wdAdd = page.querySelector('[data-wd-add]');
   if (wdAdd) wdAdd.addEventListener('click', () => {
     const cat = r._pendingWardrobeCat || r.wardrobeCats[0];
     const name = page.querySelector('[data-wd-name]').value.trim();
-    const cnt = Math.max(1, parseInt(page.querySelector('[data-wd-cnt]').value, 10) || 1);
     if (!name) return;
-    r.wardrobe.push({ id: _looksId('wd'), category: cat, name, count: cnt });
-    delete r._pendingWardrobeCat;
+    r.wardrobe.push({ id: _looksId('wd'), category: cat, name, count: 1, image: r._pendingWdImage || '' });
+    delete r._pendingWardrobeCat; delete r._pendingWdImage;
     saveLooks('outfit');
     renderOutfitPage();
   });
@@ -13416,7 +13439,7 @@ function renderMakeupPage() {
           <button class="lk-mini-btn lk-insp-del" data-minsp-pending-del aria-label="删除">${icon('delete', 11)}</button>
         </div>
       </div>` : ''}
-      <div class="lk-insp-grid">${insps || '<p class="lk-empty">收藏喜欢的妆容，慢慢攒成灵感库</p>'}</div>
+      <div class="lk-insp-grid" data-minsp-grid>${insps || '<p class="lk-empty">收藏喜欢的妆容，慢慢攒成灵感库</p>'}</div>
     </div>
 
     <div class="sk-section">
@@ -13471,7 +13494,7 @@ function renderMakeupPage() {
   const minspUpload = page.querySelector('[data-minsp-upload]');
   if (minspUpload) minspUpload.addEventListener('click', () => _looksPickImage(720, 0.65, (url) => {
     r._pendingMinspImage = url;
-    _showLooksPendingPreview(page, url, '待收藏', today, 'data-minsp-pending-del', () => { delete r._pendingMinspImage; });
+    _showLooksPendingPreview(page, url, '待收藏', today, 'data-minsp-pending-del', () => { delete r._pendingMinspImage; }, '[data-minsp-grid]');
     toast('图已选，点「收藏」保存', 'info');
   }));
   const minspAdd = page.querySelector('[data-minsp-add]');
