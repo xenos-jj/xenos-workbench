@@ -14641,7 +14641,8 @@ function renderPhotographyPage() {
   const today = getTodayKey();
   const stats = slowWeekStats('photography');
   const page = document.createElement('div');
-  page.className = 'page';
+  // v9546：参考护肤页视觉——复用 skincare-page 的卡片/间距/字号体系，描边用模块图标色调（浅蓝），去掉橘色
+  page.className = 'page skincare-page slow-photo';
   if (greetLine) greetLine.textContent = '摄影审美';
 
   const TAGS = ['人像', '风景', '静物'];
@@ -14653,8 +14654,26 @@ function renderPhotographyPage() {
     return '';
   }
 
+  // 本周练习热力图（护肤页「本周护肤统计」同款）
+  const weekDates = [];
+  for (let i = 0; i < 7; i++) weekDates.push(shiftDate(getWeekStart(), i));
+  const heatDots = weekDates.map(dk => {
+    const ck = (m.checkin || {})[dk] || {};
+    const pts = Number((m.log || {})[dk] || 0);
+    const lvl = ck.done ? 3 : (pts > 0 ? 2 : 0);
+    return `<span class="ih-dot lvl${lvl}"></span>`;
+  }).join('');
+
   page.innerHTML = `
-    ${slowPageHead(cfg)}
+    <div class="domain-hero slow-photo-hero">
+      <div class="domain-head">
+        <div><h3 class="domain-title">摄影审美</h3></div>
+        <button class="slow-insight-toggle${m.enabled ? ' on' : ''}" data-insight-toggle="photography" title="是否纳入本周洞察统计">${icon('chart', 13)}<span>${m.enabled ? '已统计' : '统计'}</span></button>
+      </div>
+    </div>
+
+    <div class="module-rule-banner"><span class="mrb-icon">${icon('info', 12)}</span><span class="mrb-text">不用强迫每天拍，看到喜欢的画面就记下来；一次只练一个点（构图 / 光线 / 色彩），慢慢养出自己的审美。</span></div>
+
     ${slowCheckinCard(cfg, {
       title: '今日练习打卡',
       fields: [
@@ -14714,11 +14733,14 @@ function renderPhotographyPage() {
       </div>
     </div>
 
-    ${slowStatsCard(cfg, stats, [
-      { value: stats.times, label: '本周练习次数' },
-      { value: m.records.length, label: '累计作品' },
-      { value: stats.pts, label: '本周积分' }
-    ])}
+    <div class="sk-section">
+      <div class="sk-section-head">${icon('chart', 14)} <span>本周练习统计</span><div class="insp-heat-legend sk-week-legend"><i class="ht-low"></i><i class="ht-mid"></i><i class="ht-high"></i>完成度 低 → 高</div></div>
+      <div class="insp-heatmap-grid">
+        <div class="ih-row ih-header-row"><span></span>${['周一', '周二', '周三', '周四', '周五', '周六', '周日'].map(l => `<span class="ih-day">${l}</span>`).join('')}</div>
+        <div class="ih-row"><span class="ih-icon">${icon('camera', 12)}</span>${heatDots}</div>
+      </div>
+      <div class="sk-week-points">本周练习 <b>${stats.times}</b> 次 · 累计作品 <b>${m.records.length}</b> 张 · 本周积分 <b>${stats.pts}</b> 分</div>
+    </div>
 
   `;
   content.appendChild(page);
