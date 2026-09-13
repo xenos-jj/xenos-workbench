@@ -12897,7 +12897,7 @@ function renderPosturePage() {
   const duration = c.duration || 0;
 
   const page = document.createElement('div');
-  page.className = 'page skincare-page'; // 复用护肤页全部 sk-* 视觉样式（仪态页参考护肤页设计）
+  page.className = 'page skincare-page looks-sub'; // 复用护肤页全部 sk-* 视觉样式（仪态页参考护肤页设计）
 
   const taskHTML = tasks.map(t => {
     const itDone = !!td[t.id];
@@ -13092,7 +13092,7 @@ function renderOutfitPage() {
   const isToday = view === today;
   const c = r.checkin[view] || {};
   const page = document.createElement('div');
-  page.className = 'page skincare-page';
+  page.className = 'page skincare-page looks-sub';
 
   const stylesHTML = (r.styles || []).map(s => `<button class="lk-tag ${c.style === s ? 'on' : ''}" data-outfit-style="${escapeHTML(s)}">${escapeHTML(s)}</button>`).join('');
   const insps = (r.inspirations || []).slice().reverse().map(i => `<div class="lk-insp">
@@ -13127,10 +13127,10 @@ function renderOutfitPage() {
     <div class="module-card">
       <div class="lk-sub-title">风格</div>
       <div class="lk-tags" style="grid-template-columns: repeat(${(r.styles || []).length}, 1fr)">${stylesHTML}</div>
-      <div class="sk-add-inline" style="margin-top:8px">
+      <div class="sk-add-inline" style="margin-top:7px">
         <input class="lk-input" data-outfit-note placeholder="记一句今天穿了什么 / 心情..." value="${escapeHTML(c.outfitNote || '')}" ${isToday ? '' : 'disabled'}>
       </div>
-      ${isToday ? `<div class="sk-add-inline" style="margin-top:6px">
+      ${isToday ? `<div class="sk-add-inline" style="margin-top:7px">
         <button class="lk-mini-btn is-wide" data-outfit-upload>${icon('image', 12)} 上传今日穿搭图</button>
         ${c.outfitImage ? `<img class="lk-thumb" src="${c.outfitImage}" alt=""><button class="lk-mini-btn" data-outfit-img-del>${icon('delete', 11)}</button>` : ''}
       </div>` : ''}
@@ -13277,7 +13277,7 @@ function renderMakeupPage() {
   const pct = total ? Math.round(done / total * 100) : 0;
   const allDone = total > 0 && pct >= 100;
   const page = document.createElement('div');
-  page.className = 'page skincare-page';
+  page.className = 'page skincare-page looks-sub';
 
   const typesHTML = (r.types || []).map(t => `<span class="sk-tag-cell"><button class="sk-status-tag ${c.makeupType === t ? 'on' : ''}" data-makeup-type="${escapeHTML(t)}">${escapeHTML(t)}</button></span>`).join('');
   const stepsHTML = tasks.map(t => { const itDone = !!td[t.id]; return `<div class="module-list-item ${itDone ? 'done' : ''}" data-item="${escapeHTML(t.id)}">

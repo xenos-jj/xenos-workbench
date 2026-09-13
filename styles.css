@@ -10227,3 +10227,14 @@ body.home-bg .topbar {
 
 /* ============ v9528 穿搭：上传今日穿搭图按钮宽度 = 上方「记一句…」输入框（整行占满） ============ */
 .skincare-page .sk-add-inline .lk-mini-btn.is-wide { flex: 1 1 auto; width: auto; padding: 0 10px; }
+
+/* ============ v9531 穿搭/仪态/妆容：卡片内打卡项间距统一 7px（对齐护肤打卡任务行 module-list gap 7px） ============ */
+/* 仅作用于三个独立页（.looks-sub），不影响护肤页 */
+.skincare-page.looks-sub .lk-sub-title { margin-bottom: 7px; }         /* 小标题（风格 等）→ 下方内容 */
+.skincare-page.looks-sub .lk-tags { gap: 7px; }                         /* 穿搭风格胶囊之间 */
+.skincare-page.looks-sub .sk-status-tags { gap: 7px; }                  /* 训练类型 / 妆容类型 标签之间 */
+.skincare-page.looks-sub .sk-add-inline + .sk-add-inline { margin-top: 7px !important; }  /* 卡片内连续添加行之间 */
+.skincare-page.looks-sub .lk-duration { margin-top: 7px; }              /* 训练时长 ↔ 上方标签 */
+.skincare-page.looks-sub .lk-insp-grid { margin-top: 7px; gap: 7px; }   /* 灵感网格 */
+.skincare-page.looks-sub .lk-wd-list,
+.skincare-page.looks-sub .lk-prod-list { margin-top: 7px; gap: 7px; }   /* 衣橱 / 用品 列表 */
