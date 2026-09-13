@@ -9,7 +9,9 @@ function bookStatusOf(b) { return (b.total > 0 && b.current >= b.total) ? 'read'
 
 function renderBookReading() {
   const page = document.createElement('div');
-  page.className = 'page';
+  // v9560：对齐摄影审美——护肤页视觉体系 + 模块色皮肤
+  page.className = 'page skincare-page slow-skin';
+  page.style.cssText = modSkinStyle('#C9A87C');
   const books = state.books;
   const notes = state.bookNotes;
   const plans = state.bookPlans;
@@ -38,10 +40,8 @@ function renderBookReading() {
 
   const noteOf = id => notes.find(n => n.id === id) || {};
   page.innerHTML = `
-    <div class="growth-hero">
-      <div>
-        <h3 class="page-title-main">书籍阅读</h3>
-        <p class="page-subtitle">在读 ${reading} · 待读 ${unread} · 已读完 ${finished}</p>
+    <div class="domain-hero"><div class="domain-head"><div><h3 class="domain-title">书籍阅读</h3></div></div></div>
+    <p class="page-subtitle">在读 ${reading} · 待读 ${unread} · 已读完 ${finished}</p>
       </div>
     </div>
 
@@ -503,7 +503,9 @@ function diffBadgeHTML(d) {
 
 function renderVideoEditing() {
   const page = document.createElement('div');
-  page.className = 'page';
+  // v9560：对齐摄影审美——护肤页视觉体系 + 模块色皮肤
+  page.className = 'page skincare-page slow-skin';
+  page.style.cssText = modSkinStyle('#8C7BB6');
   const data = state.videoEdit;
   const stage = data.stages[veActiveStage] || data.stages[0];
   const totalCourses = data.stages.reduce((s, st) => s + st.courses.length, 0);
@@ -526,10 +528,8 @@ function renderVideoEditing() {
   const editingCourse = (veEditCourse && veEditCourse.stageIdx === veActiveStage) ? stage.courses.find(c => c.id === veEditCourse.id) : null;
 
   page.innerHTML = `
-    <div class="growth-hero">
-      <div>
-        <h3 class="page-title-main">视频剪辑</h3>
-        <p class="page-subtitle">分阶段学习 · 已学 ${doneCourses}/${totalCourses} 节</p>
+    <div class="domain-hero"><div class="domain-head"><div><h3 class="domain-title">视频剪辑</h3></div></div></div>
+    <p class="page-subtitle">分阶段学习 · 已学 ${doneCourses}/${totalCourses} 节</p>
       </div>
     </div>
 
@@ -727,7 +727,9 @@ function renderVideoEditing() {
 // ============ 成长提升：3D建模 ============
 function render3DModeling() {
   const page = document.createElement('div');
-  page.className = 'page';
+  // v9560：对齐摄影审美——护肤页视觉体系 + 模块色皮肤
+  page.className = 'page skincare-page slow-skin';
+  page.style.cssText = modSkinStyle('#7FB0D3');
   const data = state.modeling;
   const stage = data.stages[mdActiveStage] || data.stages[0];
   const totalCourses = data.stages.reduce((s, st) => s + st.courses.length, 0);
@@ -749,10 +751,8 @@ function render3DModeling() {
   const editingCourse = (mdEditCourse && mdEditCourse.stageIdx === mdActiveStage) ? stage.courses.find(c => c.id === mdEditCourse.id) : null;
 
   page.innerHTML = `
-    <div class="growth-hero">
-      <div>
-        <h3 class="page-title-main">3D建模</h3>
-        <p class="page-subtitle">分阶段学习 · 已学 ${doneCourses}/${totalCourses} 节</p>
+    <div class="domain-hero"><div class="domain-head"><div><h3 class="domain-title">3D建模</h3></div></div></div>
+    <p class="page-subtitle">分阶段学习 · 已学 ${doneCourses}/${totalCourses} 节</p>
       </div>
     </div>
 

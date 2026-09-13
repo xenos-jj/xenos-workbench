@@ -10517,3 +10517,29 @@ body.home-bg .topbar {
 .slow-skin .study-goal .mini-ring .mr-fg { stroke: var(--slc); }
 .slow-skin .study-goal .mini-ring .mr-bg { stroke: var(--slcb); }
 .slow-skin .study-goal .mini-ring .mr-num { color: var(--slcd); }
+
+
+/* ============ v9560 书籍阅读 / 视频剪辑 / 3D建模：套皮肤（去多余外框 + 换模块色） ============ */
+/* ① 顶部标题区（原 growth-hero 带框）→ 无框 */
+.slow-skin .growth-hero { background: transparent; border: none; box-shadow: none; padding: 0 0 2px; margin: 0; }
+/* ② 卡片内的表单容器（编辑卡 / 课程表单）= 卡片套卡片 → 去掉外框，让输入框自身描边承担边界 */
+.slow-skin .edit-card, .slow-skin .course-form { background: transparent; border: none; padding: 0; margin-bottom: 10px; }
+/* ③ 内容型小卡：描边换模块色 */
+.slow-skin .book-row, .slow-skin .rec-card, .slow-skin .mat-note, .slow-skin .mini-stat { border-color: var(--slcb); background: #fff; }
+.slow-skin .read-cat-list .book-row { border-bottom-color: var(--slcb); }
+.slow-skin .course-card { border-bottom-color: var(--slcb); }
+/* ④ 橘色元素 → 模块色 */
+.slow-skin .jump-btn { background: var(--slcbg); color: var(--slcd); }
+.slow-skin .jump-btn:hover { background: var(--slcb); color: var(--slcd); }
+.slow-skin .jump-btn:disabled { background: var(--bg-soft); color: var(--text-muted); }
+.slow-skin .mat-kind { background: var(--slcbg); color: var(--slcd); }
+.slow-skin .mini-stat-val { color: var(--slcd); }
+.slow-skin .mini-btn:hover { background: var(--slcbg); border-color: var(--slc); color: var(--slcd); }
+.slow-skin .ghost-btn:hover { border-color: var(--slc); color: var(--slcd); background: var(--slcbg); }
+.slow-skin .icon-action:hover { background: var(--slcbg); color: var(--slcd); }
+.slow-skin .plan-check { border-color: var(--slcb); border-radius: 5px; }
+.slow-skin .plan-row.done .plan-check { background: var(--slc); border-color: var(--slc); }
+.slow-skin .plan-goal, .slow-skin .course-title { font-size: 11px; }
+/* ⑤ 模块间距与摄影审美一致（soft-card 之间 18px，与 section-card 同口径），左右内缩同卡片 */
+.slow-skin .soft-card { margin-top: 18px !important; margin-bottom: 0 !important; padding: 0 14px; }
+.slow-skin .soft-card:first-of-type { margin-top: 10px !important; }
