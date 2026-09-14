@@ -1368,7 +1368,8 @@ const state = {
   dietPlan: loadJSON('xenos-diet-plan', {}), // { breakfast, lunch, dinner, treat }
   sleepLogs: loadJSON('xenos-sleep-logs', {}), // { dateKey: { duration, quality, note } }
   moodLogs: loadJSON('xenos-mood-logs', {}), // { dateKey: { mood, note } }
-  conditionLogs: loadJSON('xenos-condition-logs', {}), // { dateKey: { items: [], note } }
+  // v9566：身体状况改为「每一笔长期累积」的记录数组 [{id,date,items,note}]（旧数据自动迁移）
+  conditionRecords: loadConditionRecords(),
   memos: loadMemos(),
   money: loadMoney(),
   budget: loadBudget(),
@@ -6063,7 +6064,7 @@ function renderMoodPage() {
   renderMoodRecent();
 }
 
-// ---------- 健康（v9563：从「运动」页分离为独立页，设计对齐生活秩序） ----------
+// ---------- 健康（v9563 从「运动」页分离；v9566：记录长期累积、去掉进度环与周统计） ----------
 function renderBodyConditionPage() {
   content.innerHTML = '';
   const page = document.createElement('div');
@@ -6074,18 +6075,13 @@ function renderBodyConditionPage() {
   const today = getTodayKey();
   const viewKey = SLOW_VIEW.health || today;
   const isToday = viewKey === today;
-  const log = state.conditionLogs[viewKey] || { items: [], note: '' };
   const OPTIONS = ['头痛', '喉咙痛', '胃痛', '腰酸背痛', '生理期', '其他'];
-  const picked = log.items || [];
-  const model = dayLogStatModel(state.conditionLogs);
-  let doneDays = 0;
-  for (let i = 0; i < 7; i++) if (dayLogHas(state.conditionLogs[shiftDate(getWeekStart(), i)])) doneDays++;
-  const pct = Math.round(doneDays / 7 * 100);
-  const recent = [];
-  for (let i = 6; i >= 0; i--) {
-    const k = shiftDate(today, -i);
-    if (dayLogHas(state.conditionLogs[k])) recent.push({ date: k, items: state.conditionLogs[k].items || [], note: state.conditionLogs[k].note || '' });
-  }
+
+  // v9566：每一笔记录长期保留（不随日期重置），列表最新在前、按查看日期过滤
+  const records = (state.conditionRecords || [])
+    .filter(r => !r.date || r.date <= viewKey)
+    .slice()
+    .sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
 
   page.innerHTML = `
     <div class="domain-hero"><div class="domain-head"><div><h3 class="domain-title">健康</h3></div></div></div>
@@ -6095,44 +6091,34 @@ function renderBodyConditionPage() {
       ? `<div class="module-rule-banner"><span class="mrb-icon">${icon('info', 12)}</span><span class="mrb-text">身体的小信号记一笔就好，方便回看规律；不舒服时先休息，不用硬撑打卡。</span></div>`
       : `<div class="sk-hist-tip">${icon('info', 12)} 正在查看历史记录 · 只读不可更改（如需修改请告知）</div>`}
 
-    <div class="study-goal section-card">
-      ${miniRingHTML(pct, '', pct + '%', '本周完成')}
-      <div class="sg-info">
-        <h4>关注身体信号</h4>
-        <p class="sg-sub">把不舒服记下来，方便回看与就医参考</p>
-      </div>
-    </div>
-
     <div class="section-card module-card">
       <div class="module-card-head">
         <span class="module-card-icon" style="color:#9FBF9A">${icon('thermometer', 14)}</span>
-        <span class="soft-card-title" style="margin:0;">今天的小状况</span>
-        <span class="sk-pending${picked.length ? ' ok' : ''}">${picked.length ? picked.join('、') : '待记录'}</span>
+        <span class="soft-card-title" style="margin:0;">身体状况</span>
+        <span class="sk-pending${isToday ? '' : ' ok'}">${isToday ? '记录今天' : '历史 · 只读'}</span>
       </div>
       <div class="slow-field"><span class="slow-label">状况</span>
-        <div class="slow-chips" id="condition-opts">${OPTIONS.map(opt => `<button class="chip${picked.includes(opt) ? ' active' : ''}" data-opt="${opt}">${opt}</button>`).join('')}</div>
+        <div class="slow-chips" id="condition-opts">${OPTIONS.map(opt => `<button class="chip" data-opt="${opt}">${opt}</button>`).join('')}</div>
       </div>
-      <div class="slow-field"><span class="slow-label">补充说明</span><textarea class="pf-input pf-textarea" id="condition-note" rows="1" placeholder="补充说明（可选）…"${isToday ? '' : ' disabled'}>${escapeHTML(log.note || '')}</textarea></div>
-      ${isToday ? `<button class="gold-btn slow-check-btn" id="condition-save">保存记录</button>` : ''}
+      <div class="slow-field"><span class="slow-label">补充说明</span><textarea class="pf-input pf-textarea" id="condition-note" rows="1" placeholder="补充说明（可选）…"${isToday ? '' : ' disabled'}></textarea></div>
+      ${isToday ? `<button class="gold-btn slow-check-btn" id="condition-save">记录</button>` : ''}
     </div>
 
-    ${recent.length ? `<div class="sk-section">
-      <div class="sk-section-head">${icon('time', 14)} <span>最近 7 天</span><span class="sk-pending ok" style="margin-left:auto">${recent.length} 天</span></div>
+    ${records.length ? `<div class="sk-section">
+      <div class="sk-section-head">${icon('list', 14)} <span>身体状况记录</span><span class="sk-pending ok" style="margin-left:auto">${records.length} 条</span></div>
       <div class="module-list">
-        ${recent.map(d => `<div class="module-list-item" style="cursor:default;">
-          <span class="mli-text">${formatDateCN(d.date)}${d.note ? ' · ' + escapeHTML(d.note) : ''}</span>
-          <span class="mli-points">${d.items.length ? d.items.join('、') : ''}</span>
+        ${records.map(r => `<div class="module-list-item" style="cursor:default;">
+          <span class="mli-text">${formatDateCN(r.date)}${r.items && r.items.length ? ' · ' + r.items.map(escapeHTML).join('、') : ''}${r.note ? '<br><small style="color:var(--text-muted);font-weight:400;">' + escapeHTML(r.note) + '</small>' : ''}</span>
+          <button class="module-act-btn module-del-btn" data-cond-del="${escapeHTML(r.id)}" title="删除">${icon('delete', 11)}</button>
         </div>`).join('')}
       </div>
     </div>` : ''}
-
-    ${slowHeatSectionHTML(model, 'thermometer', '本周健康统计')}
   `;
   content.appendChild(page);
 
-  // 迷你日期：可回看历史（圆点＝当天有健康记录）
-  bindSlowMiniDate(page, 'health', model, renderBodyConditionPage, function (k) {
-    return dayLogHas(state.conditionLogs[k]) ? 'orange' : null;
+  // 迷你日期：可回看历史（圆点＝当天有身体状况记录）
+  bindSlowMiniDate(page, 'health', null, renderBodyConditionPage, function (k) {
+    return (state.conditionRecords || []).some(function (r) { return r.date === k; }) ? 'orange' : null;
   });
   bindSlowTextarea(page);
 
@@ -6142,15 +6128,27 @@ function renderBodyConditionPage() {
       btn.classList.toggle('active');
     });
   });
+
   const saveBtn = page.querySelector('#condition-save');
   if (saveBtn) saveBtn.addEventListener('click', () => {
     const items = Array.from(page.querySelectorAll('#condition-opts .chip.active')).map(b => b.dataset.opt);
     const note = page.querySelector('#condition-note').value.trim();
-    state.conditionLogs[today] = { items: items, note: note };
-    saveConditionLogs();
-    toast('健康记录已保存');
+    if (!items.length && !note) { toast('先选一个状况或写点说明吧'); return; }
+    state.conditionRecords.push({ id: uid('cond'), date: today, items: items, note: note });
+    saveConditionRecords();
+    toast('已记录');
     SLOW_VIEW.health = null;
     renderBodyConditionPage();
+  });
+
+  // 删除某一笔记录（长期累积的记录可单独删除）
+  page.querySelectorAll('[data-cond-del]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      state.conditionRecords = (state.conditionRecords || []).filter(r => r.id !== btn.dataset.condDel);
+      saveConditionRecords();
+      renderBodyConditionPage();
+    });
   });
 }
 
@@ -7178,9 +7176,20 @@ function saveMoodLogs() {
   saveJSON('xenos-mood-logs', state.moodLogs);
 }
 
-function saveConditionLogs() {
-  saveJSON('xenos-condition-logs', state.conditionLogs);
+// v9566：身体状况记录（数组，每一笔都长期保留）——首次运行时把旧版「按天对象」迁移过来
+function loadConditionRecords() {
+  const raw = loadJSON('xenos-condition-records', null);
+  if (Array.isArray(raw)) return raw;
+  const old = loadJSON('xenos-condition-logs', null);
+  if (old && typeof old === 'object') {
+    return Object.keys(old).sort().map(function (k) {
+      const v = old[k] || {};
+      return { id: 'cond-' + k, date: k, items: v.items || [], note: v.note || '' };
+    });
+  }
+  return [];
 }
+function saveConditionRecords() { saveJSON('xenos-condition-records', state.conditionRecords); }
 
 // ============ 饮食 · 食材库存 & 花费 ============
 function getDietLog(key) {

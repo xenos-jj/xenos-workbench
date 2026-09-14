@@ -10556,3 +10556,8 @@ body.home-bg .topbar {
 /* ⑥ 饮水/添加等小按钮的悬停/描边走模块色 */
 .diet-page .diet-flat-water-btn:hover, .diet-page .diet-flat-meal-add:hover,
 .diet-page .diet-flat-ing-add-btn:hover, .diet-page .diet-flat-treat-add-btn:hover { border-color: var(--slc); color: var(--slcd); }
+
+
+/* ============ v9566 健康状况记录：行尾删除按钮走模块色（直接子元素，不影响其它页 .module-item-actions 内的按钮） ============ */
+.slow-skin .module-list-item > .module-act-btn { border-color: var(--slcb); color: var(--slcd); }
+.slow-skin .module-list-item > .module-act-btn:hover { background: var(--slcbg); }
