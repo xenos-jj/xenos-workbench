@@ -6533,8 +6533,12 @@ function renderDiet() {
       : `<div class="sk-hist-tip">${icon('info', 12)} 正在查看历史记录 · 只读不可更改（如需修改请告知）</div>`}
 
     <!-- 1. 今日饮食概览：扁平 4 统计 -->
-    <section class="diet-flat-section">
-      <div class="diet-flat-head">${icon('sun', 14)} 今日饮食<span class="diet-head-meta">${dateString}</span></div>
+    <section class="diet-flat-section module-card">
+      <div class="module-card-head">
+        <span class="module-card-icon" style="color:#D8B98F">${icon('sun', 14)}</span>
+        <span class="soft-card-title" style="margin:0;">今日饮食</span>
+        <span class="module-card-meta">${dateString}</span>
+      </div>
       <div class="diet-flat-stats">
         <div class="diet-flat-stat"><span class="diet-flat-stat-val">${totalCals}</span><span class="diet-flat-stat-lbl">热量 kcal</span></div>
         <div class="diet-flat-stat"><span class="diet-flat-stat-val">${protein}<small>g</small></span><span class="diet-flat-stat-lbl">蛋白质(约)</span></div>
@@ -6548,8 +6552,12 @@ function renderDiet() {
     </section>
 
     <!-- 2. 三餐记录：扁平 4 行列表 -->
-    <section class="diet-flat-section">
-      <div class="diet-flat-head">${icon('note', 14)} 三餐记录</div>
+    <section class="diet-flat-section module-card">
+      <div class="module-card-head">
+        <span class="module-card-icon" style="color:#D8B98F">${icon('note', 14)}</span>
+        <span class="soft-card-title" style="margin:0;">三餐记录</span>
+        <span class="module-card-meta">${(todayLog.meals || []).length} 项</span>
+      </div>
       <div class="diet-flat-meals" id="meal-cards">
         ${['早餐', '午餐', '晚餐', '加餐'].map(type => {
           const meals = (todayLog.meals || []).filter(m => m.type === type);
@@ -6568,8 +6576,11 @@ function renderDiet() {
     </section>
 
     <!-- 3. 饮食计划：扁平 3 行输入 -->
-    <section class="diet-flat-section">
-      <div class="diet-flat-head">${icon('clipboard', 14)} 饮食计划</div>
+    <section class="diet-flat-section module-card">
+      <div class="module-card-head">
+        <span class="module-card-icon" style="color:#D8B98F">${icon('clipboard', 14)}</span>
+        <span class="soft-card-title" style="margin:0;">饮食计划</span>
+      </div>
       <div class="diet-flat-plan">
         ${['breakfast', 'lunch', 'dinner'].map((k, i) => `<div class="diet-flat-plan-row"><span class="diet-flat-plan-lbl">${['早餐', '午餐', '晚餐'][i]}打算</span><input type="text" class="diet-flat-plan-input dp-input" data-plan="${k}" value="${escapeHTML((state.dietPlan && state.dietPlan[k]) || '')}" placeholder="想吃点什么～"></div>`).join('')}
       </div>
@@ -6581,8 +6592,11 @@ function renderDiet() {
     </section>
 
     <!-- 4. 饮食花费：扁平两列 -->
-    <section class="diet-flat-section">
-      <div class="diet-flat-head">${icon('card', 14)} 饮食花费</div>
+    <section class="diet-flat-section module-card">
+      <div class="module-card-head">
+        <span class="module-card-icon" style="color:#D8B98F">${icon('card', 14)}</span>
+        <span class="soft-card-title" style="margin:0;">饮食花费</span>
+      </div>
       <div class="diet-flat-cost-row">
         <div class="diet-flat-cost-item"><span class="diet-flat-cost-lbl">今日花费</span><span class="diet-flat-cost-val">¥${getDietCostForDate(dateKey).toFixed(2)}</span></div>
         <div class="diet-flat-cost-item"><span class="diet-flat-cost-lbl">本周花费</span><span class="diet-flat-cost-val">¥${getDietCostWeek(getWeekStart()).toFixed(2)}</span></div>
@@ -6591,16 +6605,23 @@ function renderDiet() {
     </section>
 
     <!-- 5. 食材库存：扁平（复用现有 renderIngredientsCardInner，外部已无 soft-card） -->
-    <section class="diet-flat-section">
-      <div class="diet-flat-head">${icon('box', 14)} 食材库存<button class="diet-flat-ing-add-btn" id="ing-add-btn">+ 添加食材</button></div>
+    <section class="diet-flat-section module-card">
+      <div class="module-card-head">
+        <span class="module-card-icon" style="color:#D8B98F">${icon('box', 14)}</span>
+        <span class="soft-card-title" style="margin:0;">食材库存</span>
+        <button class="diet-flat-ing-add-btn" id="ing-add-btn">+ 添加食材</button>
+      </div>
       <div class="ing-filter-tabs" id="ing-filter-tabs"></div>
       <div class="ing-list" id="ing-list"></div>
       <button class="ing-import-btn" id="ing-import-btn">${icon('refresh', 13)} 批量导入示例食材</button>
     </section>
 
     <!-- 6. 每周饮食分析 -->
-    <section class="diet-flat-section">
-      <div class="diet-flat-head">${icon('chart', 14)} 每周饮食分析</div>
+    <section class="diet-flat-section module-card">
+      <div class="module-card-head">
+        <span class="module-card-icon" style="color:#D8B98F">${icon('chart', 14)}</span>
+        <span class="soft-card-title" style="margin:0;">每周饮食分析</span>
+      </div>
       <div id="diet-weekly-analysis"></div>
     </section>
 

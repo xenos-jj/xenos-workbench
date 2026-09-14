@@ -10561,3 +10561,62 @@ body.home-bg .topbar {
 /* ============ v9566 健康状况记录：行尾删除按钮走模块色（直接子元素，不影响其它页 .module-item-actions 内的按钮） ============ */
 .slow-skin .module-list-item > .module-act-btn { border-color: var(--slcb); color: var(--slcd); }
 .slow-skin .module-list-item > .module-act-btn:hover { background: var(--slcbg); }
+
+
+/* ============ v9567 饮食页：卡片/盒子体系对齐护肤页（板块头 + 白底圆角行/小盒 + 模块色） ============ */
+/* ① 板块容器：护肤页 module-card 口径（透明块、左右 14px 内缩、板块之间 18px、无外框） */
+.diet-page .diet-flat-section { margin-top: 18px !important; margin-bottom: 0 !important; padding: 0 14px !important; background: transparent !important; border: none !important; box-shadow: none !important; }
+.diet-page .diet-flat-section:first-of-type { margin-top: 0 !important; }
+/* ② 板块头：与护肤页卡头同高（图标 14 + 标题 12/575 + 右侧 meta 9.5px），下边距 8 */
+.diet-page .module-card-head { margin-bottom: 8px; }
+.diet-page .module-card-head .soft-card-title { font-size: 12px !important; font-weight: 575 !important; letter-spacing: 0; }
+.diet-page .module-card-head svg { color: var(--slc) !important; flex-shrink: 0; }
+/* ③ 今日饮食 4 统计 → 护肤页小盒（白底 + 细描边 + 10 圆角 + 9/10 内边距） */
+.diet-page .diet-flat-stats { gap: 7px; }
+.diet-page .diet-flat-stat { background: var(--card); border: 1px solid var(--border-soft); border-radius: 10px; padding: 9px 10px; }
+.diet-page .diet-flat-stat-val { font-size: 14px; font-weight: 800; line-height: 1.1; }
+.diet-page .diet-flat-stat-lbl { font-size: 10px; }
+.diet-page .diet-flat-water-btns { gap: 4px; }
+.diet-page .diet-flat-water-btn { width: 20px; height: 20px; border-radius: 50%; border: 1px solid var(--slcb); background: var(--slcbg); color: var(--slcd); font-size: 11px; line-height: 1; }
+/* ④ 三餐记录行 → 护肤页打卡行（白底 + 细描边 + 10 圆角 + 行高一致） */
+.diet-page .diet-flat-meals { gap: 7px; }
+.diet-page .diet-flat-meal { background: var(--card); border: 1px solid var(--border-soft); border-radius: 10px; padding: 9px 10px; min-height: 36px; }
+.diet-page .diet-flat-meal-ic { color: var(--slc); }
+.diet-page .diet-flat-meal-ic svg { width: 16px; height: 16px; }
+.diet-page .diet-flat-meal-name { font-size: 11px; }
+.diet-page .diet-flat-meal-sub { font-size: 9.5px; }
+.diet-page .diet-flat-meal-add { width: 22px; height: 22px; border-radius: 50%; border: 1px solid var(--slcb); background: var(--slcbg); color: var(--slcd); }
+/* ⑤ 饮食计划：每行一个小盒（标签 62px + 输入框无框） */
+.diet-page .diet-flat-plan { gap: 7px; }
+.diet-page .diet-flat-plan-row { background: var(--card); border: 1px solid var(--border-soft); border-radius: 10px; padding: 3px 10px; gap: 8px; }
+.diet-page .diet-flat-plan-lbl { flex: 0 0 62px; font-size: 10px; color: var(--text-muted); }
+.diet-page .diet-flat-plan-input { border: none !important; background: transparent !important; padding: 6px 0; font-size: 11px; }
+.diet-page .diet-flat-plan-input:focus { outline: none; }
+/* ⑥ 想吃但不过量：胶囊 + 添加行（护肤页 chip 口径） */
+.diet-page .diet-flat-treat-row { gap: 8px; }
+.diet-page .diet-flat-treat-list { gap: 6px; }
+.diet-page .diet-flat-treat-item { background: var(--slcbg); border: 0.75px solid var(--slcb); border-radius: 999px; padding: 3px 10px; font-size: 10px; color: var(--slcd); }
+.diet-page .diet-flat-treat-add-row { gap: 6px; }
+.diet-page .diet-flat-treat-input { height: 30px; border: 1px solid var(--border-soft); border-radius: 8px; padding: 0 10px; font-size: 11px; }
+.diet-page .diet-flat-treat-add-btn { height: 28px; padding: 0 12px; border: 1px solid var(--slcb); background: var(--slcbg); color: var(--slcd); border-radius: 999px; font-size: 11px; }
+/* ⑦ 饮食花费：两个小盒 */
+.diet-page .diet-flat-cost-row { gap: 7px; }
+.diet-page .diet-flat-cost-item { background: var(--card); border: 1px solid var(--border-soft); border-radius: 10px; padding: 9px 10px; }
+.diet-page .diet-flat-cost-val { font-size: 14px; font-weight: 800; }
+/* ⑧ 食材库存：筛选项胶囊 + 行 + 导入条 */
+.diet-page .ing-filter-tabs { gap: 6px; }
+.diet-page .ing-filter-btn { background: #fff; border: 1px solid var(--border-soft); border-radius: 999px; padding: 4px 10px; font-size: 10px; }
+.diet-page .ing-filter-btn.active { background: var(--slcbg); border-color: var(--slc); color: var(--slcd); }
+.diet-page .ing-filter-count { background: var(--bg-soft); }
+.diet-page .ing-filter-btn.active .ing-filter-count { background: rgba(0,0,0,0.05); color: var(--slcd); }
+.diet-page .ing-list { gap: 7px; }
+.diet-page .ing-row { background: var(--card); border: 1px solid var(--border-soft); border-radius: 10px; padding: 9px 10px; }
+.diet-page .ing-row:hover { background: var(--slcbg); border-color: var(--slcb); }
+.diet-page .ing-name { font-size: 11px; font-weight: 500; }
+.diet-page .ing-import-btn { border: 1px dashed var(--slcb); color: var(--slcd); background: transparent; border-radius: 10px; }
+.diet-page .ing-import-btn:hover { background: var(--slcbg); }
+/* ⑨ 板块头里的「+ 添加食材」按钮（行尾小胶囊） */
+.diet-page .diet-flat-ing-add-btn { margin-left: auto; height: 24px; padding: 0 10px; border: 1px solid var(--slcb); background: var(--slcbg); color: var(--slcd); border-radius: 999px; font-size: 10px; }
+/* ⑩ 每周饮食分析里的小统计盒 */
+.diet-page .diet-flat-dwa-stat { background: var(--card); border: 1px solid var(--border-soft); border-radius: 10px; padding: 9px 10px; }
+.diet-page .diet-flat-dwa-stats { gap: 7px; }
