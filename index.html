@@ -7,22 +7,22 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <script>
-    // v9562：取消「版本探针自动刷新」——user 要求：我没有主动刷新工作台时，工作台不要自己刷新。
+    // v9563：取消「版本探针自动刷新」——user 要求：我没有主动刷新工作台时，工作台不要自己刷新。
     // 原先这里会轮询 version.json，一旦发现线上是新版本就强制 location.replace 刷新自己，
     // 会在用户正在操作时把页面刷掉。现在只保留版本号常量（与 version.json / sw.js 同步，便于排查线上版本），
     // 新版本在用户下次打开 / 主动刷新时自然生效。
-    var BUILT = 9562;
+    var BUILT = 9563;
   </script>
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <link rel="manifest" href="manifest.webmanifest?v=562">
-  <link rel="apple-touch-icon" href="icon-192.png?v=562">
-  <link rel="stylesheet" href="styles.css?v=562">
+  <link rel="manifest" href="manifest.webmanifest?v=563">
+  <link rel="apple-touch-icon" href="icon-192.png?v=563">
+  <link rel="stylesheet" href="styles.css?v=563">
   <!-- 预加载关键资源，缩短首屏等待 -->
-  <link rel="preload" href="app.js?v=562" as="script">
-  <link rel="preload" href="fonts/zcool-sub.ttf?v=562" as="font" type="font/ttf" crossorigin>
-  <link rel="preload" href="fonts/strawberry-sub.ttf?v=562" as="font" type="font/ttf" crossorigin>
+  <link rel="preload" href="app.js?v=563" as="script">
+  <link rel="preload" href="fonts/zcool-sub.ttf?v=563" as="font" type="font/ttf" crossorigin>
+  <link rel="preload" href="fonts/strawberry-sub.ttf?v=563" as="font" type="font/ttf" crossorigin>
   <title>xenos - 人生系统工作台</title>
 <meta name="theme-color" content="#FFE4CC">
   <!-- 字体已改为本地自托管 ZCOOL KuaiLe，见 styles.css 顶部 @font-face -->
@@ -277,6 +277,6 @@
     </div>
   </div>
 
-  <script src="app.js?v=562"></script>
+  <script src="app.js?v=563"></script>
 </body>
 </html>

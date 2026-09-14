@@ -887,6 +887,9 @@ const DEFAULT_SETTINGS = {
   keepBranches: [
     { name: '生活秩序', emoji: '📋', icon: 'list', freq: '每周 2 天', color: '#a0bb7a' },
     { name: '内在成长', emoji: '🌱', icon: 'sprout', freq: '每周 1 天', color: '#f4b75b' },
+    // v9563：睡眠 / 健康 从「运动」页分离为独立页，入口落在保持中的支线（生活秩序 / 内在成长 之后）
+    { name: '睡眠', emoji: '🌙', icon: 'moon', freq: '每天', color: '#9FB2D0' },
+    { name: '健康', emoji: '🌿', icon: 'health', freq: '按需记录', color: '#9FBF9A' },
   ],
   slowBranches: [
     { name: '旅行体验', emoji: '✈️', icon: 'plane' },
@@ -3917,9 +3920,9 @@ const SUB_PAGE_PARENT = {
   '每日计划': '工作台首页',
   '饮食': '健康',
   '健身': '健康',
-  '睡眠管理': '健康',
+  '睡眠管理': '我的支线',
   '今日心境': '健康',
-  '身体小状况': '健康',
+  '身体小状况': '我的支线',
   '记账存钱': '金钱',
   '地点打卡': '旅行体验',
   // v9253：暂时放缓 6 模块，返回「我的支线」
@@ -3945,9 +3948,9 @@ const PAGE_BACK_FALLBACK = {
   '每日计划': '工作台首页',
   '饮食': '健康',
   '健身': '健康',
-  '睡眠管理': '健康',
+  '睡眠管理': '我的支线',
   '今日心境': '健康',
-  '身体小状况': '健康',
+  '身体小状况': '我的支线',
   '记账存钱': '记账',
   '地点打卡': '旅行体验',
   // v9253：暂时放缓 6 模块兜底返回「我的支线」
@@ -5935,7 +5938,7 @@ function renderHealthPage() {
     <!-- 身体数据：仅记录体脂率 / 体重 / 目标体重，不做达成提醒（v9301：去卡片套卡片 + 取消内层重复标题） -->
     <div id="health-body-mount"></div>
 
-    <!-- 工具入口（v9301：删「资产」字 + 5→4 张 + 重命名为饮食/运动/睡眠/健康） -->
+    <!-- 工具入口（v9563：睡眠 / 健康 已从本页分离为独立页 → 只留 饮食 / 运动） -->
     <div class="soft-card health-module-card">
       <div class="soft-card-title">工具</div>
       <div class="tool-grid">
@@ -5947,16 +5950,6 @@ function renderHealthPage() {
         <button class="tool-btn" data-route="健身">
           <span class="tb-icon">${icon('running', 18)}</span>
           <span><b>运动</b><span class="tb-sub">运动训练</span></span>
-          <span class="tb-arrow">${icon('chevronLeft', 12)}</span>
-        </button>
-        <button class="tool-btn" data-route="睡眠管理">
-          <span class="tb-icon">${icon('moon', 18)}</span>
-          <span><b>睡眠</b><span class="tb-sub">记录睡眠时长与质量</span></span>
-          <span class="tb-arrow">${icon('chevronLeft', 12)}</span>
-        </button>
-        <button class="tool-btn" data-route="身体小状况">
-          <span class="tb-icon">${icon('thermometer', 18)}</span>
-          <span><b>健康</b><span class="tb-sub">轻量记录身体不适</span></span>
           <span class="tb-arrow">${icon('chevronLeft', 12)}</span>
         </button>
       </div>
@@ -6066,81 +6059,100 @@ function renderHealthPage() {
 }
 
 // ---------- 健康子页面：睡眠管理 ----------
+// ---------- 睡眠（v9563：从「运动」页分离为独立页，设计对齐生活秩序） ----------
 function renderSleepPage() {
   content.innerHTML = '';
   const page = document.createElement('div');
-  page.className = 'page sub-health-page';
-  const viewKey = state.viewDate || getTodayKey();
-  const isToday = viewKey === getTodayKey();
+  page.className = 'page skincare-page slow-skin';
+  page.style.cssText = modSkinStyle('#9FB2D0');
+  if (greetLine) greetLine.textContent = '睡眠';
+
+  const today = getTodayKey();
+  const viewKey = SLOW_VIEW.sleep || today;
+  const isToday = viewKey === today;
   const log = state.sleepLogs[viewKey] || { duration: '', quality: '', note: '' };
+  const QUALITY = ['很好', '一般', '不好'];
+  const model = dayLogStatModel(state.sleepLogs);
+  let doneDays = 0;
+  for (let i = 0; i < 7; i++) if (dayLogHas(state.sleepLogs[shiftDate(getWeekStart(), i)])) doneDays++;
+  const pct = Math.round(doneDays / 7 * 100);
+  const recent = [];
+  for (let i = 6; i >= 0; i--) {
+    const k = shiftDate(today, -i);
+    const l = state.sleepLogs[k];
+    if (dayLogHas(l)) recent.push({ date: k, duration: l.duration, quality: l.quality, note: l.note });
+  }
+  const hasRec = !!(log.duration || log.quality);
 
   page.innerHTML = `
-    <div class="domain-hero">
-      <div class="domain-head">
-        <div class="domain-icon">${icon('moon', 24)}</div>
-        <div>
-          <h3 class="domain-title">睡眠管理</h3>
-        </div>
+    <div class="domain-hero"><div class="domain-head"><div><h3 class="domain-title">睡眠</h3></div></div></div>
+
+    <div class="sk-mini-date">${skMiniDateHTML(viewKey)}</div>
+    ${isToday
+      ? `<div class="module-rule-banner"><span class="mrb-icon">${icon('info', 12)}</span><span class="mrb-text">睡眠看趋势、不追完美：记下大概的时长和质量就好，偶尔熬夜也不用自责。</span></div>`
+      : `<div class="sk-hist-tip">${icon('info', 12)} 正在查看历史记录 · 只读不可更改（如需修改请告知）</div>`}
+
+    <div class="study-goal section-card">
+      ${miniRingHTML(pct, '', pct + '%', '本周完成')}
+      <div class="sg-info">
+        <h4>睡眠记录中</h4>
+        <p class="sg-sub">记下时长与质量，慢慢摸清自己的节律</p>
       </div>
     </div>
-    ${dateBarHTML(viewKey, { showToday: !isToday })}
-    <div class="soft-card">
-      <div class="soft-card-title">${icon('moon', 16)} 昨夜睡眠</div>
-      <label class="pf-label" style="display:block;margin:10px 0 6px;font-size:11px;color:var(--text-muted);">睡眠时长（小时）</label>
-      <input type="number" class="pf-input" id="sleep-duration" value="${log.duration}" placeholder="例如 7.5" step="0.1">
-      <label class="pf-label" style="display:block;margin:14px 0 6px;font-size:11px;color:var(--text-muted);">睡眠质量</label>
-      <div class="chip-group" id="sleep-quality" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
-        ${['很好', '一般', '不好'].map(q => `<button class="chip${log.quality === q ? ' active' : ''}" data-q="${q}">${q}</button>`).join('')}
+
+    <div class="section-card module-card">
+      <div class="module-card-head">
+        <span class="module-card-icon" style="color:#9FB2D0">${icon('moon', 14)}</span>
+        <span class="soft-card-title" style="margin:0;">昨夜睡眠</span>
+        <span class="sk-pending${hasRec ? ' ok' : ''}">${log.duration ? escapeHTML(String(log.duration)) + ' h' : (log.quality || '待记录')}</span>
       </div>
-      <label class="pf-label" style="display:block;margin:14px 0 6px;font-size:11px;color:var(--text-muted);">备注（可选）</label>
-      <textarea class="pf-input" id="sleep-note" rows="2" placeholder="昨晚做了什么梦、中途是否醒来…">${escapeHTML(log.note || '')}</textarea>
-      <button class="gold-btn" id="sleep-save" style="margin-top:12px;width:100%;">保存记录</button>
+      <div class="slow-field"><span class="slow-label">睡眠时长</span><input class="pf-input" id="sleep-duration" type="number" step="0.1" placeholder="小时，例如 7.5" value="${log.duration === '' || log.duration == null ? '' : escapeHTML(String(log.duration))}"${isToday ? '' : ' disabled'}></div>
+      <div class="slow-field"><span class="slow-label">睡眠质量</span>
+        <div class="slow-chips" id="sleep-quality">${QUALITY.map(q => `<button class="chip${log.quality === q ? ' active' : ''}" data-q="${q}">${q}</button>`).join('')}</div>
+      </div>
+      <div class="slow-field"><span class="slow-label">备注</span><textarea class="pf-input pf-textarea" id="sleep-note" rows="1" placeholder="昨晚做了什么梦、中途是否醒来…"${isToday ? '' : ' disabled'}>${escapeHTML(log.note || '')}</textarea></div>
+      ${isToday ? `<button class="gold-btn slow-check-btn" id="sleep-save">保存记录</button>` : ''}
     </div>
-    <div class="soft-card">
-      <div class="soft-card-title">${icon('time', 16)} 最近 7 天</div>
-      <div id="sleep-recent"></div>
-    </div>
+
+    ${recent.length ? `<div class="sk-section">
+      <div class="sk-section-head">${icon('time', 14)} <span>最近 7 天</span><span class="sk-pending ok" style="margin-left:auto">${recent.length} 天</span></div>
+      <div class="module-list">
+        ${recent.map(d => `<div class="module-list-item" style="cursor:default;">
+          <span class="mli-text">${formatDateCN(d.date)}${d.note ? ' · ' + escapeHTML(d.note) : ''}</span>
+          <span class="mli-points">${d.duration ? escapeHTML(String(d.duration)) + ' h' : ''}${d.quality ? (d.duration ? ' · ' : '') + d.quality : ''}</span>
+        </div>`).join('')}
+      </div>
+    </div>` : ''}
+
+    ${slowHeatSectionHTML(model, 'moon', '本周睡眠统计')}
   `;
   content.appendChild(page);
 
-  bindDateBar(page, {
-    onShift: (d) => { state.viewDate = shiftDate(viewKey, d); renderContent(); },
-    onPick: (k) => { state.viewDate = k; renderContent(); },
-    onToday: () => { state.viewDate = ''; renderContent(); }
+  // 迷你日期：可回看历史（圆点＝当天有睡眠记录）
+  bindSlowMiniDate(page, 'sleep', model, renderSleepPage, function (k) {
+    return dayLogHas(state.sleepLogs[k]) ? 'orange' : null;
   });
+  bindSlowTextarea(page);
+
   page.querySelectorAll('#sleep-quality .chip').forEach(btn => {
     btn.addEventListener('click', () => {
+      if (!isToday) { toast('只能在当天记录哦'); return; }
+      const wasOn = btn.classList.contains('active');
       page.querySelectorAll('#sleep-quality .chip').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
+      if (!wasOn) btn.classList.add('active');
     });
   });
-  page.querySelector('#sleep-save').addEventListener('click', () => {
+  const saveBtn = page.querySelector('#sleep-save');
+  if (saveBtn) saveBtn.addEventListener('click', () => {
     const duration = parseFloat(page.querySelector('#sleep-duration').value) || 0;
-    const quality = page.querySelector('#sleep-quality .chip.active')?.dataset.q || '';
+    const qEl = page.querySelector('#sleep-quality .chip.active');
     const note = page.querySelector('#sleep-note').value.trim();
-    state.sleepLogs[viewKey] = { duration, quality, note };
+    state.sleepLogs[today] = { duration: duration, quality: qEl ? qEl.dataset.q : '', note: note };
     saveSleepLogs();
     toast('睡眠记录已保存');
-    renderSleepRecent();
+    SLOW_VIEW.sleep = null;
+    renderSleepPage();
   });
-
-  function renderSleepRecent() {
-    const host = page.querySelector('#sleep-recent');
-    const days = [];
-    for (let i = 6; i >= 0; i--) {
-      const k = shiftDate(getTodayKey(), -i);
-      const l = state.sleepLogs[k];
-      if (l && (l.duration || l.quality)) days.push({ date: k, ...l });
-    }
-    if (!days.length) { host.innerHTML = '<p class="section-note">还没有睡眠记录。</p>'; return; }
-    host.innerHTML = days.map(d => `
-      <div class="module-list-item" style="cursor:default;">
-        <span class="mli-text">${formatDateCN(d.date)}</span>
-        <span class="mli-points">${d.duration ? d.duration + 'h' : ''} ${d.quality || ''}</span>
-      </div>
-    `).join('');
-  }
-  renderSleepRecent();
 }
 
 // ---------- 健康子页面：今日心境 ----------
@@ -6215,74 +6227,95 @@ function renderMoodPage() {
   renderMoodRecent();
 }
 
-// ---------- 健康子页面：身体小状况 ----------
+// ---------- 健康（v9563：从「运动」页分离为独立页，设计对齐生活秩序） ----------
 function renderBodyConditionPage() {
   content.innerHTML = '';
   const page = document.createElement('div');
-  page.className = 'page sub-health-page';
-  const viewKey = state.viewDate || getTodayKey();
-  const isToday = viewKey === getTodayKey();
+  page.className = 'page skincare-page slow-skin';
+  page.style.cssText = modSkinStyle('#9FBF9A');
+  if (greetLine) greetLine.textContent = '健康';
+
+  const today = getTodayKey();
+  const viewKey = SLOW_VIEW.health || today;
+  const isToday = viewKey === today;
   const log = state.conditionLogs[viewKey] || { items: [], note: '' };
-  const options = ['头痛', '喉咙痛', '胃痛', '腰酸背痛', '生理期', '其他'];
+  const OPTIONS = ['头痛', '喉咙痛', '胃痛', '腰酸背痛', '生理期', '其他'];
+  const picked = log.items || [];
+  const model = dayLogStatModel(state.conditionLogs);
+  let doneDays = 0;
+  for (let i = 0; i < 7; i++) if (dayLogHas(state.conditionLogs[shiftDate(getWeekStart(), i)])) doneDays++;
+  const pct = Math.round(doneDays / 7 * 100);
+  const recent = [];
+  for (let i = 6; i >= 0; i--) {
+    const k = shiftDate(today, -i);
+    if (dayLogHas(state.conditionLogs[k])) recent.push({ date: k, items: state.conditionLogs[k].items || [], note: state.conditionLogs[k].note || '' });
+  }
 
   page.innerHTML = `
-    <div class="domain-hero">
-      <div class="domain-head">
-        <div class="domain-icon">${icon('thermometer', 24)}</div>
-        <div>
-          <h3 class="domain-title">身体小状况</h3>
-        </div>
+    <div class="domain-hero"><div class="domain-head"><div><h3 class="domain-title">健康</h3></div></div></div>
+
+    <div class="sk-mini-date">${skMiniDateHTML(viewKey)}</div>
+    ${isToday
+      ? `<div class="module-rule-banner"><span class="mrb-icon">${icon('info', 12)}</span><span class="mrb-text">身体的小信号记一笔就好，方便回看规律；不舒服时先休息，不用硬撑打卡。</span></div>`
+      : `<div class="sk-hist-tip">${icon('info', 12)} 正在查看历史记录 · 只读不可更改（如需修改请告知）</div>`}
+
+    <div class="study-goal section-card">
+      ${miniRingHTML(pct, '', pct + '%', '本周完成')}
+      <div class="sg-info">
+        <h4>关注身体信号</h4>
+        <p class="sg-sub">把不舒服记下来，方便回看与就医参考</p>
       </div>
     </div>
-    ${dateBarHTML(viewKey, { showToday: !isToday })}
-    <div class="soft-card">
-      <div class="soft-card-title">${icon('thermometer', 16)} 今天有哪些小状况</div>
-      <div class="chip-group" id="condition-opts" style="display:flex;flex-wrap:wrap;gap:8px;margin:10px 0;">
-        ${options.map(opt => `<button class="chip${(log.items || []).includes(opt) ? ' active' : ''}" data-opt="${opt}">${opt}</button>`).join('')}
+
+    <div class="section-card module-card">
+      <div class="module-card-head">
+        <span class="module-card-icon" style="color:#9FBF9A">${icon('thermometer', 14)}</span>
+        <span class="soft-card-title" style="margin:0;">今天的小状况</span>
+        <span class="sk-pending${picked.length ? ' ok' : ''}">${picked.length ? picked.join('、') : '待记录'}</span>
       </div>
-      <textarea class="pf-input" id="condition-note" rows="2" placeholder="补充说明（可选）…">${escapeHTML(log.note || '')}</textarea>
-      <button class="gold-btn" id="condition-save" style="margin-top:12px;width:100%;">保存记录</button>
+      <div class="slow-field"><span class="slow-label">状况</span>
+        <div class="slow-chips" id="condition-opts">${OPTIONS.map(opt => `<button class="chip${picked.includes(opt) ? ' active' : ''}" data-opt="${opt}">${opt}</button>`).join('')}</div>
+      </div>
+      <div class="slow-field"><span class="slow-label">补充说明</span><textarea class="pf-input pf-textarea" id="condition-note" rows="1" placeholder="补充说明（可选）…"${isToday ? '' : ' disabled'}>${escapeHTML(log.note || '')}</textarea></div>
+      ${isToday ? `<button class="gold-btn slow-check-btn" id="condition-save">保存记录</button>` : ''}
     </div>
-    <div class="soft-card">
-      <div class="soft-card-title">${icon('time', 16)} 最近 7 天</div>
-      <div id="condition-recent"></div>
-    </div>
+
+    ${recent.length ? `<div class="sk-section">
+      <div class="sk-section-head">${icon('time', 14)} <span>最近 7 天</span><span class="sk-pending ok" style="margin-left:auto">${recent.length} 天</span></div>
+      <div class="module-list">
+        ${recent.map(d => `<div class="module-list-item" style="cursor:default;">
+          <span class="mli-text">${formatDateCN(d.date)}${d.note ? ' · ' + escapeHTML(d.note) : ''}</span>
+          <span class="mli-points">${d.items.length ? d.items.join('、') : ''}</span>
+        </div>`).join('')}
+      </div>
+    </div>` : ''}
+
+    ${slowHeatSectionHTML(model, 'thermometer', '本周健康统计')}
   `;
   content.appendChild(page);
 
-  bindDateBar(page, {
-    onShift: (d) => { state.viewDate = shiftDate(viewKey, d); renderContent(); },
-    onPick: (k) => { state.viewDate = k; renderContent(); },
-    onToday: () => { state.viewDate = ''; renderContent(); }
+  // 迷你日期：可回看历史（圆点＝当天有健康记录）
+  bindSlowMiniDate(page, 'health', model, renderBodyConditionPage, function (k) {
+    return dayLogHas(state.conditionLogs[k]) ? 'orange' : null;
   });
+  bindSlowTextarea(page);
+
   page.querySelectorAll('#condition-opts .chip').forEach(btn => {
-    btn.addEventListener('click', () => btn.classList.toggle('active'));
+    btn.addEventListener('click', () => {
+      if (!isToday) { toast('只能在当天记录哦'); return; }
+      btn.classList.toggle('active');
+    });
   });
-  page.querySelector('#condition-save').addEventListener('click', () => {
+  const saveBtn = page.querySelector('#condition-save');
+  if (saveBtn) saveBtn.addEventListener('click', () => {
     const items = Array.from(page.querySelectorAll('#condition-opts .chip.active')).map(b => b.dataset.opt);
     const note = page.querySelector('#condition-note').value.trim();
-    state.conditionLogs[viewKey] = { items, note };
+    state.conditionLogs[today] = { items: items, note: note };
     saveConditionLogs();
-    toast('小状况记录已保存');
-    renderConditionRecent();
+    toast('健康记录已保存');
+    SLOW_VIEW.health = null;
+    renderBodyConditionPage();
   });
-
-  function renderConditionRecent() {
-    const host = page.querySelector('#condition-recent');
-    const days = [];
-    for (let i = 6; i >= 0; i--) {
-      const k = shiftDate(getTodayKey(), -i);
-      const l = state.conditionLogs[k];
-      if (l && ((l.items && l.items.length) || l.note)) days.push({ date: k, ...l });
-    }
-    if (!days.length) { host.innerHTML = '<p class="section-note">还没有身体小状况记录。</p>'; return; }
-    host.innerHTML = days.map(d => `
-      <div class="module-list-item" style="cursor:default;align-items:flex-start;">
-        <span class="mli-text">${formatDateCN(d.date)}${d.items && d.items.length ? ' · ' + d.items.join('、') : ''}<br><small style="color:var(--text-muted);font-weight:400;">${escapeHTML(d.note || '')}</small></span>
-      </div>
-    `).join('');
-  }
-  renderConditionRecent();
 }
 
 // ---------- Fitness page ----------
@@ -11229,6 +11262,25 @@ function weatherBunnyIconSVG() {
   </svg>`;
 }
 
+// v9563：保持中的支线卡片名 -> 实际路由（多数同名，个别需要映射）
+const KEEP_BRANCH_ROUTE = { '攒钱': '记账', '睡眠': '睡眠管理', '健康': '身体小状况' };
+// v9563：老用户的 keepBranches 里没有「睡眠 / 健康」，打开支线页时补齐一次（幂等）
+function ensureKeepBranches() {
+  if (!Array.isArray(state.settings.keepBranches) || !state.settings.keepBranches.length) {
+    state.settings.keepBranches = JSON.parse(JSON.stringify(DEFAULT_SETTINGS.keepBranches));
+    saveSettings();
+    return;
+  }
+  let changed = false;
+  ['睡眠', '健康'].forEach(function (n) {
+    if (!state.settings.keepBranches.some(function (k) { return k.name === n; })) {
+      const d = (DEFAULT_SETTINGS.keepBranches || []).find(function (x) { return x.name === n; });
+      if (d) { state.settings.keepBranches.push(JSON.parse(JSON.stringify(d))); changed = true; }
+    }
+  });
+  if (changed) saveSettings();
+}
+
 function renderBranchesPage() {
   const page = document.createElement('div');
   page.className = 'page';
@@ -11404,6 +11456,7 @@ function renderBranchesPage() {
       progress: calcBranchWeeklyProgress(type, name)
     };
   });
+  ensureKeepBranches();
   const keepList = (state.settings.keepBranches || DEFAULT_SETTINGS.keepBranches).filter(k => k.name !== '攒钱');
   // v9285：运行时过滤 v9283 已删除的 烹饪美食/志愿公益（防御老数据）
   const REMOVED_SLOW_NAMES = ['烹饪美食', '志愿公益'];
@@ -11487,7 +11540,7 @@ function renderBranchesPage() {
         ${keepList.map(k => {
           const defaultItem = DEFAULT_SETTINGS.keepBranches.find(d => d.name === k.name);
           const iconName = (defaultItem && defaultItem.icon) || k.icon || k.emoji;
-          const route = k.name === '攒钱' ? '记账' : k.name;
+          const route = KEEP_BRANCH_ROUTE[k.name] || k.name;
           return `<div class="br-slow-card" data-route="${escapeHTML(route)}">
             <div class="br-slow-left"><span class="bsi-emoji"><span class="bsi-icon-wrap">${renderItemIcon(iconName, 15)}</span></span><span class="bsi-name">${k.name}</span></div>
             <span class="bsi-tag">保持中</span>
@@ -11971,6 +12024,24 @@ function openEnglishHistoryModal() {
   document.body.appendChild(overlay);
   overlay.querySelector('.modal-close').addEventListener('click', () => overlay.remove());
   overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
+}
+
+// v9563：把「按天日志」型数据（睡眠 / 健康）转成 slowHeatSectionHTML 需要的 { checkin, log } 结构
+// （当天有记录 = 完成；log 记 1 分，供图例的「完成度」梯度）
+function dayLogStatModel(logs) {
+  const checkin = {}, log = {};
+  Object.keys(logs || {}).forEach(function (k) {
+    const l = logs[k] || {};
+    const hasItems = Array.isArray(l.items) && l.items.length > 0;
+    if (l.duration || l.quality || l.note || hasItems) { checkin[k] = { done: true }; log[k] = 1; }
+  });
+  return { checkin: checkin, log: log };
+}
+// 某天是否有日志记录
+function dayLogHas(l) {
+  if (!l) return false;
+  const hasItems = Array.isArray(l.items) && l.items.length > 0;
+  return !!(l.duration || l.quality || l.note || hasItems);
 }
 
 // ============ 生活秩序 ============
@@ -14595,7 +14666,7 @@ function modSkinStyle(color) {
   return `--slc:${c};--slcb:${_mixHex(c, '#FFFFFF', 0.72)};--slcd:${_mixHex(c, '#000000', 0.18)};--slcbg:${_mixHex(c, '#FFFFFF', 0.88)};`;
 }
 // 各模块「回看日期」（null = 今天）
-const SLOW_VIEW = { photography: null, cert: null, homeorg: null, music: null, social: null, travel: null, order: null, growth: null };
+const SLOW_VIEW = { photography: null, cert: null, homeorg: null, music: null, social: null, travel: null, order: null, growth: null, sleep: null, health: null };
 // 日期选择器圆点：该模块自己的打卡/积分（不与其他模块共享）
 function slowDateStatus(m) {
   return function (k) {
