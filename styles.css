@@ -10581,7 +10581,8 @@ body.home-bg .topbar {
 /* ④ 三餐记录行 → 护肤页打卡行（白底 + 细描边 + 10 圆角 + 行高一致） */
 .diet-page .diet-flat-meals { gap: 7px; }
 .diet-page .diet-flat-meal { background: var(--card); border: 1px solid var(--border-soft); border-radius: 10px; padding: 9px 10px; min-height: 36px; }
-.diet-page .diet-flat-meal-ic { color: var(--slc); }
+/* v9568：三餐行图标去掉底色块，只留裸图标（行高随之降低） */
+.diet-page .diet-flat-meal-ic { color: var(--slc); background: transparent; width: auto; height: auto; border-radius: 0; }
 .diet-page .diet-flat-meal-ic svg { width: 16px; height: 16px; }
 .diet-page .diet-flat-meal-name { font-size: 11px; }
 .diet-page .diet-flat-meal-sub { font-size: 9.5px; }

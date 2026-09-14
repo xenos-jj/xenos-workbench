@@ -93,10 +93,10 @@ const INSIGHT_MODULES = [
   },
   {
     id: 'health',
-    name: '健康',
-    icon: 'health',
-    color: '#A0BB7A',
-    bg: '#F1F6E9',
+    name: '运动',
+    icon: 'dumbbell',
+    color: '#9CC2BC',
+    bg: '#EAF4F2',
     metricName: '累计时长',
     metricUnit: 'min',
     avgName: '日均运动',
@@ -106,12 +106,11 @@ const INSIGHT_MODULES = [
       let items = 0, metric = 0;
       for (let i = 0; i < 7; i++) {
         const d = shiftDate(weekStart, i);
-        const list = state.exerciseLogs[d] || [];
-        const min = list.filter(e => e.done).reduce((a, e) => a + (Number(e.duration) || 0), 0);
+        // v9568：口径只取「运动」页的数据（state.exerciseLogs），不再混入饮食/健康领域
+        const doneList = (state.exerciseLogs[d] || []).filter(e => e.done);
+        const min = doneList.reduce((a, e) => a + (Number(e.duration) || 0), 0);
         daily.push(min); metric += min;
-        const di = list.filter(e => e.done).length
-          + ((state.dietLogs[d] || []).length ? 1 : 0)
-          + ((state.domains.health && Number(state.domains.health.log[d]) > 0) ? 1 : 0);
+        const di = doneList.length;
         dailyItems.push(di); items += di;
         levels.push(di === 0 ? 0 : di === 1 ? 1 : di === 2 ? 2 : 3);
       }
@@ -6560,14 +6559,11 @@ function renderDiet() {
       </div>
       <div class="diet-flat-meals" id="meal-cards">
         ${['早餐', '午餐', '晚餐', '加餐'].map(type => {
-          const meals = (todayLog.meals || []).filter(m => m.type === type);
-          const cals = meals.reduce((s, m) => s + (m.items || []).reduce((is, it) => is + (Number(it.calories) || 0), 0), 0);
           const iconName = type === '早餐' ? 'sunrise' : type === '午餐' ? 'utensils' : type === '晚餐' ? 'food' : 'plus';
           return `<div class="diet-flat-meal" data-type="${type}">
             <div class="diet-flat-meal-ic">${icon(iconName, 22)}</div>
             <div class="diet-flat-meal-body">
               <div class="diet-flat-meal-name">${type}</div>
-              <div class="diet-flat-meal-sub">${meals.length ? meals.length + ' 项 · ' + cals + ' kcal' : '轻点记录'}</div>
             </div>
             <button class="diet-flat-meal-add" aria-label="添加${type}">${icon('plus', 12)}</button>
           </div>`;
@@ -6575,23 +6571,7 @@ function renderDiet() {
       </div>
     </section>
 
-    <!-- 3. 饮食计划：扁平 3 行输入 -->
-    <section class="diet-flat-section module-card">
-      <div class="module-card-head">
-        <span class="module-card-icon" style="color:#D8B98F">${icon('clipboard', 14)}</span>
-        <span class="soft-card-title" style="margin:0;">饮食计划</span>
-      </div>
-      <div class="diet-flat-plan">
-        ${['breakfast', 'lunch', 'dinner'].map((k, i) => `<div class="diet-flat-plan-row"><span class="diet-flat-plan-lbl">${['早餐', '午餐', '晚餐'][i]}打算</span><input type="text" class="diet-flat-plan-input dp-input" data-plan="${k}" value="${escapeHTML((state.dietPlan && state.dietPlan[k]) || '')}" placeholder="想吃点什么～"></div>`).join('')}
-      </div>
-      <div class="diet-flat-treat-row">
-        <span class="diet-flat-plan-lbl">想吃但不过量</span>
-        <div class="diet-flat-treat-list" id="dp-treat-list"></div>
-        ${isToday ? `<div class="diet-flat-treat-add-row"><input type="text" class="diet-flat-treat-input" id="dp-treat-input" placeholder="如 一块小蛋糕"><button class="diet-flat-treat-add-btn" id="dp-treat-add">添加</button></div>` : ''}
-      </div>
-    </section>
-
-    <!-- 4. 饮食花费：扁平两列 -->
+    <!-- 3. 饮食花费：扁平两列 -->
     <section class="diet-flat-section module-card">
       <div class="module-card-head">
         <span class="module-card-icon" style="color:#D8B98F">${icon('card', 14)}</span>
@@ -6604,7 +6584,7 @@ function renderDiet() {
       <div class="diet-flat-cost-ring" id="diet-flat-cost-ring"></div>
     </section>
 
-    <!-- 5. 食材库存：扁平（复用现有 renderIngredientsCardInner，外部已无 soft-card） -->
+    <!-- 4. 食材库存：扁平（复用现有 renderIngredientsCardInner，外部已无 soft-card） -->
     <section class="diet-flat-section module-card">
       <div class="module-card-head">
         <span class="module-card-icon" style="color:#D8B98F">${icon('box', 14)}</span>
@@ -6616,7 +6596,7 @@ function renderDiet() {
       <button class="ing-import-btn" id="ing-import-btn">${icon('refresh', 13)} 批量导入示例食材</button>
     </section>
 
-    <!-- 6. 每周饮食分析 -->
+    <!-- 5. 每周饮食分析 -->
     <section class="diet-flat-section module-card">
       <div class="module-card-head">
         <span class="module-card-icon" style="color:#D8B98F">${icon('chart', 14)}</span>
@@ -6655,49 +6635,6 @@ function renderDiet() {
     const row = e.target.closest('.diet-flat-meal');
     if (!row) return;
     triggerMealAdd(row.dataset.type);
-  });
-
-  // 饮食计划输入
-  card.querySelectorAll('.dp-input').forEach(inp => {
-    inp.addEventListener('change', () => {
-      state.dietPlan = state.dietPlan || {};
-      state.dietPlan[inp.dataset.plan] = inp.value.trim();
-      saveDietPlan();
-    });
-  });
-  // 想吃但不过量
-  if (!state.dietMemos) state.dietMemos = loadDietMemos();
-  const treatList = card.querySelector('#dp-treat-list');
-  function renderTreatList() {
-    treatList.innerHTML = '';
-    if (!state.dietMemos.length) { treatList.innerHTML = '<p class="memo-empty" style="margin:0;">还没有想吃的，添加一点也无妨～</p>'; return; }
-    state.dietMemos.forEach((m, idx) => {
-      const row = document.createElement('span');
-      row.className = 'diet-flat-treat-item';
-      row.dataset.idx = idx;
-      row.innerHTML = `<span>${escapeHTML(m.text)}</span><button class="diet-flat-treat-del" data-idx="${idx}" aria-label="删除"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>`;
-      treatList.appendChild(row);
-    });
-  }
-  renderTreatList();
-  const treatAdd = card.querySelector('#dp-treat-add');
-  if (treatAdd) {
-    treatAdd.addEventListener('click', () => {
-      const inp = card.querySelector('#dp-treat-input');
-      const text = inp.value.trim();
-      if (!text) return;
-      state.dietMemos.push({ id: uid('memo'), text, done: false });
-      saveDietMemos();
-      inp.value = '';
-      renderTreatList();
-    });
-  }
-  treatList.addEventListener('click', (e) => {
-    const del = e.target.closest('.diet-flat-treat-del');
-    if (!del) return;
-    state.dietMemos.splice(parseInt(del.dataset.idx), 1);
-    saveDietMemos();
-    renderTreatList();
   });
 
   // 饮食花费环形图（外卖 vs 自做 vs 其他）
