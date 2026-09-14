@@ -10582,7 +10582,8 @@ function miniRingHTML(percent, colorClass, num, label, strokeColor) {
 const BR_WEEKDAY_NAMES = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
 // v9518：满级阈值；满 ≥ THRESHOLD，部分 0<v<THRESHOLD，空 v===0
 const BR_FULL_THRESHOLD = 4;
-function branchWeekDotsHTML(week, color, bg) {
+function branchWeekDotsHTML(week, color, bg, fullThreshold) {
+  const FULL = fullThreshold || BR_FULL_THRESHOLD;
   const arr = (week && week.length === 7) ? week : [0, 0, 0, 0, 0, 0, 0];
   const todayKey = getTodayKey();
   const weekStart = getWeekStart();
@@ -10592,7 +10593,7 @@ function branchWeekDotsHTML(week, color, bg) {
   })();
   const dots = arr.map((v, i) => {
     let bgStyle;
-    if (v >= BR_FULL_THRESHOLD) bgStyle = `background:${color};opacity:1`;       // 满
+    if (v >= FULL) bgStyle = `background:${color};opacity:1`;                    // 满
     else if (v > 0) bgStyle = `background:${color};opacity:0.42`;                // 部分
     else bgStyle = `background:${bg || '#f5efe6'};opacity:1`;                    // 空
     const isToday = i === todayIdx;
@@ -11282,6 +11283,13 @@ function renderBranchesPage() {
 
   // 各支线近 7 天每日数据点（滚动窗口，含当天）——用于「本周趋势」折线
   function weeklyPointsFor(type, name) {
+    // v9562：阅读支线跟「书籍阅读」页自己的记录走（与英语学习完全独立）
+    if (isReadingBranch(name)) {
+      const map = readingDayMap();
+      const days = [];
+      for (let i = 6; i >= 0; i--) { const k = shiftDate(getTodayKey(), -i); days.push(map[k] || 0); }
+      return days;
+    }
     // v9517：looks 下各支线（护肤/仪态/穿搭/妆容）数据源互相独立
     if (type === 'looks') {
       if (name === '护肤') {
@@ -11320,6 +11328,13 @@ function renderBranchesPage() {
   const DAY_BASE = 100 / 7;
   function calcBranchWeeklyProgress(type, name) {
     const todayKey = getTodayKey();
+    // v9562：阅读支线进度 = 近 7 天在「书籍阅读」页有记录的天数 / 7
+    if (isReadingBranch(name)) {
+      const map = readingDayMap();
+      let cnt = 0;
+      for (let i = 0; i < 7; i++) { const k = shiftDate(todayKey, -i); if ((map[k] || 0) > 0) cnt++; }
+      return Math.round(cnt / 7 * 100);
+    }
     // v9517：looks 下各支线进度独立（护肤=护肤日常完成天数；仪态/穿搭/妆容=各自打卡天数）
     if (type === 'looks') {
       let cnt = 0;
@@ -11372,12 +11387,16 @@ function renderBranchesPage() {
     const weekTotal = week.reduce((s, v) => s + v, 0);
     const activeDays = week.filter(v => v > 0).length;
     // v9516：等级按累计打卡/记录天数（不再用积分/词量）
-    const lvInfo = getBranchLevelInfo(type);
+    const isReading = isReadingBranch(name);
+    const lvInfo = getBranchLevelInfo(type, name);
     const level = lvInfo.level;
     const levelText = lvInfo.levelText;
     const focusMin = type === 'learning' ? getFocusMinutesByDomain(null, 'learning') : 0;
     const learnedWords = Object.keys(state.language.learned || {}).length;
-    const hasData = weekTotal > 0 || (type === 'learning' && learnedWords > 0);
+    // v9562：阅读只看自己的记录（不再借英语的词量/专注判断有没有数据）
+    const hasData = isReading
+      ? (weekTotal > 0 || Object.keys(readingDayMap()).length > 0)
+      : (weekTotal > 0 || (type === 'learning' && learnedWords > 0));
     return {
       name, type, icon: branchIconFor(name, c.color), color: c.color, border: c.border, bg: c.bg,
       sub: branchSubFor(name), action: branchActionFor(name), route: branchRouteFor(name),
@@ -11435,7 +11454,7 @@ function renderBranchesPage() {
               <div class="br-branch-title" style="color:${b.color}">${b.name}</div>
               <div class="br-branch-sub">${b.sub}</div>
               <div class="br-branch-meta">
-                <span class="br-lv-tag" data-level-type="${b.type}" title="点击查看等级进度" style="background:${b.bg};color:${b.color}">Lv.${b.level}<span class="br-lv-gap"></span>${b.levelText}</span>
+                <span class="br-lv-tag" data-level-type="${b.type}" data-level-name="${escapeHTML(b.name)}" title="点击查看等级进度" style="background:${b.bg};color:${b.color}">Lv.${b.level}<span class="br-lv-gap"></span>${b.levelText}</span>
                 <span class="br-freq-tag">每周 ${b.activeDays} 天</span>
               </div>
             </div>
@@ -11522,7 +11541,7 @@ function renderBranchesPage() {
 
   // v9516：点击等级标签 → 查看该支线等级进度
   page.querySelectorAll('.br-lv-tag[data-level-type]').forEach(el => {
-    el.addEventListener('click', (e) => { e.stopPropagation(); openBranchLevelModal(el.dataset.levelType); });
+    el.addEventListener('click', (e) => { e.stopPropagation(); openBranchLevelModal(el.dataset.levelType, el.dataset.levelName); });
   });
 
   // v9518：点击进度环 → 弹出本周完成度小卡片（圆点图 + 周一到周日）
@@ -11542,12 +11561,32 @@ function renderBranchesPage() {
   if (slowManage) slowManage.addEventListener('click', openSlowBranchPicker);
 }
 
+// v9562：阅读支线（卡片「阅读」，route=书籍阅读）独立打卡口径 —— 只认「书籍阅读」页自己的记录，
+// 与「英语」共用 type='learning' 但数据源完全分开（英语走英语打卡/专注，阅读走下面的读书记录）。
+function isReadingBranch(name) {
+  const def = FOCUS_CARD_DEF[name];
+  return !!def && def.route === '书籍阅读';
+}
+// 「书籍阅读」页按天归集的记录数：① 阅读计划打卡（checkins）② 书架翻页（+10/-10 当天记一次）
+// ③ 当天新增/编辑的阅读笔记与思想沉淀（date 字段）
+function readingDayMap() {
+  const map = {};
+  const bump = k => { if (k) map[k] = (map[k] || 0) + 1; };
+  (state.bookPlans || []).forEach(p => (Array.isArray(p.checkins) ? p.checkins : []).forEach(bump));
+  (state.books || []).forEach(b => (Array.isArray(b.readDates) ? b.readDates : []).forEach(bump));
+  (state.bookNotes || []).forEach(n => bump(n.date));
+  (state.bookInsights || []).forEach(n => bump(n.date));
+  return map;
+}
+
 // v9516：支线等级——按「累计打卡/记录天数」升级（Lv.1→2 需 10 天，之后每级所需天数 +10）
 const BRANCH_LEVEL_NAMES = ['起步中', '发育中', '稳定中', '进阶中'];
 function branchLevelThreshold(n) { return 5 * n * (n - 1); } // Lv.n 的累计天数门槛（0/10/30/60/100/150…）
 function branchLevelName(lv) { return BRANCH_LEVEL_NAMES[lv - 1] || '精进中'; }
 // 累计打卡/记录天数（health/looks=log 有值的天数；money=有交易的天数；learning=英语打卡 ∪ 专注）
-function getBranchTotalDays(type) {
+function getBranchTotalDays(type, name) {
+  // v9562：阅读支线只统计「书籍阅读」页自己的记录天数
+  if (isReadingBranch(name)) return Object.keys(readingDayMap()).length;
   const days = new Set();
   if (type === 'money') {
     (state.transactions || []).forEach(t => { if (t.date) days.add(t.date); });
@@ -11560,8 +11599,8 @@ function getBranchTotalDays(type) {
   }
   return days.size;
 }
-function getBranchLevelInfo(type) {
-  const days = getBranchTotalDays(type);
+function getBranchLevelInfo(type, name) {
+  const days = getBranchTotalDays(type, name);
   let level = 1;
   while (days >= branchLevelThreshold(level + 1)) level++;
   const curBase = branchLevelThreshold(level);
@@ -11570,10 +11609,11 @@ function getBranchLevelInfo(type) {
 }
 
 // v9516：支线等级进度弹窗（点击支线卡上的等级标签触发）
-function openBranchLevelModal(type) {
-  const info = getBranchLevelInfo(type);
+function openBranchLevelModal(type, name) {
+  const info = getBranchLevelInfo(type, name);
   const nameMap = { health: '健康', looks: '护肤', money: '记账', learning: '英语' };
-  const tname = nameMap[type] || type;
+  // v9562：优先用卡片自己的名字（修复「仪态/穿搭/妆容」等级弹窗都写「护肤」、阅读写「英语」的问题）
+  const tname = name || nameMap[type] || type;
   const span = Math.max(1, info.nextNeed - info.curBase);
   const pct = Math.max(0, Math.min(100, Math.round((info.days - info.curBase) / span * 100)));
   const body = `
@@ -11594,6 +11634,13 @@ function openBranchLevelModal(type) {
 // v9518：按「本周（周一~周日）」固定 7 天取每日数据点——用于点击进度环弹出的完成度卡片
 function weeklyWeekPoints(type, name) {
   const weekStart = getWeekStart();
+  // v9562：阅读支线按「书籍阅读」页自己的记录取本周数据点
+  if (isReadingBranch(name)) {
+    const map = readingDayMap();
+    const days = [];
+    for (let i = 0; i < 7; i++) { const k = shiftDate(weekStart, i); days.push(map[k] || 0); }
+    return days;
+  }
   if (type === 'looks') {
     if (name === '护肤') {
       const sc = state.skincare || {};
@@ -11636,7 +11683,7 @@ function openBranchWeekModal(type, name, color, bg) {
   const week = weeklyWeekPoints(type, name);
   const doneDays = week.filter(v => v > 0).length;
   const body = `
-    ${branchWeekDotsHTML(week, color, bg)}
+    ${branchWeekDotsHTML(week, color, bg, isReadingBranch(name) ? 1 : 0)}
     <div style="display:flex; justify-content:center; align-items:center; gap:14px; margin-top:14px; font-size:11px; color:var(--text-muted); font-family:var(--font-small);">
       <span style="display:inline-flex; align-items:center; gap:5px;"><i style="width:10px;height:10px;border-radius:50%;background:${bg || '#f5efe6'};display:inline-block;"></i>未打卡</span>
       <span style="display:inline-flex; align-items:center; gap:5px;"><i style="width:10px;height:10px;border-radius:50%;background:${color};opacity:0.42;display:inline-block;"></i>部分完成</span>

@@ -137,12 +137,20 @@ function renderBookReading() {
   page.querySelectorAll('.book-row').forEach(row => {
     const b = books.find(x => x.id === row.dataset.id);
     if (!b) return;
+    // v9562：翻页即在当天留一条阅读记录（供支线「阅读」卡统计，按天去重）
+    const stampRead = () => {
+      b.readDates = Array.isArray(b.readDates) ? b.readDates : [];
+      const t = getTodayKey();
+      if (!b.readDates.includes(t)) b.readDates.push(t);
+    };
     row.querySelector('[data-act="plus"]').addEventListener('click', () => {
       b.current = Math.min(b.total || b.current + 10, b.current + 10);
+      stampRead();
       saveBooks(); renderContent();
     });
     row.querySelector('[data-act="minus"]').addEventListener('click', () => {
       b.current = Math.max(0, b.current - 10);
+      stampRead();
       saveBooks(); renderContent();
     });
     row.querySelector('[data-act="del"]').addEventListener('click', () => {
@@ -178,6 +186,7 @@ function renderBookReading() {
   if (bkEditNote) {
     const n = notes.find(x => x.id === bkEditNote);
     page.querySelector('#bn-save').addEventListener('click', () => {
+      n.date = getTodayKey(); // v9562：当天编辑也算当天有阅读记录
       n.book = page.querySelector('#bn-book').value.trim();
       n.thesis = page.querySelector('#bn-thesis').value.trim();
       n.quotes = page.querySelector('#bn-quotes').value.trim();
@@ -191,7 +200,7 @@ function renderBookReading() {
     page.querySelector('#bn-add').addEventListener('click', () => {
       const thesis = page.querySelector('#bn-thesis').value.trim();
       if (!thesis) return;
-      state.bookNotes.push({ id: uid('bn'), book: page.querySelector('#bn-book').value.trim(), thesis, quotes: page.querySelector('#bn-quotes').value.trim(), reflection: page.querySelector('#bn-reflect').value.trim(), action: page.querySelector('#bn-action').value.trim() });
+      state.bookNotes.push({ id: uid('bn'), date: getTodayKey(), book: page.querySelector('#bn-book').value.trim(), thesis, quotes: page.querySelector('#bn-quotes').value.trim(), reflection: page.querySelector('#bn-reflect').value.trim(), action: page.querySelector('#bn-action').value.trim() });
       saveBookNotes(); renderContent();
     });
   }
@@ -256,6 +265,7 @@ function renderBookReading() {
   if (bkEditInsight) {
     const i = insights.find(x => x.id === bkEditInsight);
     page.querySelector('#bi-save').addEventListener('click', () => {
+      i.date = getTodayKey(); // v9562
       i.title = page.querySelector('#bi-title').value.trim();
       i.content = page.querySelector('#bi-content').value.trim();
       saveBookInsights(); bkEditInsight = null; renderContent();
@@ -266,7 +276,7 @@ function renderBookReading() {
     page.querySelector('#bi-add').addEventListener('click', () => {
       const title = page.querySelector('#bi-title').value.trim();
       if (!title) return;
-      state.bookInsights.push({ id: uid('bi'), title, content: page.querySelector('#bi-content').value.trim() });
+      state.bookInsights.push({ id: uid('bi'), date: getTodayKey(), title, content: page.querySelector('#bi-content').value.trim() });
       saveBookInsights(); renderContent();
     });
   }
