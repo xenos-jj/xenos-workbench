@@ -619,7 +619,6 @@ const DEFAULT_GROUPS = [
     icon: 'leaf',
     collapsed: false,
     items: [
-      { id: 'i-health', name: '健康', icon: 'health' },
       { id: 'i-diet', name: '饮食', icon: 'utensils' }
     ]
   },
@@ -652,7 +651,7 @@ const MOBILE_TABS = [
   { id: 'tab-plan', name: '计划', icon: 'review', target: '每日计划' },
   { id: 'tab-focus', name: '专注', icon: 'clock', action: 'focus' },
   { id: 'tab-money', name: '记账', icon: 'coins', target: '记账' },
-  { id: 'tab-health', name: '健康', icon: 'health', target: '健康' }
+  { id: 'tab-health', name: '健康', icon: 'health', target: '身体小状况' }
 ];
 
 // 人生领域配置（领域页模板）
@@ -880,8 +879,8 @@ const DEFAULT_SETTINGS = {
   mood: '平静',
   currentPhase: '成长',
   phaseOptions: ['成长', '生活', '自律', '学习', '英语', '剪辑', 'AI'],
-  monthlyFocus: ['英语', '健康', '记账'],
-  focusOptions: ['英语', '健康', '记账', '阅读', '护肤', '穿搭', '妆容', '仪态', '运动', '饮食'],
+  monthlyFocus: ['英语', '记账'],
+  focusOptions: ['英语', '记账', '阅读', '护肤', '穿搭', '妆容', '仪态', '运动', '饮食'],
   moduleTravel: true,
   moduleSocial: true,
   keepBranches: [
@@ -908,7 +907,6 @@ const DEFAULT_SETTINGS = {
 // 本月主线标签配色：每个标签独立颜色（移除 睡眠/自媒体/锻炼/生活）
 const FOCUS_COLORS = {
   '英语': { bg: '#F5F2F9', border: '#A99ADC', color: '#8978C3' },
-  '健康': { bg: '#F5F6E8', border: '#A0BB7A', color: '#7A9C5A' },
   // v9564：运动 / 饮食 从「运动」整合页分离 —— 本月主线可选，低饱和淡色
   '运动': { bg: '#EFF6F4', border: '#9CC2BC', color: '#5F8F88' },
   '饮食': { bg: '#FAF3EA', border: '#D8B98F', color: '#A97F4E' },
@@ -923,7 +921,6 @@ const FOCUS_COLORS = {
 const FOCUS_CARD_DEF = {
   '英语': { type: 'learning', route: '学习成长', action: '背词汇 20min', sub: '每天进步一点点，未来更自由' },
   '阅读': { type: 'learning', route: '书籍阅读', action: '阅读 30min', sub: '翻开一本书，安放一段时光' },
-  '健康': { type: 'health', route: '健康', action: '今晚 23:30 前睡', sub: '健康是所有热爱的底气' },
   // v9564：运动 / 饮食 独立支线（各自读自己页面的记录）
   '运动': { type: 'fitness', route: '健身', action: '运动 20min', sub: '动一动，身体会记得' },
   '饮食': { type: 'diet', route: '饮食', action: '记录今日三餐', sub: '好好吃饭，是最基本的照顾' },
@@ -2195,7 +2192,8 @@ function loadGroups() {
       if (parsed && parsed.version === SCHEMA_VERSION && Array.isArray(parsed.data)) {
       // v9176：人生领域分组移除 旅行体验 / 社交拓展 侧边栏入口
       // v9291：移除 每日计划 / 本周洞察 / 我的支线 / 书籍阅读 / 学习成长（仅删侧边栏导航，页面本体保留）
-      const removed = new Set(['历史', '内容素材库', '旅行体验', '社交拓展', '每日计划', '本周洞察', '我的支线', '书籍阅读', '学习成长']);
+      // v9565：健康整合页已整页删除 → 老菜单里同步剔除「健康」入口
+      const removed = new Set(['历史', '内容素材库', '旅行体验', '社交拓展', '每日计划', '本周洞察', '我的支线', '书籍阅读', '学习成长', '健康']);
       // v9317：兼容旧的「社交拓展」入口过滤（已迁移为「爱好拓展」）
       parsed.data.forEach(g => {
         if (Array.isArray(g.items)) {
@@ -3887,7 +3885,6 @@ const PAGE_ROUTES = {
   // 成长提升（书籍阅读/视频剪辑/3D建模 为懒加载模块，见 LAZY_PAGES）
   // 保留的功能页（由领域页的工具入口跳转）
   '每日计划': renderDailyPlan,
-  '健康': renderHealthPage,
   '饮食': renderDiet,
   '健身': renderFitness,
   '睡眠管理': renderSleepPage,
@@ -3927,7 +3924,7 @@ const SUB_PAGE_PARENT = {
   '饮食': '我的支线',
   '健身': '我的支线',
   '睡眠管理': '我的支线',
-  '今日心境': '健康',
+  '今日心境': '我的支线',
   '身体小状况': '我的支线',
   '记账存钱': '金钱',
   '地点打卡': '旅行体验',
@@ -3955,7 +3952,7 @@ const PAGE_BACK_FALLBACK = {
   '饮食': '我的支线',
   '健身': '我的支线',
   '睡眠管理': '我的支线',
-  '今日心境': '健康',
+  '今日心境': '我的支线',
   '身体小状况': '我的支线',
   '记账存钱': '记账',
   '地点打卡': '旅行体验',
@@ -3964,7 +3961,6 @@ const PAGE_BACK_FALLBACK = {
   '技能考证': '我的支线',
   '家居整理': '我的支线',
   '音乐练习': '我的支线',
-  '健康': '工作台首页',
   '记账': '工作台首页',
   '学习成长': '工作台首页',
   '项目计划': '工作台首页',
@@ -4104,6 +4100,8 @@ function renderContent() {
 
   // v9529：外貌汇总页已移除（仪态/穿搭/妆容/护肤 各自独立成页）——历史 activeItem='外貌' 兜底回首页
   if (state.activeItem === '外貌') state.activeItem = '工作台首页';
+  // v9565：健康整合页已整页删除 —— 历史 activeItem='健康' 兜底回首页
+  if (state.activeItem === '健康') state.activeItem = '工作台首页';
 
   if (DOMAIN_CONFIG[state.activeItem]) {
     renderDomainPage(state.activeItem);
@@ -5897,159 +5895,6 @@ function drawTrendChart(containerSelector, measurements) {
   container.appendChild(legend);
 }
 
-// ============================================================
-//  健康 · 整合页（独立成页）
-// ============================================================
-function renderHealthPage() {
-  content.innerHTML = '';
-  const page = document.createElement('div');
-  page.className = 'page health-page';
-
-  const viewKey = state.viewDate || getTodayKey();
-  const isToday = viewKey === getTodayKey();
-  const domain = ensureDomain('health');
-  normalizeDomainTasks('health');
-
-  // 每日打卡数据源：领域任务 + 运动计划，但过滤掉「饮食记录」
-  const planTasks = isToday ? state.plans.filter(p => p.group === '运动计划') : [];
-  const visibleTasks = domain.tasks.filter(t => !/饮食记录|三餐规律记录/.test(t.text));
-  const doneCount = visibleTasks.filter(t => t.done).length + planTasks.filter(p => p.done).length;
-  const totalCount = visibleTasks.length + planTasks.length;
-  const percent = totalCount ? Math.round((doneCount / totalCount) * 100) : 0;
-
-  page.innerHTML = `
-    <div class="domain-hero">
-      <div class="domain-head">
-        <div class="domain-icon">${icon('dumbbell', 24)}</div>
-        <div>
-          <h3 class="domain-title">运动</h3>
-        </div>
-      </div>
-    </div>
-
-    ${dateBarHTML(viewKey, { id: 'health-date-trigger', showToday: !isToday })}
-
-    <div class="stat-boxes">
-      <div class="stat-box">
-        <div class="stb-val">${getDomainPoints('health')}</div><div class="stb-label">累计积分</div>
-      </div>
-      <div class="stat-box">
-        <div class="stb-val">${getDomainStreak('health')}</div><div class="stb-label">连续天数</div>
-      </div>
-      <div class="stat-box">
-        <div class="stb-val">${percent}%</div><div class="stb-label">${isToday ? '今日进度' : viewKey.slice(5)}</div>
-      </div>
-    </div>
-
-    <!-- 身体数据：仅记录体脂率 / 体重 / 目标体重，不做达成提醒（v9301：去卡片套卡片 + 取消内层重复标题） -->
-    <div id="health-body-mount"></div>
-
-    <!-- v9564：工具入口整块移除（饮食 → 本月主线「饮食」；运动 → 本月主线「运动」） -->
-
-    <!-- 每日打卡：饮食记录已移除 -->
-    <div class="soft-card">
-      <div class="soft-card-title">${icon('check', 16)} 每日打卡${isToday ? `<span class="stitle-meta">今日 +${domain.log[viewKey] || 0}</span>` : ` · ${viewKey}（只读）`}</div>
-      <div class="task-list" id="health-tasks"></div>
-      ${isToday ? `<div class="review-datebar" style="margin-top:12px;">
-        <input type="text" class="pf-input" id="health-new-task" placeholder="添加一个每日任务...">
-        <input type="number" class="pf-input" id="health-new-points" value="5" style="max-width:72px;">
-        <button class="gold-btn" id="health-add-task">添加任务</button>
-      </div>` : '<p class="section-note">历史日期为只读快照，切换回今天可继续打卡。</p>'}
-    </div>
-
-  `;
-  content.appendChild(page);
-
-  // 日期导航：全局统一日期组件
-  bindDateBar(page, {
-    onShift: (d) => { state.viewDate = shiftDate(viewKey, d); renderContent(); },
-    onPick: (k) => { state.viewDate = k; renderContent(); },
-    onToday: () => { state.viewDate = ''; renderContent(); }
-  });
-
-  // 身体数据卡片（v9301：title 传空字符串隐藏内层重复标题）
-  const bodyMount = page.querySelector('#health-body-mount');
-  bodyMount.innerHTML = bodyCardHTML(state.body, '');
-  bindBodyCard(bodyMount, () => renderContent());
-
-  // 工具入口跳转
-  page.querySelectorAll('[data-route]').forEach(el => {
-    el.addEventListener('click', () => selectItem(el.dataset.route));
-  });
-
-  // 每日打卡渲染
-  const taskList = page.querySelector('#health-tasks');
-  function renderTasks() {
-    taskList.innerHTML = '';
-    const showTasks = visibleTasks;
-    const showPlans = planTasks;
-    if (!showTasks.length && !showPlans.length) {
-      taskList.innerHTML = '<p class="empty-note">' + (isToday ? '还没有任务，先添加一个吧' : '这一天没有打卡记录') + '</p>';
-      return;
-    }
-    showTasks.forEach(task => {
-      const row = document.createElement('div');
-      row.className = 'task-row' + (task.done ? ' done' : '');
-      row.innerHTML = `
-        <span class="task-check"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
-        <span class="task-text">${escapeHTML(task.text)}</span>
-        <span class="task-points">+${task.points}</span>
-        ${isToday ? `<button class="item-delete" data-del-type="domain-task" data-id="${task.id}" data-domain="health" aria-label="删除"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>` : ''}
-      `;
-      if (isToday) {
-        row.addEventListener('click', (e) => {
-          if (e.target.closest('.item-delete')) return;
-          // v9258.1：原位更新（不整页重绘，打卡更跟手）
-          toggleDomainTask('health', task.id, {
-            inPlace: true,
-            onDone: () => { row.classList.toggle('done', task.done); }
-          });
-        });
-      }
-      taskList.appendChild(row);
-    });
-    showPlans.forEach(plan => {
-      const row = document.createElement('div');
-      row.className = 'task-row plan-task-row' + (plan.done ? ' done' : '');
-      row.innerHTML = `
-        <span class="task-check"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
-        <span class="task-text">${escapeHTML(plan.text)}</span>
-        <span class="task-points">+${plan.points}</span>
-        <button class="item-delete" data-id="${plan.id}" data-del-type="plan" aria-label="删除"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
-      `;
-      row.addEventListener('click', (e) => {
-        if (e.target.closest('.item-delete')) return;
-        togglePlanDone(plan.id);
-      });
-      taskList.appendChild(row);
-    });
-  }
-  renderTasks();
-
-  if (isToday) {
-    const addTask = () => {
-      const input = page.querySelector('#health-new-task');
-      const ptsInput = page.querySelector('#health-new-points');
-      const text = input.value.trim();
-      if (!text) return;
-      if (/饮食记录|三餐规律记录/.test(text)) {
-        toast('饮食记录请从上方「工具 / 资产」入口跳转');
-        return;
-      }
-      const points = Math.max(0, parseInt(ptsInput.value) || 5);
-      domain.tasks.push({ id: uid('health-t'), text, points, done: false, doneDate: '' });
-      saveDomains();
-      input.value = '';
-      renderContent();
-    };
-    page.querySelector('#health-add-task').addEventListener('click', addTask);
-    page.querySelector('#health-new-task').addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') addTask();
-    });
-  }
-}
-
-// ---------- 健康子页面：睡眠管理 ----------
 // ---------- 睡眠（v9563：从「运动」页分离为独立页，设计对齐生活秩序） ----------
 function renderSleepPage() {
   content.innerHTML = '';
@@ -11278,10 +11123,12 @@ function ensureKeepBranches() {
 }
 
 // v9564：老用户的 focusOptions 里没有「运动 / 饮食」，进支线页时补齐一次（幂等）
+// v9565：「健康」整合页已删除 → 主线标签池与已选主线里都剔除「健康」
 function ensureFocusOptions() {
   const need = ['运动', '饮食'];
   if (!Array.isArray(state.settings.focusOptions) || !state.settings.focusOptions.length) {
     state.settings.focusOptions = DEFAULT_SETTINGS.focusOptions.slice();
+    state.settings.monthlyFocus = DEFAULT_SETTINGS.monthlyFocus.slice();
     saveSettings();
     return;
   }
@@ -11289,6 +11136,14 @@ function ensureFocusOptions() {
   need.forEach(function (n) {
     if (!state.settings.focusOptions.includes(n)) { state.settings.focusOptions.push(n); changed = true; }
   });
+  if (state.settings.focusOptions.includes('健康')) {
+    state.settings.focusOptions = state.settings.focusOptions.filter(function (n) { return n !== '健康'; });
+    changed = true;
+  }
+  if (Array.isArray(state.settings.monthlyFocus) && state.settings.monthlyFocus.includes('健康')) {
+    state.settings.monthlyFocus = state.settings.monthlyFocus.filter(function (n) { return n !== '健康'; });
+    changed = true;
+  }
   if (changed) saveSettings();
 }
 
@@ -11332,7 +11187,8 @@ function renderBranchesPage() {
     const def = FOCUS_CARD_DEF[name];
     if (def) return def.route;
     const type = focusTypeOf(name);
-    return { learning: '学习成长', health: '健康', money: '记账' }[type] || '学习成长';
+    // v9565：健康整合页已删除 → 兜底指向仍存在的「健康」页（身体小状况）
+    return { learning: '学习成长', health: '身体小状况', money: '记账' }[type] || '学习成长';
   }
   function branchActionFor(name) {
     const def = FOCUS_CARD_DEF[name];
