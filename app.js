@@ -881,7 +881,7 @@ const DEFAULT_SETTINGS = {
   currentPhase: '成长',
   phaseOptions: ['成长', '生活', '自律', '学习', '英语', '剪辑', 'AI'],
   monthlyFocus: ['英语', '健康', '记账'],
-  focusOptions: ['英语', '健康', '记账', '阅读', '护肤', '穿搭', '妆容', '仪态'],
+  focusOptions: ['英语', '健康', '记账', '阅读', '护肤', '穿搭', '妆容', '仪态', '运动', '饮食'],
   moduleTravel: true,
   moduleSocial: true,
   keepBranches: [
@@ -909,6 +909,9 @@ const DEFAULT_SETTINGS = {
 const FOCUS_COLORS = {
   '英语': { bg: '#F5F2F9', border: '#A99ADC', color: '#8978C3' },
   '健康': { bg: '#F5F6E8', border: '#A0BB7A', color: '#7A9C5A' },
+  // v9564：运动 / 饮食 从「运动」整合页分离 —— 本月主线可选，低饱和淡色
+  '运动': { bg: '#EFF6F4', border: '#9CC2BC', color: '#5F8F88' },
+  '饮食': { bg: '#FAF3EA', border: '#D8B98F', color: '#A97F4E' },
   '记账': { bg: '#FDF1E1', border: '#F7BA61', color: '#F4B75B' },
   '阅读': { bg: '#EEF5FB', border: '#9BBBD8', color: '#5A8AB8' },
   '护肤': { bg: '#F8EEF4', border: '#EAD0E2', color: '#B07A9E' },
@@ -921,6 +924,9 @@ const FOCUS_CARD_DEF = {
   '英语': { type: 'learning', route: '学习成长', action: '背词汇 20min', sub: '每天进步一点点，未来更自由' },
   '阅读': { type: 'learning', route: '书籍阅读', action: '阅读 30min', sub: '翻开一本书，安放一段时光' },
   '健康': { type: 'health', route: '健康', action: '今晚 23:30 前睡', sub: '健康是所有热爱的底气' },
+  // v9564：运动 / 饮食 独立支线（各自读自己页面的记录）
+  '运动': { type: 'fitness', route: '健身', action: '运动 20min', sub: '动一动，身体会记得' },
+  '饮食': { type: 'diet', route: '饮食', action: '记录今日三餐', sub: '好好吃饭，是最基本的照顾' },
   '记账': { type: 'money', route: '记账', action: '记 1 笔收支', sub: '把热爱变现，创造更多可能' },
   '护肤': { type: 'looks', route: '护肤', action: '完成今日护肤', sub: '认真护肤，是对自己的温柔' },
   '妆容': { type: 'looks', route: '妆容', action: '练习一个妆容', sub: '一点点精致，让自己更喜欢自己' },
@@ -3918,8 +3924,8 @@ function loadLazyPage(name, cb) {
 // 功能子页 -> 返回目标（这些页面由领域页/系统面板跳转进来）
 const SUB_PAGE_PARENT = {
   '每日计划': '工作台首页',
-  '饮食': '健康',
-  '健身': '健康',
+  '饮食': '我的支线',
+  '健身': '我的支线',
   '睡眠管理': '我的支线',
   '今日心境': '健康',
   '身体小状况': '我的支线',
@@ -3946,8 +3952,8 @@ const PAGE_BACK_FALLBACK = {
   '自我介绍': '工作台首页',
   '设置': '工作台首页',
   '每日计划': '工作台首页',
-  '饮食': '健康',
-  '健身': '健康',
+  '饮食': '我的支线',
+  '健身': '我的支线',
   '睡眠管理': '我的支线',
   '今日心境': '健康',
   '身体小状况': '我的支线',
@@ -5938,22 +5944,7 @@ function renderHealthPage() {
     <!-- 身体数据：仅记录体脂率 / 体重 / 目标体重，不做达成提醒（v9301：去卡片套卡片 + 取消内层重复标题） -->
     <div id="health-body-mount"></div>
 
-    <!-- 工具入口（v9563：睡眠 / 健康 已从本页分离为独立页 → 只留 饮食 / 运动） -->
-    <div class="soft-card health-module-card">
-      <div class="soft-card-title">工具</div>
-      <div class="tool-grid">
-        <button class="tool-btn" data-route="饮食">
-          <span class="tb-icon">${icon('utensils', 18)}</span>
-          <span><b>饮食</b><span class="tb-sub">食材库存管理</span></span>
-          <span class="tb-arrow">${icon('chevronLeft', 12)}</span>
-        </button>
-        <button class="tool-btn" data-route="健身">
-          <span class="tb-icon">${icon('running', 18)}</span>
-          <span><b>运动</b><span class="tb-sub">运动训练</span></span>
-          <span class="tb-arrow">${icon('chevronLeft', 12)}</span>
-        </button>
-      </div>
-    </div>
+    <!-- v9564：工具入口整块移除（饮食 → 本月主线「饮食」；运动 → 本月主线「运动」） -->
 
     <!-- 每日打卡：饮食记录已移除 -->
     <div class="soft-card">
@@ -6322,56 +6313,60 @@ function renderBodyConditionPage() {
 function renderFitness() {
   content.innerHTML = '';
   const card = document.createElement('div');
-  card.className = 'content-card fitness-card';
+  // v9564：对齐护肤页排版（护肤页视觉体系 + 模块色皮肤）
+  card.className = 'page skincare-page slow-skin fitness-page';
+  card.style.cssText = modSkinStyle('#9CC2BC');
+  if (greetLine) greetLine.textContent = '运动';
 
   const today = new Date();
   const weekdays = ['周日','周一','周二','周三','周四','周五','周六'];
   const dateString = `${today.getFullYear()}年${today.getMonth()+1}月${today.getDate()}日 ${weekdays[today.getDay()]}`;
   const todayEx = getTodayExercise();
   const totalEx = todayEx.reduce((s, ex) => s + (ex.calories || 0), 0);
+  const viewKey = SLOW_VIEW.fitness || getTodayKey();
+  const isToday = viewKey === getTodayKey();
+  const viewEx = (state.exerciseLogs || {})[viewKey] || [];
 
   card.innerHTML = `
-    <div class="page-header">
-      <div>
-        <h3 class="page-title-main">运动</h3>
-        <p class="page-subtitle">${dateString}</p>
-      </div>
+    <div class="domain-hero"><div class="domain-head"><div><h3 class="domain-title">运动</h3></div></div></div>
+
+    <div class="sk-mini-date">${skMiniDateHTML(viewKey)}</div>
+    ${isToday
+      ? `<div class="module-rule-banner"><span class="mrb-icon">${icon('info', 12)}</span><span class="mrb-text">动起来就好，不求强度：走一走、拉伸几分钟也算今天有运动。</span></div>`
+      : `<div class="sk-hist-tip">${icon('info', 12)} 正在查看历史记录 · 只读不可更改（如需修改请告知）</div>`}
+
+    <div class="sk-day-head">
+      <span class="sk-day-title">${icon('dumbbell', 14)} ${isToday ? '今日运动' : '该日运动'}</span>
+      <span class="sk-day-pts" id="ex-burn">${isToday ? '已消耗 ' + totalEx + ' kcal' : (viewEx.length ? viewEx.length + ' 项' : '无记录')}</span>
     </div>
 
-    <div class="fitness-body">${bodyCardHTML(state.body, '身体健康', 'fitness')}</div>
-
-    <div class="section-card">
-      <div class="section-header">
-        <span class="section-icon">${icon('dumbbell', 16)}</span>
-        <span class="section-title">今日运动</span>
-        <span class="section-meta">已消耗 ${totalEx} kcal</span>
-      </div>
+    <div class="sk-section">
+      <div class="sk-section-head">${icon('running', 14)} <span>运动清单</span><span class="sk-pending ok" style="margin-left:auto">${viewEx.length} 项</span></div>
       <div class="exercise-list" id="exercise-list"></div>
-      <div class="exercise-add-row">
+      ${isToday ? `<div class="exercise-add-row">
         <input type="text" id="ex-name" class="small-input" placeholder="运动名称，如爬楼梯">
         <input type="number" id="ex-duration" class="small-input" placeholder="分钟" value="20">
-        <button class="btn btn-primary" id="ex-add-btn">新增</button>
-      </div>
+        <button class="gold-btn" id="ex-add-btn">新增</button>
+      </div>` : ''}
     </div>
 
-    <div class="section-card">
-      <div class="section-header">
-        <span class="section-icon">${icon('video', 16)}</span>
-        <span class="section-title">跟练视频</span>
-      </div>
+    <div class="sk-section">
+      <div class="sk-section-head">${icon('user', 14)} <span>身体数据</span></div>
+      <div class="fitness-body">${bodyCardHTML(state.body, '', 'fitness')}</div>
+    </div>
+
+    <div class="sk-section">
+      <div class="sk-section-head">${icon('video', 14)} <span>跟练视频</span><span class="sk-pending ok" style="margin-left:auto">${state.workoutVideos.length} 条</span></div>
       <div class="video-list" id="video-list"></div>
       <div class="video-add-row">
         <input type="text" id="video-title" class="small-input" placeholder="视频标题，如韩小四瘦腿">
         <input type="text" id="video-url" class="small-input" placeholder="链接">
-        <button class="btn btn-primary" id="video-add-btn">新增</button>
+        <button class="gold-btn" id="video-add-btn">新增</button>
       </div>
     </div>
 
-    <div class="section-card">
-      <div class="section-header">
-        <span class="section-icon">${icon('ruler', 16)}</span>
-        <span class="section-title">身体维度</span>
-      </div>
+    <div class="sk-section">
+      <div class="sk-section-head">${icon('ruler', 14)} <span>身体维度</span></div>
       <div class="measure-form-row">
         <div class="measure-form">
           <label><span class="m-label">体重 kg</span><input type="number" id="m-weight" step="0.1"></label>
@@ -6381,27 +6376,21 @@ function renderFitness() {
           <label><span class="m-label">大腿 cm</span><input type="number" id="m-thigh" step="0.1"></label>
           <label><span class="m-label">小腿 cm</span><input type="number" id="m-calf" step="0.1"></label>
         </div>
-        <button class="btn btn-green save-measure-btn" id="save-measure-btn">保存</button>
+        <button class="gold-btn save-measure-btn" id="save-measure-btn">保存</button>
       </div>
     </div>
 
-    <div class="section-card">
-      <div class="section-header">
-        <span class="section-icon">${icon('ruler', 16)}</span>
-        <span class="section-title">测量记录</span>
-        <span class="section-meta measure-count-meta">${state.measurements.length} 条</span>
-        ${state.measurements.length ? `<button class="text-btn measure-clear" id="measure-clear">清空记录</button>` : ''}
-      </div>
+    <div class="sk-section">
+      <div class="sk-section-head">${icon('list', 14)} <span>测量记录</span><span class="sk-pending ok measure-count-meta" style="margin-left:auto">${state.measurements.length} 条</span>${state.measurements.length ? `<button class="text-btn measure-clear" id="measure-clear">清空记录</button>` : ''}</div>
       <div class="measure-history" id="measure-history"></div>
     </div>
 
-    <div class="section-card">
-      <div class="section-header">
-        <span class="section-icon">${icon('chart', 16)}</span>
-        <span class="section-title">综合趋势图</span>
-      </div>
+    <div class="sk-section">
+      <div class="sk-section-head">${icon('chart', 14)} <span>综合趋势图</span></div>
       <div class="chart-wrap" id="fitness-chart"></div>
     </div>
+
+    ${slowHeatSectionHTML(branchMapStatModel(branchDayMap('fitness')), 'dumbbell', '本周运动统计')}
   `;
   content.appendChild(card);
 
@@ -6414,7 +6403,7 @@ function renderFitness() {
   function renderExerciseList() {
     list.innerHTML = '';
     // 运动计划默认项（与计划页/健康领域同步）
-    const planExercises = state.plans.filter(p => p.group === '运动计划');
+    const planExercises = isToday ? state.plans.filter(p => p.group === '运动计划') : [];
     planExercises.forEach(plan => {
       const duration = parsePlanDuration(plan.text);
       const row = document.createElement('div');
@@ -6429,8 +6418,8 @@ function renderFitness() {
       `;
       list.appendChild(row);
     });
-    // 自定义运动
-    todayEx.forEach((ex, idx) => {
+    // 自定义运动（历史视图看该日记录，只读）
+    (isToday ? todayEx : viewEx).forEach((ex, idx) => {
       const row = document.createElement('div');
       row.className = 'exercise-row' + (ex.done ? ' done' : '');
       row.dataset.idx = idx;
@@ -6439,7 +6428,7 @@ function renderFitness() {
         <span class="ex-name">${ex.name}</span>
         <span class="ex-duration">${ex.duration} 分钟</span>
         <span class="ex-points">+3</span>
-        <button class="item-delete" data-del-type="exercise" data-idx="${idx}" aria-label="删除"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+        ${isToday ? `<button class="item-delete" data-del-type="exercise" data-idx="${idx}" aria-label="删除"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>` : ''}
       `;
       list.appendChild(row);
     });
@@ -6449,17 +6438,23 @@ function renderFitness() {
       return s + estimateExerciseCalories(p.text, d);
     }, 0);
     const customBurn = todayEx.reduce((s, ex) => s + (ex.done ? (ex.calories || 0) : 0), 0);
-    card.querySelector('.section-meta').textContent = `已消耗 ${planBurn + customBurn} kcal`;
+    const burnEl = card.querySelector('#ex-burn');
+    if (burnEl && isToday) burnEl.textContent = `已消耗 ${planBurn + customBurn} kcal`;
     // 运动变化时同步更新身体卡片上的今日总消耗
     const tdeeEl = card.querySelector('.tdee-value');
     if (tdeeEl) tdeeEl.textContent = calcTodayTotalBurn(state.body);
   }
   renderExerciseList();
 
+  // v9564：护肤页同款迷你日期（可回看历史；圆点＝当天有运动记录）
+  bindSlowMiniDate(card, 'fitness', branchMapStatModel(branchDayMap('fitness')), renderFitness, function (k) {
+    return ((state.exerciseLogs || {})[k] || []).some(function (e) { return (Number(e.duration) || 0) > 0; }) ? 'orange' : null;
+  });
+
   const nameInput = card.querySelector('#ex-name');
   const durationInput = card.querySelector('#ex-duration');
   const addBtn = card.querySelector('#ex-add-btn');
-  addBtn.addEventListener('click', () => {
+  if (addBtn) addBtn.addEventListener('click', () => {
     const name = nameInput.value.trim() || '其他运动';
     const duration = parseInt(durationInput.value) || 20;
     const calories = estimateExerciseCalories(name, duration);
@@ -6471,6 +6466,7 @@ function renderFitness() {
   });
 
   list.addEventListener('click', (e) => {
+    if (!isToday) { toast('只能查看历史记录，不能修改哦'); return; }
     const check = e.target.closest('.ex-check');
     if (!check) return;
     const row = check.closest('.exercise-row');
@@ -6668,9 +6664,12 @@ function getTodayVegServings() {
 function renderDiet() {
   content.innerHTML = '';
   const card = document.createElement('div');
-  card.className = 'content-card diet-page diet-flat';
+  // v9564：对齐护肤页排版（护肤页视觉体系 + 模块色皮肤）
+  card.className = 'page skincare-page slow-skin diet-page';
+  card.style.cssText = modSkinStyle('#D8B98F');
+  if (greetLine) greetLine.textContent = '饮食';
 
-  const dateKey = state.viewDate || getTodayKey();
+  const dateKey = SLOW_VIEW.diet || getTodayKey();
   const isToday = dateKey === getTodayKey();
   const dt = parseDateKey(dateKey);
   const weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
@@ -6683,16 +6682,12 @@ function renderDiet() {
   const water = Number(state.dietWater[dateKey]) || 0;
 
   card.innerHTML = `
-    <div class="domain-hero">
-      <div class="domain-head">
-        <div class="domain-icon">${icon('utensils', 24)}</div>
-        <div>
-          <h3 class="domain-title">饮食</h3>
-        </div>
-      </div>
-    </div>
+    <div class="domain-hero"><div class="domain-head"><div><h3 class="domain-title">饮食</h3></div></div></div>
 
-    ${dateBarHTML(dateKey, { id: 'diet-date-trigger', showToday: !isToday })}
+    <div class="sk-mini-date">${skMiniDateHTML(dateKey)}</div>
+    ${isToday
+      ? `<div class="module-rule-banner"><span class="mrb-icon">${icon('info', 12)}</span><span class="mrb-text">吃了什么记一笔就好，不用算到完美；三餐规律、喝水够量，就是在照顾自己。</span></div>`
+      : `<div class="sk-hist-tip">${icon('info', 12)} 正在查看历史记录 · 只读不可更改（如需修改请告知）</div>`}
 
     <!-- 1. 今日饮食概览：扁平 4 统计 -->
     <section class="diet-flat-section">
@@ -6765,14 +6760,14 @@ function renderDiet() {
       <div class="diet-flat-head">${icon('chart', 14)} 每周饮食分析</div>
       <div id="diet-weekly-analysis"></div>
     </section>
+
+    ${slowHeatSectionHTML(branchMapStatModel(branchDayMap('diet')), 'utensils', '本周饮食统计')}
   `;
   content.appendChild(card);
 
-  // 日期导航
-  bindDateBar(card, {
-    onShift: (d) => { state.viewDate = shiftDate(dateKey, d); renderContent(); },
-    onPick: (k) => { state.viewDate = k; renderContent(); },
-    onToday: () => { state.viewDate = ''; renderContent(); }
+  // 日期导航：护肤页同款迷你日期（回看历史；圆点＝当天有饮食记录）
+  bindSlowMiniDate(card, 'diet', branchMapStatModel(branchDayMap('diet')), renderDiet, function (k) {
+    return (((state.dietLogs || {})[k] || {}).meals || []).length > 0 ? 'orange' : null;
   });
 
   // 饮水 +/-
@@ -6792,6 +6787,7 @@ function renderDiet() {
     if (res) { addDietMeal(type, res.food, res.cost, res.ingredients); renderContent(); }
   }
   mealCards.addEventListener('click', (e) => {
+    if (!isToday) { toast('只能查看历史记录，不能修改哦'); return; }
     const row = e.target.closest('.diet-flat-meal');
     if (!row) return;
     triggerMealAdd(row.dataset.type);
@@ -11281,6 +11277,21 @@ function ensureKeepBranches() {
   if (changed) saveSettings();
 }
 
+// v9564：老用户的 focusOptions 里没有「运动 / 饮食」，进支线页时补齐一次（幂等）
+function ensureFocusOptions() {
+  const need = ['运动', '饮食'];
+  if (!Array.isArray(state.settings.focusOptions) || !state.settings.focusOptions.length) {
+    state.settings.focusOptions = DEFAULT_SETTINGS.focusOptions.slice();
+    saveSettings();
+    return;
+  }
+  let changed = false;
+  need.forEach(function (n) {
+    if (!state.settings.focusOptions.includes(n)) { state.settings.focusOptions.push(n); changed = true; }
+  });
+  if (changed) saveSettings();
+}
+
 function renderBranchesPage() {
   const page = document.createElement('div');
   page.className = 'page';
@@ -11305,6 +11316,8 @@ function renderBranchesPage() {
     if (name === '英语') return branchIconLanguage(color);
     if (name === '阅读') return branchIconBook(color, color, '#ffffff');
     if (name === '健康') return icon('health', 25);
+    if (name === '运动') return icon('dumbbell', 25);
+    if (name === '饮食') return icon('utensils', 25);
     if (name === '记账') return branchIconMoney(color);
     if (name === '护肤') return branchIconSkincare(color);
     if (name === '妆容') return branchIconMakeup(color);
@@ -11335,6 +11348,13 @@ function renderBranchesPage() {
 
   // 各支线近 7 天每日数据点（滚动窗口，含当天）——用于「本周趋势」折线
   function weeklyPointsFor(type, name) {
+    // v9564：运动 / 饮食 支线各读自己页面的按天记录（滚动 7 天）
+    if (type === 'fitness' || type === 'diet') {
+      const map = branchDayMap(type);
+      const days = [];
+      for (let i = 6; i >= 0; i--) { const k = shiftDate(getTodayKey(), -i); days.push(map[k] || 0); }
+      return days;
+    }
     // v9562：阅读支线跟「书籍阅读」页自己的记录走（与英语学习完全独立）
     if (isReadingBranch(name)) {
       const map = readingDayMap();
@@ -11380,6 +11400,13 @@ function renderBranchesPage() {
   const DAY_BASE = 100 / 7;
   function calcBranchWeeklyProgress(type, name) {
     const todayKey = getTodayKey();
+    // v9564：运动 / 饮食 进度 = 近 7 天在自己页面上有记录的天数 / 7
+    if (type === 'fitness' || type === 'diet') {
+      const map = branchDayMap(type);
+      let cnt = 0;
+      for (let i = 0; i < 7; i++) { if ((map[shiftDate(todayKey, -i)] || 0) > 0) cnt++; }
+      return Math.round(cnt / 7 * 100);
+    }
     // v9562：阅读支线进度 = 近 7 天在「书籍阅读」页有记录的天数 / 7
     if (isReadingBranch(name)) {
       const map = readingDayMap();
@@ -11457,6 +11484,7 @@ function renderBranchesPage() {
     };
   });
   ensureKeepBranches();
+  ensureFocusOptions();
   const keepList = (state.settings.keepBranches || DEFAULT_SETTINGS.keepBranches).filter(k => k.name !== '攒钱');
   // v9285：运行时过滤 v9283 已删除的 烹饪美食/志愿公益（防御老数据）
   const REMOVED_SLOW_NAMES = ['烹饪美食', '志愿公益'];
@@ -11640,6 +11668,8 @@ function branchLevelName(lv) { return BRANCH_LEVEL_NAMES[lv - 1] || '精进中';
 function getBranchTotalDays(type, name) {
   // v9562：阅读支线只统计「书籍阅读」页自己的记录天数
   if (isReadingBranch(name)) return Object.keys(readingDayMap()).length;
+  // v9564：运动 / 饮食 只统计各自页面的记录天数
+  if (type === 'fitness' || type === 'diet') return Object.keys(branchDayMap(type)).length;
   const days = new Set();
   if (type === 'money') {
     (state.transactions || []).forEach(t => { if (t.date) days.add(t.date); });
@@ -11687,6 +11717,13 @@ function openBranchLevelModal(type, name) {
 // v9518：按「本周（周一~周日）」固定 7 天取每日数据点——用于点击进度环弹出的完成度卡片
 function weeklyWeekPoints(type, name) {
   const weekStart = getWeekStart();
+  // v9564：运动 / 饮食 按自己页面的记录取本周数据点
+  if (type === 'fitness' || type === 'diet') {
+    const map = branchDayMap(type);
+    const days = [];
+    for (let i = 0; i < 7; i++) { const k = shiftDate(weekStart, i); days.push(map[k] || 0); }
+    return days;
+  }
   // v9562：阅读支线按「书籍阅读」页自己的记录取本周数据点
   if (isReadingBranch(name)) {
     const map = readingDayMap();
@@ -12024,6 +12061,31 @@ function openEnglishHistoryModal() {
   document.body.appendChild(overlay);
   overlay.querySelector('.modal-close').addEventListener('click', () => overlay.remove());
   overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
+}
+
+// v9564：运动 / 饮食 支线的「按天活动量」（支线卡进度环 / 本周趋势 / 等级 / 周统计共用）
+//   运动 = 当天自定义运动总分钟；饮食 = 当天记录的三餐条数
+function branchDayMap(type) {
+  const map = {};
+  if (type === 'fitness') {
+    Object.keys(state.exerciseLogs || {}).forEach(function (k) {
+      const list = state.exerciseLogs[k] || [];
+      const min = list.reduce(function (s, e) { return s + (Number(e.duration) || 0); }, 0);
+      if (min > 0) map[k] = min;
+    });
+  } else if (type === 'diet') {
+    Object.keys(state.dietLogs || {}).forEach(function (k) {
+      const meals = (state.dietLogs[k] || {}).meals || [];
+      if (meals.length > 0) map[k] = meals.length;
+    });
+  }
+  return map;
+}
+// 按天活动量 -> 热力图模型（有活动 = 当天完成）
+function branchMapStatModel(map) {
+  const checkin = {}, log = {};
+  Object.keys(map || {}).forEach(function (k) { checkin[k] = { done: true }; log[k] = map[k]; });
+  return { checkin: checkin, log: log };
 }
 
 // v9563：把「按天日志」型数据（睡眠 / 健康）转成 slowHeatSectionHTML 需要的 { checkin, log } 结构
@@ -14666,7 +14728,7 @@ function modSkinStyle(color) {
   return `--slc:${c};--slcb:${_mixHex(c, '#FFFFFF', 0.72)};--slcd:${_mixHex(c, '#000000', 0.18)};--slcbg:${_mixHex(c, '#FFFFFF', 0.88)};`;
 }
 // 各模块「回看日期」（null = 今天）
-const SLOW_VIEW = { photography: null, cert: null, homeorg: null, music: null, social: null, travel: null, order: null, growth: null, sleep: null, health: null };
+const SLOW_VIEW = { photography: null, cert: null, homeorg: null, music: null, social: null, travel: null, order: null, growth: null, sleep: null, health: null, fitness: null, diet: null };
 // 日期选择器圆点：该模块自己的打卡/积分（不与其他模块共享）
 function slowDateStatus(m) {
   return function (k) {

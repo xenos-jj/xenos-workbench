@@ -10538,3 +10538,21 @@ body.home-bg .topbar {
 /* ⑤ 模块间距与摄影审美一致（soft-card 之间 18px，与 section-card 同口径），左右内缩同卡片 */
 .slow-skin .soft-card { margin-top: 18px !important; margin-bottom: 0 !important; padding: 0 14px; }
 .slow-skin .soft-card:first-of-type { margin-top: 10px !important; }
+
+
+/* ============ v9564 运动 / 饮食 页对齐护肤页排版 ============ */
+/* ① 页内局部变量改写：所有 var(--primary*) 的橘色自动换成本模块淡色 */
+.fitness-page, .diet-page { --primary: var(--slc); --primary-dark: var(--slcd); --primary-light: var(--slcb); }
+/* ② 旧橘/绿渐变按钮 → 模块色（去掉发光阴影） */
+.fitness-page .btn-primary, .fitness-page .btn-green { background: var(--slc) !important; box-shadow: none !important; color: #fff; }
+/* ③ 饮食页区块标题 = 护肤页 sk-section-head 口径（12px/575、gap6、下边距 8px） */
+.diet-page .diet-flat-head { font-size: 12px; font-weight: 575; gap: 6px; margin: 0 0 8px; color: var(--text); }
+.diet-page .diet-flat-head svg { color: var(--slc); flex: 0 0 auto; }
+/* ④ 区块间距 = 护肤页板块间距 18px（原来是 22px） */
+.diet-page .diet-flat-section { margin-top: 18px; margin-bottom: 0; }
+/* ⑤ 卡内行距 7px（与护肤页打卡行一致） */
+.fitness-page .exercise-list, .fitness-page .video-list, .fitness-page .measure-history { gap: 7px; }
+.diet-page .diet-flat-meals { gap: 7px; }
+/* ⑥ 饮水/添加等小按钮的悬停/描边走模块色 */
+.diet-page .diet-flat-water-btn:hover, .diet-page .diet-flat-meal-add:hover,
+.diet-page .diet-flat-ing-add-btn:hover, .diet-page .diet-flat-treat-add-btn:hover { border-color: var(--slc); color: var(--slcd); }
