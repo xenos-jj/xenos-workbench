@@ -655,13 +655,6 @@ const MOBILE_TABS = [
 
 // 人生领域配置（领域页模板）
 const DOMAIN_CONFIG = {
-  '健康': {
-    key: 'health', icon: 'health', subtitle: '身体是所有事情的地基',
-    tags: [],
-    tools: [],
-    /* v9367：user 反馈「喝水 1500ml」「12 点前睡觉」删除——这两个任务与工具入口重复 */
-    tasks: []
-  },
   '外貌': {
     key: 'looks', icon: 'sparkles', subtitle: '把自己当作长期作品来打磨',
     tags: ['仪态', '穿搭', '妆容'],
@@ -1573,7 +1566,7 @@ function saveContentItems() { saveJSON('xenos-content-items', state.contentItems
 function loadFocusSessions() { return loadJSON('xenos-focus-sessions', []); }
 function saveFocusSessions() { saveJSON('xenos-focus-sessions', state.focusSessions); }
 
-// 领域数据：{ health: { tasks:[{id,text,points,done,doneDate}], log:{ '2026-07-31': 20 } } }
+// 领域数据：{ looks: { tasks:[{id,text,points,done,doneDate}], log:{ '2026-07-31': 20 } } }
 function loadDomains() {
   const saved = loadJSON('xenos-domains', {});
   const result = {};
@@ -1628,10 +1621,6 @@ function migrateData() {
       if (taskRename[t.text]) t.text = taskRename[t.text];
       if (cfg.key === 'money' && (t.text === '不超日预算' || t.text === '记录今日所有支出')) t.points = 2;
     });
-    // 健康领域：饮食记录已独立为「工具/资产」入口，不再作为每日打卡任务
-    if (cfg.key === 'health') {
-      d.tasks = d.tasks.filter(t => !/饮食记录|三餐规律记录/.test(t.text));
-    }
     cfg.tasks.forEach(def => {
       if (!d.tasks.find(t => t.text === def.text)) {
         d.tasks.push({ id: uid(key + '-t'), text: def.text, points: def.points, done: false, doneDate: '' });
@@ -1641,6 +1630,14 @@ function migrateData() {
     d.tasks = d.tasks.filter(t => valid.includes(t.text));
   });
   saveDomains();
+
+  // v9569：清理已删「健康」领域的域历史快照残留（域快照按 key 存 → state.domainHistory[日]['health']）
+  let histCleaned = false;
+  Object.keys(state.domainHistory || {}).forEach(day => {
+    const daySnap = state.domainHistory[day];
+    if (daySnap && daySnap.health) { delete daySnap.health; histCleaned = true; }
+  });
+  if (histCleaned) saveDomainHistory();
 
   // 2. 计划：重命名 / 删除旧项；跨日继承以「快照」为准，不再自动回退 DEFAULT_PLANS（允许自由增删，含默认系统任务）
   const planRemove = ['运动 30 分钟', '英语30分钟'];
@@ -5306,14 +5303,13 @@ function bindDateBar(scope, handlers) {
 // 3) 有做但未全满 → 'green'
 function getDayStatus(key) {
   const looks = Number((state.domains && state.domains.looks && state.domains.looks.log || {})[key] || 0);
-  const health = Number((state.domains && state.domains.health && state.domains.health.log || {})[key] || 0);
   const money = (state.transactions || []).some(t => t.date === key);
   const learning = (state.englishCheckin && state.englishCheckin.dates || []).includes(key)
     || (state.focusSessions || []).some(s => s.date === key && s.domain === 'learning');
-  // "满"标准：looks 11 步全完 / health 日志>0 / money 1 笔 / learning 有英语或专注
+  // "满"标准：looks 11 步全完 / money 1 笔 / learning 有英语或专注
+  // v9569：「健康」领域已删除（含 state.domains.health），不再参与全局圆点聚合
   const checks = [
     { done: looks > 0, full: looks >= 8 },
-    { done: health > 0, full: health >= 1 },
     { done: money, full: money },
     { done: learning, full: learning }
   ];
@@ -7609,7 +7605,6 @@ function getTotalEarnedPoints() {
 
 function getPointRankingItems() {
   return [
-    { name: '健康', icon: 'health', value: getDomainPoints('health') },
     { name: '外貌', icon: 'sparkles', value: getDomainPoints('looks') },
     { name: '记账', icon: 'coins', value: getDomainPoints('money') },
     { name: '每日计划', icon: 'review', value: getPlanPoints() },
@@ -8832,30 +8827,10 @@ function renderDomainPage(name, opts) {
       </div>
     </div>
 
-    <div class="soft-card" id="domain-extra" hidden></div>
-
-    ${name === '健康' ? `
-    <div class="soft-card health-module-card">
-      <div class="soft-card-title">${icon('leaf', 16)} 健康模块</div>
-      <div class="tool-grid">
-        <button class="tool-btn" data-route="健身">
-          <span class="tb-icon">${icon('dumbbell', 18)}</span>
-          <span><b>健身训练</b><span class="tb-sub">运动</span></span>
-          <span class="tb-arrow">${icon('chevronLeft', 12)}</span>
-        </button>
-        <button class="tool-btn" data-route="饮食">
-          <span class="tb-icon">${icon('utensils', 18)}</span>
-          <span><b>饮食记录</b><span class="tb-sub">食材库存管理</span></span>
-          <span class="tb-arrow">${icon('chevronLeft', 12)}</span>
-        </button>
-      </div>
-    </div>
-    ` : `
     <div class="soft-card">
       <div class="soft-card-title">${icon('briefcase', 16)} 工具 / 资产</div>
       <div class="tool-grid" id="domain-tools"></div>
     </div>
-    `}
 
     <div class="soft-card">
       <div class="soft-card-title">${icon('check', 16)} 每日打卡${readOnly ? ` · ${viewKey}（只读）` : `<span class="stitle-meta">今日 +${domain.log[todayKey] || 0}</span>`}</div>
@@ -8924,7 +8899,7 @@ function renderDomainPage(name, opts) {
   }
   function renderTasks() {
     taskList.innerHTML = '';
-    const planTasks = !readOnly && name === '健康' ? state.plans.filter(p => p.group === '运动计划') : [];
+    const planTasks = [];   // v9569：原「健康」领域专用（运动计划项），领域已删除
     const showTasks = viewTasks.filter(taskMatchesTag);
     const showPlans = planTasks.filter(taskMatchesTag);
     if (!showTasks.length && !showPlans.length) {
@@ -8989,14 +8964,6 @@ function renderDomainPage(name, opts) {
     page.querySelector('#domain-new-task').addEventListener('keydown', (e) => {
       if (e.key === 'Enter') addTask();
     });
-  }
-
-  // 健康领域：身体数据卡 + 快捷入口
-  if (name === '健康' && !readOnly) {
-    const extra = page.querySelector('#domain-extra');
-    extra.hidden = false;
-    extra.innerHTML = `<div class="soft-card-title">🫀 身体数据</div>` + bodyCardHTML(state.body, '我的身体数据');
-    bindBodyCard(extra, () => renderContent());
   }
 
   // 记账领域：内嵌记账页 + 子标签导航
@@ -14458,16 +14425,6 @@ async function saveQuickRecord() {
     const stateChip = modal.querySelector('#qr-sleep-chips .qr-chip.active');
     const sleepState = stateChip ? stateChip.dataset.s : '一般';
     localStorage.setItem('xenos-sleep-note', JSON.stringify({ date: getTodayKey(), bed, wake, quality, sleepState, note }));
-    try {
-      normalizeDomainTasks('health');
-      const d = ensureDomain('health');
-      const t = d.tasks.find(x => x.text.includes('12点前睡觉'));
-      if (t && !t.done) {
-        t.done = true; t.doneDate = getTodayKey();
-        d.log[getTodayKey()] = (d.log[getTodayKey()] || 0) + (t.points || 0);
-        saveDomains();
-      }
-    } catch (e) {}
   } else if (tab === 'money') {
     const amount = parseFloat((modal.querySelector('#qr-amount') || {}).value);
     const typeChip = modal.querySelector('#qr-type-chips .qr-chip.active');
