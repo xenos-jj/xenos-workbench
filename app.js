@@ -573,13 +573,26 @@ function renderItemIcon(value, size = 16) {
 
 const DEFAULT_GROUPS = [
   {
-    id: 'g-overview',
-    name: '概览',
-    icon: 'layers',
+    id: 'g-domains',
+    name: '人生领域',
+    icon: 'leaf',
     collapsed: false,
     items: [
-      { id: 'i-home', name: '工作台首页', icon: 'home' },
-      { id: 'i-money', name: '记账', icon: 'coins' }
+      { id: 'i-money', name: '记账', icon: 'coins' },
+      { id: 'i-diet', name: '饮食', icon: 'utensils' },
+      { id: 'i-memos', name: '碎碎念', icon: 'note' }
+    ]
+  },
+  {
+    id: 'g-looks',
+    name: '外貌',
+    icon: 'sparkles',
+    collapsed: false,
+    items: [
+      { id: 'i-posture', name: '仪态', icon: 'body' },
+      { id: 'i-outfit', name: '穿搭', icon: 'shirt' },
+      { id: 'i-makeup', name: '妆容', icon: 'brush' },
+      { id: 'i-skincare', name: '护肤', icon: 'droplet' }
     ]
   },
   {
@@ -609,36 +622,6 @@ const DEFAULT_GROUPS = [
     collapsed: false,
     items: [
       { id: 'i-panel', name: '系统面板', icon: 'panel' },
-      { id: 'i-memos', name: '碎碎念', icon: 'note' }
-    ]
-  },
-  {
-    id: 'g-domains',
-    name: '人生领域',
-    icon: 'leaf',
-    collapsed: false,
-    items: [
-      { id: 'i-diet', name: '饮食', icon: 'utensils' }
-    ]
-  },
-  {
-    id: 'g-looks',
-    name: '外貌',
-    icon: 'sparkles',
-    collapsed: false,
-    items: [
-      { id: 'i-posture', name: '仪态', icon: 'body' },
-      { id: 'i-outfit', name: '穿搭', icon: 'shirt' },
-      { id: 'i-makeup', name: '妆容', icon: 'brush' },
-      { id: 'i-skincare', name: '护肤', icon: 'droplet' }
-    ]
-  },
-  {
-    id: 'g-self',
-    name: '自我',
-    icon: 'user',
-    collapsed: false,
-    items: [
       { id: 'i-intro', name: '自我介绍', icon: 'user' },
       { id: 'i-settings', name: '设置', icon: 'settings' }
     ]
@@ -1519,7 +1502,9 @@ function resetRewardsDefaults() {
 // v8：领域任务与计划默认数据调整
 // v9：本批次——新增「记账」概览项与记账领域；健康/外貌/记账领域任务与新计划组（健康计划）对齐；清理旧任务文本；测量记录清空
 // v10：修复旅行/社交 actions 因历史 bug 误入的重复条目——按 text 去重并保留已完成状态；toggle handler 仅做状态切换，禁止 push 新条目
-const SCHEMA_VERSION = 10;
+// v9571：侧边栏结构重排（概览→人生领域、外貌移到激励上方、系统移到最底部含自我介绍/设置、碎碎念并入人生领域、首页移出侧边栏）
+// 只影响侧边栏菜单（xenos-groups）：版本号一变，老菜单即被 DEFAULT_GROUPS 取代
+const SCHEMA_VERSION = 11;
 
 // 全局交互规则：勾选 toggle 仅做「状态切换」——禁止调用 push 误增条目。
 // 列表是固定列表，新增只能来自用户点击页面内的「+」按钮；render 函数渲染前对 actions 按 text 去重，兜底防止历史污染数据继续显示重复。
