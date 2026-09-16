@@ -4,18 +4,18 @@
 // 因此此处缓存 app.js/styles.css/字体/图片 不会造成“看不到新版”的问题。
 // v9392：瘦身——删除 5 张零引用图片（images/1,2,5.png / images/mascot.png / assets/mascot.png），
 // assets/mascot.png 已从预缓存清单移除（无任何 UI 引用）。
-const CACHE = 'xenos-cache-v9576';
+const CACHE = 'xenos-cache-v9577';
 const STATIC = [
   './',
   'index.html',
-  'app.js?v=576',
-  'styles.css?v=576',
-  'fonts/zcool-sub.ttf?v=576',
-  'fonts/strawberry-sub.ttf?v=576',
-  'manifest.webmanifest?v=576',
-  'icon-192.png?v=576',
-  'modules/study.js?v=576',
-  'modules/contentlib.js?v=576'
+  'app.js?v=577',
+  'styles.css?v=577',
+  'fonts/zcool-sub.ttf?v=577',
+  'fonts/strawberry-sub.ttf?v=577',
+  'manifest.webmanifest?v=577',
+  'icon-192.png?v=577',
+  'modules/study.js?v=577',
+  'modules/contentlib.js?v=577'
 ];
 
 self.addEventListener('install', (e) => {

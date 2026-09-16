@@ -1651,6 +1651,14 @@ function migrateData() {
   });
   if (histCleaned) saveDomainHistory();
 
+  // v9577：早期「首页 → 快速记录 → 灵感」写进碎碎念的条目只有 date 没有 time（碎碎念页按 m.time 显示时间）
+  // → 用 date 补上 time，让老条目也能正常显示时间
+  let memosFixed = false;
+  (state.memos || []).forEach(m => {
+    if (m && !m.time && m.date) { m.time = m.date; memosFixed = true; }
+  });
+  if (memosFixed) saveMemos();
+
   // 2. 计划：重命名 / 删除旧项；跨日继承以「快照」为准，不再自动回退 DEFAULT_PLANS（允许自由增删，含默认系统任务）
   const planRemove = ['运动 30 分钟', '英语30分钟'];
   const planRename = { '喝水1L': '喝水 1500ml', '喝水 1L': '喝水 1500ml' };
@@ -14327,8 +14335,14 @@ async function saveQuickRecord() {
     const idea = (modal.querySelector('#qr-idea') || {}).value || '';
     if (!idea.trim()) { await appAlert('写点什么吧～'); return; }
     if (!Array.isArray(state.memos)) state.memos = [];
-    state.memos.push({ id: uid('memo'), date: getTodayKey(), text: idea });
+    // v9577：与「碎碎念」页共用同一份数据（state.memos）且用同一种结构（id/text/time）——
+    // 之前这里写的是 date 字段，而碎碎念页按 m.time 显示时间戳，导致同步过去的条目时间空着。
+    const now = new Date();
+    const pad = n => String(n).padStart(2, '0');
+    const timeStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
+    state.memos.push({ id: uid('memo'), text: idea.trim(), time: timeStr });
     saveMemos();
+    toast('已记入碎碎念');
   }
   closeQuickRecordModal();
   renderContent();
