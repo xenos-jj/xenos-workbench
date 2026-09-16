@@ -7618,18 +7618,55 @@ function getTotalEarnedPoints() {
     + Math.max(0, state.points || 0);
 }
 
+// ==================== v9576：积分来源「全量清单」 ====================
+// 按【页面模块】粒度逐个列出真正会加分的模块，不加积分的模块一律不列。
+// 各模块的积分落点（审计结论）：
+//   护肤    → saveSkincare() 写 state.domains.looks.log（当日完成步骤数）
+//   仪态/穿搭/妆容 → addLooksPoints() 写各自的 looks tab log，并同步 state.points
+//   记账    → settleMoneyDaily() 写 state.domains.money.log（记录支出 / 不超预算）
+//   每日计划 → getPlanPoints()（计划任务勾选，已排除领域任务重复）
+//   专注    → getFocusPoints()（每 25 分钟 5 分）｜每日复盘 → getReviewCount()×5
+//   英语学习 → state.language.points
+//   生活秩序/内在成长/爱好拓展 → 各自 log（order / growth / social）
+//   旅行体验 + 地点打卡 → 共用 state.travel.log：用「已打卡地点的积分」拆出地点打卡，余量归旅行体验（两者之和 = travel.log）
+//   暂缓 4 模块 → 各自 log（photography / cert / homeorg / music）
+// ⚠ 无积分的模块（不要加进来）：饮食、运动、睡眠、身体小状况、阅读、视频剪辑、3D建模、碎碎念、内容素材库
+function getLooksTabPoints(tab) {
+  const r = getLooksRef(tab);
+  return Object.values((r && r.log) || {}).reduce((s, v) => s + (Number(v) || 0), 0);
+}
+
+function getTravelPlacePoints() {
+  const t = state.travel || {};
+  let sum = 0;
+  (((t.checkin || {}).categories) || []).forEach(c => {
+    (c.places || []).forEach(p => { if (p.checked) sum += Number(p.points) || 0; });
+  });
+  return sum;
+}
+
 function getPointRankingItems() {
+  const travelLog = getSlowModulePoints('travel');
+  const placePts = getTravelPlacePoints();
   return [
-    { name: '外貌', icon: 'sparkles', value: getDomainPoints('looks') },
+    { name: '护肤', icon: 'droplet', value: getDomainPoints('looks') },
+    { name: '仪态', icon: 'body', value: getLooksTabPoints('posture') },
+    { name: '穿搭', icon: 'shirt', value: getLooksTabPoints('outfit') },
+    { name: '妆容', icon: 'brush', value: getLooksTabPoints('makeup') },
     { name: '记账', icon: 'coins', value: getDomainPoints('money') },
     { name: '每日计划', icon: 'review', value: getPlanPoints() },
-    { name: '专注', icon: 'focus', value: getFocusPoints() },
+    { name: '专注', icon: 'clock', value: getFocusPoints() },
     { name: '每日复盘', icon: 'note', value: getReviewCount() * 5 },
-    { name: '外语学习', icon: 'language', value: getLanguagePoints() },
+    { name: '英语学习', icon: 'language', value: getLanguagePoints() },
+    { name: '生活秩序', icon: 'layers', value: getSlowModulePoints('order') },
+    { name: '内在成长', icon: 'leaf', value: getSlowModulePoints('growth') },
+    { name: '旅行体验', icon: 'plane', value: Math.max(0, travelLog - placePts) },
+    { name: '地点打卡', icon: 'flag', value: placePts },
+    { name: '爱好拓展', icon: 'sparkles', value: getSocialPoints() },
     { name: '摄影审美', icon: 'camera', value: getSlowModulePoints('photography') },
     { name: '技能考证', icon: 'scroll', value: getSlowModulePoints('cert') },
     { name: '家居整理', icon: 'home', value: getSlowModulePoints('homeorg') },
-    { name: '音乐练习', icon: 'music', value: getSlowModulePoints('music') },
+    { name: '音乐练习', icon: 'music', value: getSlowModulePoints('music') }
   ];
 }
 
@@ -7642,36 +7679,15 @@ function getAvailablePoints() {
   return Math.max(0, getTotalEarnedPoints() - getSpentPoints());
 }
 
-function getTravelPoints() {
-  const t = state.travel || {};
-  let sum = Object.values(t.log || {}).reduce((s, v) => s + (Number(v) || 0), 0);
-  if (t.checkin && Array.isArray(t.checkin.categories)) {
-    t.checkin.categories.forEach(c => {
-      (c.places || []).forEach(p => {
-        if (p.checked) sum += Number(p.points) || 0;
-      });
-    });
-  }
-  return sum;
-}
-
 function getSocialPoints() {
   const s = state.social || {};
   return Object.values(s.log || {}).reduce((sum, v) => sum + (Number(v) || 0), 0);
 }
 
-// v9255：暂缓 6 模块累计积分（来自 m.log 的打卡 / 任务勾选发放）
+// v9255：暂缓 6 模块累计积分（来自 m.log 的打卡 / 任务勾选发放）——也用于生活秩序/内在成长/旅行/爱好拓展
 function getSlowModulePoints(key) {
   const m = state[key] || {};
   return Object.values(m.log || {}).reduce((s, v) => s + (Number(v) || 0), 0);
-}
-
-function getLifeOrderPoints() {
-  return getDomainPointsTotal();
-}
-
-function getInnerGrowthPoints() {
-  return getPlanPoints() + getFocusPoints() + getReviewCount() * 5;
 }
 
 function getLevelInfo() {
@@ -9512,33 +9528,26 @@ function openInfoModal(title, htmlBody, iconHtml = '') {
 }
 
 function openPointBreakdownModal() {
-  const items = [
-    { name: '摄影审美', icon: 'camera', value: getSlowModulePoints('photography') },
-    { name: '技能考证', icon: 'scroll', value: getSlowModulePoints('cert') },
-    { name: '家居整理', icon: 'home', value: getSlowModulePoints('homeorg') },
-    { name: '音乐练习', icon: 'music', value: getSlowModulePoints('music') },
-    { name: '生活秩序', icon: 'layers', value: getLifeOrderPoints() },
-    { name: '内在成长', icon: 'leaf', value: getInnerGrowthPoints() },
-    { name: '旅行体验', icon: 'plane', value: getTravelPoints() },
-    { name: '爱好拓展', icon: 'sparkles', value: getSocialPoints() },
-    { name: '英语学习', icon: 'language', value: getLanguagePoints() },
-    { name: '奖励池兑换', icon: 'gift', value: -getSpentPoints(), spent: true }
-  ];
-  // v9552：把「没有归入上面任何一项」的积分汇总成「其他」——让明细各项之和能与总积分对上。
-  // （例如还没做分类页面的模块、暂缓模块的打卡积分等；等那些页面做好后再拆细。）
-  const listed = items.filter(it => !it.spent).reduce((sum, it) => sum + (Number(it.value) || 0), 0);
-  const rest = getTotalEarnedPoints() - listed;
-  if (rest > 0) {
-    const spentIdx = items.findIndex(it => it.spent);
-    items.splice(spentIdx < 0 ? items.length : spentIdx, 0, { name: '其他', icon: 'sparkle', value: rest });
-  }
+  // v9576：与「成就殿堂 → 积分来源排行」共用同一份全量清单（getPointRankingItems），不再各写一份
+  const items = getPointRankingItems();
+  const spent = getSpentPoints();
+  // 「其他」= 总积分 − 已列各项之和（只在 >0 时出现；正常情况下应接近 0，剩下的多为历史遗留数据）
+  const listed = items.reduce((sum, it) => sum + (Number(it.value) || 0), 0);
+  const rest = Math.round(getTotalEarnedPoints() - listed);
+  if (rest > 0) items.push({ name: '其他（历史遗留）', icon: 'sparkle', value: rest });
+
   const body = items.map(it => `
     <div class="point-row">
       <div class="point-icon">${icon(it.icon, 15)}</div>
       <div class="point-name">${it.name}</div>
-      <div class="point-val${it.spent ? ' spent' : ''}">${it.spent ? '' : '+'}${it.value} 分</div>
+      <div class="point-val">+${it.value} 分</div>
     </div>
-  `).join('') + `
+  `).join('') + (spent > 0 ? `
+    <div class="point-row">
+      <div class="point-icon">${icon('gift', 15)}</div>
+      <div class="point-name">奖励池兑换</div>
+      <div class="point-val spent">-${spent} 分</div>
+    </div>` : '') + `
     <div class="point-row" style="border-top:1px dashed var(--border); margin-top:4px; padding-top:12px;">
       <div class="point-icon">${icon('coins', 15)}</div>
       <div class="point-name">当前可用积分</div>
