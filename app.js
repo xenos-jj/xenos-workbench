@@ -7702,12 +7702,9 @@ const LEVEL_GOALS = [
   '连续记录 100 天'
 ];
 
-function openLevelProgressModal() {
+// 总积分等级阶梯（Lv.1~Lv.11 + 暂定尾注）——资料卡面板与支线等级弹窗共用
+function levelLadderListHTML() {
   const lv = getLevelInfo();
-  const nextNeed = lv.level * 100;
-  const rest = Math.max(0, nextNeed - lv.total);
-  const pct = Math.max(0, Math.min(100, Math.round((lv.exp / lv.need) * 100)));
-
   const rows = LEVEL_GOALS.map((goal, i) => {
     const n = i + 1;
     const need = (n - 1) * 100;
@@ -7722,6 +7719,15 @@ function openLevelProgressModal() {
       <span class="lp-goal">${goal}</span>${mark}
     </div>`;
   }).join('');
+  return `<div class="lp-list">${rows}</div>
+    <div class="lp-tip">Lv.${LEVEL_GOALS.length + 1} 及以后：门槛与达成目标暂定</div>`;
+}
+
+function openLevelProgressModal() {
+  const lv = getLevelInfo();
+  const nextNeed = lv.level * 100;
+  const rest = Math.max(0, nextNeed - lv.total);
+  const pct = Math.max(0, Math.min(100, Math.round((lv.exp / lv.need) * 100)));
 
   const body = `
     <div style="text-align:center;margin-bottom:8px;">
@@ -7732,8 +7738,7 @@ function openLevelProgressModal() {
       <div style="height:100%;width:${pct}%;background:var(--primary);border-radius:999px;"></div>
     </div>
     <div style="font-size:11px;color:var(--text-muted);text-align:center;margin-bottom:12px;">${lv.exp} / ${lv.need} 分 · 距 Lv.${lv.level + 1} 还需 <b style="color:var(--primary-dark);">${rest}</b> 分</div>
-    <div class="lp-list">${rows}</div>
-    <div class="lp-tip">Lv.${LEVEL_GOALS.length + 1} 及以后：门槛与达成目标暂定</div>
+    ${levelLadderListHTML()}
   `;
   openInfoModal('积分等级进度', body, icon('star', 20));
 }
@@ -11355,6 +11360,8 @@ function openBranchLevelModal(type, name) {
   const tname = name || nameMap[type] || type;
   const span = Math.max(1, info.nextNeed - info.curBase);
   const pct = Math.max(0, Math.min(100, Math.round((info.days - info.curBase) / span * 100)));
+  // v9575：本支线等级门槛（累计打卡天数）+ 总积分等级需求（与资料卡面板同一套阶梯）
+  const ownLadder = [1, 2, 3, 4, 5].map(n => `Lv.${n} ${branchLevelThreshold(n)} 天`).join(' · ');
   const body = `
     <div style="text-align:center; margin-bottom: 10px;">
       <div style="font-size: 20px; font-weight: 600; color: var(--primary-dark);">Lv.${info.level} ${info.levelText}</div>
@@ -11365,6 +11372,14 @@ function openBranchLevelModal(type, name) {
     </div>
     <div style="font-size: 11px; color: var(--text-muted); text-align: center;">
       距 Lv.${info.level + 1} 还需 ${info.toNext} 天（累计 ${info.nextNeed} 天）
+    </div>
+    <div style="font-size: 10px; color: var(--text-muted); text-align: center; margin-top: 6px; font-family: var(--font-small);">
+      本支线等级门槛（累计天数）：${ownLadder}
+    </div>
+
+    <div style="margin-top: 14px; border-top: 1px solid var(--border-soft); padding-top: 12px;">
+      <div style="font-size: 12px; font-weight: 575; color: var(--text); margin-bottom: 8px;">总积分等级需求</div>
+      ${levelLadderListHTML()}
     </div>
   `;
   openInfoModal(`等级进度 · ${tname}`, body, icon('star', 20));
