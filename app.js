@@ -1432,44 +1432,72 @@ const touchState = {
   groupId: null
 };
 
-function resetProgressData() {
-  // 清空积分
+// ==================== v9570：清空所有记录（保留配置） ====================
+// 入口：设置 →「数据与隐私」→「清空所有记录」（带二次确认，调用后 reload）。
+// 清掉所有「随时间累积」的东西：每日打卡/习惯日志、领域积分（清零）、专注会话、计划完成状态与历史、
+//   睡眠/身体/运动/饮食记录、记账流水、测量记录、心情、饮水、复盘、照片作品、笔记、收藏、
+//   内容素材库、食材库存、兑换记录。
+// 保留：设置、自定义菜单、计划模板与任务清单、今日主任务清单、支线配置、分类/账户/预算、
+//   奖励池、身体基础资料、食物库、外语的语言/等级/目标、洞察勾选、一次性迁移标记。
+// 实现：① 少数键要「留容器、清记录」→ 就地清空并保存；② 其余 xenos-* 键整体删除；③ 由调用方 reload。
+const RECORD_KEEP_KEYS = [
+  'xenos-activeItem',
+  'xenos-asset-accounts', 'xenos-asset-reconcile-v9160',
+  'xenos-body',
+  'xenos-budget', 'xenos-budget-settled', 'xenos-month-budget',
+  'xenos-domains',
+  'xenos-expense-categories', 'xenos-income-categories',
+  'xenos-food-library',
+  'xenos-groups',
+  'xenos-insight-diy-init', 'xenos-insight-modules',
+  'xenos-language',
+  'xenos-looks-clean-v9523', 'xenos-looks-sub-reset-v9517',
+  'xenos-main-tasks',
+  'xenos-money-reset-v1',
+  'xenos-plan-groups', 'xenos-plans', 'xenos-plans-reset',
+  'xenos-profile',
+  'xenos-quote',
+  'xenos-reset-progress-v9066', 'xenos-reset-rewards-v9067',
+  'xenos-rewards',
+  'xenos-settings',
+  'xenos-skin-close-v9533',
+  'xenos-travel-merge-v9557'
+];
+
+function clearAllRecords() {
+  // ① 留容器、只清记录（这些键在保留名单里，必须先就地清空再保存）
+  // 积分清零
   state.points = 0;
   savePoints();
-  // 清空领域日志与任务完成状态
-  Object.keys(state.domains).forEach(key => {
+  // 计划：保留清单，清完成状态
+  (state.plans || []).forEach(p => { p.done = false; p.doneDate = ''; });
+  savePlans();
+  // 今日主任务：保留清单，清完成状态
+  state.mainTasks = loadMainTasks();
+  (state.mainTasks || []).forEach(t => { t.done = false; });
+  saveMainTasks();
+  // 领域：保留任务定义，清每日 log 与勾选
+  Object.keys(state.domains || {}).forEach(key => {
     const d = state.domains[key];
+    if (!d) return;
     d.log = {};
     if (Array.isArray(d.tasks)) d.tasks.forEach(t => { t.done = false; t.doneDate = ''; });
   });
   saveDomains();
-  // 清空专注记录
-  state.focusSessions = [];
-  saveFocusSessions();
-  // 清空语言学习进度
-  state.language = JSON.parse(JSON.stringify(DEFAULT_LANGUAGE));
+  // 外语：保留语言/等级/每日目标，清全部学习进度与英语打卡
+  const langCfg = {};
+  ['lang', 'level', 'dailyGoal'].forEach(k => {
+    if (state.language && state.language[k] !== undefined && state.language[k] !== null) langCfg[k] = state.language[k];
+  });
+  state.language = Object.assign(JSON.parse(JSON.stringify(DEFAULT_LANGUAGE)), langCfg);
   saveLanguage();
-  // 清空英语打卡记录
-  state.englishCheckin = JSON.parse(JSON.stringify(DEFAULT_ENGLISH_CHECKIN));
-  saveEnglishCheckin();
-  // 清空计划完成状态
-  state.plans.forEach(p => { p.done = false; p.doneDate = ''; });
-  savePlans();
-  state.planHistory = {};
-  savePlanHistory();
-  // 清空打卡、运动/饮食记录、成就
-  state.checkins = {};
-  saveCheckins();
-  state.exerciseLogs = {};
-  saveExerciseLogs();
-  state.dietLogs = {};
-  saveDietLogs();
-  state.achievements = {};
-  saveAchievements();
-  state.dailyReviews = {};
-  saveDailyReviews();
-  state.dailySnapshot = {};
-  saveDailySnapshot();
+  // 奖励：保留奖励池，清兑换记录（否则「已花费积分」残留会让可用积分对不上）
+  state.rewards = { items: JSON.parse(JSON.stringify(DEFAULT_REWARDS)), redeemed: [], version: 1 };
+  saveRewards();
+  // ② 其余所有 xenos-* 键整体删除（含动态键 xenos-looks-posture / -outfit / -makeup）
+  Object.keys(localStorage)
+    .filter(k => k.indexOf('xenos-') === 0 && RECORD_KEEP_KEYS.indexOf(k) === -1)
+    .forEach(k => localStorage.removeItem(k));
 }
 
 function resetRewardsDefaults() {
@@ -13644,6 +13672,7 @@ function renderSettingsPage() {
       <div class="setting-row"><div class="setting-label">导出全部数据<small>生成 JSON 备份文件</small></div><button class="ghost-btn" id="me-export">导出</button></div>
       <div class="setting-row"><div class="setting-label">导入备份<small>会覆盖当前本地数据</small></div><button class="ghost-btn" id="me-import">导入</button></div>
       <div class="setting-row"><div class="setting-label">重置菜单结构<small>恢复默认的人生系统菜单</small></div><button class="ghost-btn" id="me-reset-menu">重置菜单</button></div>
+      <div class="setting-row"><div class="setting-label" style="color:var(--danger)">清空所有记录<small>打卡/日志/流水/照片/笔记/收藏全清 + 积分清零；保留设置与模板</small></div><button class="ghost-btn" id="me-reset-records" style="color:var(--danger);border-color:var(--danger)">清空</button></div>
       <div class="setting-row"><div class="setting-label" style="color:var(--danger)">清空全部数据<small>不可恢复，请先导出备份</small></div><button class="ghost-btn" id="me-reset-all" style="color:var(--danger);border-color:var(--danger)">清空</button></div>
     </div>
 
@@ -13704,6 +13733,13 @@ function renderSettingsPage() {
     localStorage.removeItem('xenos-groups');
     state.groups = loadGroups(); saveGroups();
     state.activeItem = '设置'; renderMenu(); renderContent(); renderMobileTabs();
+  });
+  // v9570：清空所有记录（保留设置/菜单/计划模板与任务清单/分类账户/奖励池/身体基础资料/食物库）
+  page.querySelector('#me-reset-records').addEventListener('click', async () => {
+    if (!await appConfirm('清空所有记录？将删除全部打卡、日志、流水、照片、笔记、收藏与素材库，并把积分清零。设置、菜单、计划模板与任务清单会保留。', { danger: true })) return;
+    if (!await appConfirm('再次确认：此操作不可恢复！', { danger: true })) return;
+    clearAllRecords();
+    location.reload();
   });
   page.querySelector('#me-reset-all').addEventListener('click', async () => {
     if (!await appConfirm('确认清空全部数据？此操作不可恢复！', { danger: true })) return;
