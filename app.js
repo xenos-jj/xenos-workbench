@@ -3235,7 +3235,10 @@ function readFileAsDataURL(file) {
   });
 }
 
-document.getElementById('profile-avatar').addEventListener('click', () => avatarInput.click());
+document.getElementById('profile-avatar').addEventListener('click', (e) => {
+  e.stopPropagation();   // v9574：点头像仍只换头像，不要同时弹出资料卡的「积分等级进度」面板
+  avatarInput.click();
+});
 avatarInput.addEventListener('change', async (e) => {
   const file = e.target.files[0];
   if (!file) return;
@@ -7682,6 +7685,59 @@ function getLevelTitle(level) {
   return titles[Math.min(titles.length - 1, Math.floor((level - 1) / 3))];
 }
 
+// ==================== v9574：积分等级进度面板 ====================
+// 门槛沿用 getLevelInfo() 的既有算法：Lv.N 需累计 (N-1)×100 分（0 分即 Lv.1，每满 100 分升一级）。
+// 每级配一条「达成目标」，是第一版草稿，可随时改这里。
+const LEVEL_GOALS = [
+  '完成第一次打卡，让工作台跑起来',
+  '连续记录 3 天',
+  '连续记录 7 天',
+  '累计专注 5 小时',
+  '读完 1 本书',
+  '记账累计 30 笔',
+  '连续记录 30 天',
+  '累计专注 20 小时',
+  '读完 5 本书',
+  '每个模块都留下第一次记录',
+  '连续记录 100 天'
+];
+
+function openLevelProgressModal() {
+  const lv = getLevelInfo();
+  const nextNeed = lv.level * 100;
+  const rest = Math.max(0, nextNeed - lv.total);
+  const pct = Math.max(0, Math.min(100, Math.round((lv.exp / lv.need) * 100)));
+
+  const rows = LEVEL_GOALS.map((goal, i) => {
+    const n = i + 1;
+    const need = (n - 1) * 100;
+    const isCur = n === lv.level;
+    const done = lv.total >= need;
+    const mark = isCur
+      ? '<span class="lp-cur">当前</span>'
+      : (done ? '<span class="lp-done">✓</span>' : '');
+    return `<div class="lp-row${isCur ? ' cur' : ''}">
+      <span class="lp-lv">Lv.${n}</span>
+      <span class="lp-need">${need} 分</span>
+      <span class="lp-goal">${goal}</span>${mark}
+    </div>`;
+  }).join('');
+
+  const body = `
+    <div style="text-align:center;margin-bottom:8px;">
+      <div style="font-size:20px;font-weight:600;color:var(--primary-dark);">Lv.${lv.level}<span style="font-size:12px;font-weight:500;color:var(--text-muted);margin-left:6px;">${getLevelTitle(lv.level)}</span></div>
+      <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">累计积分 ${lv.total} 分</div>
+    </div>
+    <div style="height:8px;background:var(--bg-soft);border-radius:999px;overflow:hidden;margin:10px 0 6px;">
+      <div style="height:100%;width:${pct}%;background:var(--primary);border-radius:999px;"></div>
+    </div>
+    <div style="font-size:11px;color:var(--text-muted);text-align:center;margin-bottom:12px;">${lv.exp} / ${lv.need} 分 · 距 Lv.${lv.level + 1} 还需 <b style="color:var(--primary-dark);">${rest}</b> 分</div>
+    <div class="lp-list">${rows}</div>
+    <div class="lp-tip">Lv.${LEVEL_GOALS.length + 1} 及以后：门槛与达成目标暂定</div>
+  `;
+  openInfoModal('积分等级进度', body, icon('star', 20));
+}
+
 // ---- 今日数据 ----
 function getTodayExerciseMinutes(dateKey) {
   const list = state.exerciseLogs[dateKey || getTodayKey()] || [];
@@ -9674,6 +9730,10 @@ function exportData() {
   a.click();
   URL.revokeObjectURL(url);
 }
+
+// v9574：点侧边栏资料卡（经验条 / Lv 标签那片区域）→ 积分等级进度面板
+// 头像（换头像）与昵称（改名）各自有 handler 且会 stopPropagation，互不影响
+document.getElementById('profile-card').addEventListener('click', () => openLevelProgressModal());
 
 document.getElementById('btn-export').addEventListener('click', exportData);
 

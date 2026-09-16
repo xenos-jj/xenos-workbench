@@ -10606,3 +10606,27 @@ body.home-bg .topbar {
 /* ⑩ 每周饮食分析里的小统计盒 */
 .diet-page .diet-flat-dwa-stat { background: var(--card); border: 1px solid var(--border-soft); border-radius: 10px; padding: 9px 10px; }
 .diet-page .diet-flat-dwa-stats { gap: 7px; }
+
+
+/* ============ v9574 侧边栏资料卡：可点（积分等级进度面板） ============ */
+.profile-card { cursor: pointer; }
+.profile-card:active { background: var(--bg-soft); }
+
+/* 等级进度面板内的等级列表（弹窗内容，非页面作用域） */
+.lp-list { display: flex; flex-direction: column; gap: 6px; }
+.lp-row {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--card); border: 1px solid var(--border-soft);
+  border-radius: 10px; padding: 7px 10px;
+}
+.lp-row.cur { background: var(--primary-light); border-color: var(--primary); }
+.lp-lv { flex: 0 0 40px; font-size: 12px; font-weight: 700; color: var(--primary-dark); font-family: var(--font-small); }
+.lp-need { flex: 0 0 48px; font-size: 10px; color: var(--text-muted); font-family: var(--font-small); }
+.lp-goal { flex: 1; min-width: 0; font-size: 11px; color: var(--text); }
+.lp-cur {
+  flex: 0 0 auto; font-size: 9.5px; font-family: var(--font-small);
+  color: var(--primary-dark); background: #fff; border-radius: 999px; padding: 1px 8px;
+}
+.lp-done { flex: 0 0 12px; font-size: 10px; color: var(--green); text-align: center; }
+.lp-tip { margin-top: 8px; text-align: center; font-size: 10px; color: var(--text-muted); font-family: var(--font-small); }
+
