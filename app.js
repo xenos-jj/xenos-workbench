@@ -621,7 +621,6 @@ const DEFAULT_GROUPS = [
     icon: 'panel',
     collapsed: false,
     items: [
-      { id: 'i-panel', name: '系统面板', icon: 'panel' },
       { id: 'i-intro', name: '自我介绍', icon: 'user' },
       { id: 'i-settings', name: '设置', icon: 'settings' }
     ]
@@ -2203,7 +2202,8 @@ function loadGroups() {
       // v9176：人生领域分组移除 旅行体验 / 社交拓展 侧边栏入口
       // v9291：移除 每日计划 / 本周洞察 / 我的支线 / 书籍阅读 / 学习成长（仅删侧边栏导航，页面本体保留）
       // v9565：健康整合页已整页删除 → 老菜单里同步剔除「健康」入口
-      const removed = new Set(['历史', '内容素材库', '旅行体验', '社交拓展', '每日计划', '本周洞察', '我的支线', '书籍阅读', '学习成长', '健康']);
+      // v9572：系统面板页整页删除 → 老菜单里同步剔除「系统面板」入口
+      const removed = new Set(['历史', '内容素材库', '旅行体验', '社交拓展', '每日计划', '本周洞察', '我的支线', '书籍阅读', '学习成长', '健康', '系统面板']);
       // v9317：兼容旧的「社交拓展」入口过滤（已迁移为「爱好拓展」）
       parsed.data.forEach(g => {
         if (Array.isArray(g.items)) {
@@ -3868,7 +3868,6 @@ const PAGE_ROUTES = {
   '本周洞察': renderInsightPage,
   '奖励池': renderRewards,
   '成就殿堂': renderAchievements,
-  '系统面板': renderSystemPanel,
   '碎碎念': renderMemos,
   '自我介绍': renderSelfIntro,
   '设置': renderSettingsPage,
@@ -3928,7 +3927,7 @@ function loadLazyPage(name, cb) {
   document.head.appendChild(s);
 }
 
-// 功能子页 -> 返回目标（这些页面由领域页/系统面板跳转进来）
+// 功能子页 -> 返回目标（这些页面由领域页/支线卡跳转进来）
 const SUB_PAGE_PARENT = {
   '每日计划': '工作台首页',
   '饮食': '我的支线',
@@ -9568,63 +9567,6 @@ function renderAchievements() {
     };
     card.addEventListener('click', onClick);
     card.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick(); } });
-  });
-}
-
-// ============ 系统面板 ============
-function renderSystemPanel() {
-  const lv = getLevelInfo();
-  const prog = getTodayProgress();
-  const page = document.createElement('div');
-  page.className = 'page';
-
-  const cells = [
-    { name: '每日计划', icon: 'review', meta: `${getReviewCount()} 次`, target: '每日计划' },
-    { name: '本周洞察', icon: 'chart', meta: `Lv.${lv.level}`, target: '本周洞察' },
-    { name: '奖励池', icon: 'rewards', meta: `${getAvailablePoints()} 分可用`, target: '奖励池' },
-    { name: '成就殿堂', icon: 'trophy', meta: `${DEFAULT_ACHIEVEMENTS.filter(a => state.achievements[a.id]).length} 枚徽章`, target: '成就殿堂' },
-    { name: '当日计划', icon: 'calendar', meta: `${prog.done}/${prog.total}`, target: '每日计划' },
-    { name: '饮食', icon: 'utensils', meta: `${getDietTotals().total} kcal`, target: '饮食' },
-    { name: '健身', icon: 'dumbbell', meta: `${getTodayExerciseMinutes()} 分钟`, target: '健身' },
-    { name: '记账', icon: 'coins', meta: `¥${formatMoney(calcAssetTotal())}`, target: '记账' },
-    { name: '自我介绍', icon: 'user', meta: state.profile.name || '未填写', target: '自我介绍' },
-    { name: '设置', icon: 'settings', meta: `v${APP_VERSION}`, target: '设置' }
-  ];
-
-  page.innerHTML = `
-    <div class="stat-boxes">
-      <div class="stat-box"><div class="stb-val">Lv.${lv.level}</div><div class="stb-label">当前等级</div></div>
-      <div class="stat-box"><div class="stb-val">${getAvailablePoints()}</div><div class="stb-label">可用积分</div></div>
-      <div class="stat-box"><div class="stb-val">${calcStreak()}</div><div class="stb-label">连续打卡</div></div>
-    </div>
-    <div class="soft-card">
-      <div class="soft-card-title">${icon('layers', 16)} 全部模块</div>
-      <div class="panel-grid" id="panel-grid"></div>
-    </div>
-    <div class="soft-card">
-      <div class="soft-card-title">${icon('leaf', 16)} 人生领域</div>
-      <div class="panel-grid" id="panel-domains"></div>
-    </div>
-  `;
-  content.appendChild(page);
-
-  const grid = page.querySelector('#panel-grid');
-  cells.forEach(c => {
-    const btn = document.createElement('button');
-    btn.className = 'panel-cell';
-    btn.innerHTML = `<div class="pc-icon">${icon(c.icon, 20)}</div><div class="pc-name">${c.name}</div><div class="pc-meta">${c.meta}</div>`;
-    btn.addEventListener('click', () => selectItem(c.target));
-    grid.appendChild(btn);
-  });
-
-  const dgrid = page.querySelector('#panel-domains');
-  Object.keys(DOMAIN_CONFIG).forEach(name => {
-    const cfg = DOMAIN_CONFIG[name];
-    const btn = document.createElement('button');
-    btn.className = 'panel-cell';
-    btn.innerHTML = `<div class="pc-icon">${icon(cfg.icon, 20)}</div><div class="pc-name">${name}</div><div class="pc-meta">${getDomainPoints(cfg.key)} 分 · ${getDomainStreak(cfg.key)} 天</div>`;
-    btn.addEventListener('click', () => selectItem(name));
-    dgrid.appendChild(btn);
   });
 }
 

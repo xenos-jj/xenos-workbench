@@ -4932,21 +4932,6 @@ svg text { font-family: var(--font-small) !important; }
 .setting-label small { display: block; font-size: 10px; color: var(--text-muted); margin-top: 2px; }
 .setting-row .pf-input { max-width: 190px; }
 
-/* ---- 系统面板 ---- */
-.panel-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
-.panel-cell {
-  background: var(--bg-soft);
-  border: 1px solid var(--border-soft);
-  border-radius: var(--radius-sm);
-  padding: 13px;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-.panel-cell:hover { background: var(--primary-light); border-color: var(--primary-hover); }
-.pc-icon { font-size: 15px; margin-bottom: 6px; }
-.pc-name { font-size: 11px; font-weight: 600; color: var(--text); }
-.pc-meta { font-size: 10px; color: var(--text-muted); margin-top: 3px; }
-
 /* ---- 移动端适配 ---- */
 @media (max-width: 768px) {
   .app { padding-bottom: 58px; }
@@ -5043,7 +5028,7 @@ select.pf-input {
    线性图标系统：让 SVG 继承容器文字颜色与尺寸
    ============================================================ */
 .item-icon svg, .group-icon svg, .tab-icon svg, .section-icon svg, .tool-icon svg, .domain-icon svg,
-.pc-icon svg, .sb-icon svg, .ic-icon svg, .quick-icon svg, .stat-icon svg, .rbb-icon svg,
+.sb-icon svg, .ic-icon svg, .quick-icon svg, .stat-icon svg, .rbb-icon svg,
 .growth-hero-icon svg, .soft-card-title svg, .stitle-meta svg, .voice-wave svg, .hs-del svg,
 .model-thumb svg, .book-done svg, .mini-btn svg, .icon-action svg, .refresh-btn svg,
 .fab svg {
