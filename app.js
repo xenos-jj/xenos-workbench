@@ -9652,155 +9652,6 @@ function renderSelfIntro() {
   });
 }
 
-// ============ 设置 ============
-function renderSettings() {
-  const s = state.settings;
-  const page = document.createElement('div');
-  page.className = 'page';
-  page.innerHTML = `
-    <div class="soft-card">
-      <div class="soft-card-title">${icon('user', 16)} 个人资料</div>
-      <div class="setting-row">
-        <div class="setting-label">昵称<small>显示在侧边栏与问候语</small></div>
-        <input class="pf-input" id="st-name" value="${escapeHTML(s.userName || '')}">
-      </div>
-      <div class="setting-row">
-        <div class="setting-label">头像 Emoji<small>也可点击侧边栏头像上传图片</small></div>
-        <input class="pf-input" id="st-avatar" value="${isImageSource(s.userAvatar) ? '' : escapeHTML(s.userAvatar || '')}" placeholder="🐰">
-      </div>
-      <div class="setting-row">
-        <div class="setting-label">当前心情</div>
-        <select class="pf-input" id="st-mood">
-          ${MOOD_LIST.map(m => `<option value="${m.name}"${s.mood === m.name ? ' selected' : ''}>${m.emoji} ${m.name}</option>`).join('')}
-        </select>
-      </div>
-    </div>
-
-    <div class="soft-card">
-      <div class="soft-card-title">🏷 系统名称</div>
-      <div class="setting-row">
-        <div class="setting-label">主标题</div>
-        <input class="pf-input" id="st-title" value="${escapeHTML(s.brandTitle || '')}">
-      </div>
-      <div class="setting-row">
-        <div class="setting-label">副标题</div>
-        <input class="pf-input" id="st-sub" value="${escapeHTML(s.brandSubtitle || '')}">
-      </div>
-      <div class="focus-actions" style="margin-top:12px;">
-        <button class="gold-btn" id="st-save">保存设置</button>
-      </div>
-    </div>
-
-    <div class="soft-card">
-      <div class="soft-card-title">${icon('clock', 16)} 专注默认时长</div>
-      <div class="focus-presets" style="justify-content:flex-start;">
-        ${[15, 25, 45, 60].map(m => `<button class="focus-preset${state.focus.preset === m ? ' active' : ''}" data-min="${m}">${m} 分</button>`).join('')}
-      </div>
-    </div>
-
-    <div class="soft-card">
-      <div class="soft-card-title">💾 数据备份</div>
-      <div class="setting-row">
-        <div class="setting-label">导出全部数据<small>生成 JSON 备份文件</small></div>
-        <button class="ghost-btn" id="st-export">导出</button>
-      </div>
-      <div class="setting-row">
-        <div class="setting-label">导入备份<small>会覆盖当前本地数据</small></div>
-        <button class="ghost-btn" id="st-import">导入</button>
-      </div>
-      <div class="setting-row">
-        <div class="setting-label">重置菜单结构<small>恢复默认的人生系统菜单</small></div>
-        <button class="ghost-btn" id="st-reset-menu">重置菜单</button>
-      </div>
-      <div class="setting-row">
-        <div class="setting-label" style="color:var(--danger)">清空全部数据<small>不可恢复，请先导出备份</small></div>
-        <button class="ghost-btn" id="st-reset-all" style="color:var(--danger);border-color:var(--danger)">清空</button>
-      </div>
-    </div>
-
-    <div class="soft-card">
-      <div class="soft-card-title">${icon('layers', 16)} 模块开关</div>
-      <div class="setting-row">
-        <div class="setting-label">旅行体验<small>低精力版 · 当天往返、不用过夜</small></div>
-        <div class="xn-toggle ${s.moduleTravel !== false ? 'on' : ''}" data-mod="travel" role="switch" tabindex="0" aria-checked="${s.moduleTravel !== false}"><span class="xn-knob"></span></div>
-      </div>
-      <div class="setting-row">
-        <div class="setting-label">爱好拓展<small>滋养自己的爱好，享受过程</small></div>
-        <div class="xn-toggle ${s.moduleSocial !== false ? 'on' : ''}" data-mod="social" role="switch" tabindex="0" aria-checked="${s.moduleSocial !== false}"><span class="xn-knob"></span></div>
-      </div>
-    </div>
-
-    <div class="soft-card">
-      <div class="soft-card-title">ℹ️ 关于</div>
-      <div class="setting-row"><div class="setting-label">版本号</div><span class="setting-label" style="flex:0;color:var(--text-muted)">v${APP_VERSION}</span></div>
-      <div class="setting-row"><div class="setting-label">数据结构版本</div><span class="setting-label" style="flex:0;color:var(--text-muted)">schema v${SCHEMA_VERSION}</span></div>
-      <div class="setting-row"><div class="setting-label">存储方式</div><span class="setting-label" style="flex:0;color:var(--text-muted)">浏览器 localStorage</span></div>
-    </div>
-  `;
-  content.appendChild(page);
-
-  page.querySelector('#st-save').addEventListener('click', async () => {
-    s.userName = page.querySelector('#st-name').value.trim() || 'Xenos';
-    const av = page.querySelector('#st-avatar').value.trim();
-    if (av) s.userAvatar = av;
-    s.mood = page.querySelector('#st-mood').value;
-    s.brandTitle = page.querySelector('#st-title').value.trim();
-    s.brandSubtitle = page.querySelector('#st-sub').value.trim();
-    state.profile.name = s.userName;
-    saveSettings();
-    saveProfile();
-    renderProfileCard();
-    renderTopbar();
-    await appAlert('设置已保存', { icon: 'sparkle' });
-  });
-
-  page.querySelectorAll('.focus-preset').forEach(btn => {
-    btn.addEventListener('click', () => {
-      setFocusPreset(Number(btn.dataset.min));
-      renderContent();
-    });
-  });
-
-  page.querySelector('#st-export').addEventListener('click', exportData);
-  page.querySelector('#st-import').addEventListener('click', () => importFile.click());
-
-  page.querySelector('#st-reset-menu').addEventListener('click', async () => {
-    if (!await appConfirm('确认恢复默认菜单结构？自定义分组会丢失。')) return;
-    localStorage.removeItem('xenos-groups');
-    state.groups = loadGroups();
-    saveGroups();
-    state.activeItem = '工作台首页';
-    renderMenu();
-    renderContent();
-    renderMobileTabs();
-  });
-
-  page.querySelector('#st-reset-all').addEventListener('click', async () => {
-    if (!await appConfirm('确认清空全部数据？此操作不可恢复！', { danger: true })) return;
-    if (!await appConfirm('再次确认：所有记录都会被删除。', { danger: true })) return;
-    Object.keys(localStorage)
-      .filter(k => k.startsWith('xenos-'))
-      .forEach(k => localStorage.removeItem(k));
-    location.reload();
-  });
-
-  page.querySelectorAll('.xn-toggle[data-mod]').forEach(tg => {
-    const flip = () => {
-      const mod = tg.dataset.mod;
-      const key = mod === 'travel' ? 'moduleTravel' : 'moduleSocial';
-      s[key] = s[key] === false;
-      tg.classList.toggle('on', s[key] !== false);
-      tg.setAttribute('aria-checked', s[key] !== false ? 'true' : 'false');
-      saveSettings();
-      state.groups = loadGroups();
-      saveGroups();
-      renderMenu();
-      renderMobileTabs();
-    };
-    tg.addEventListener('click', flip);
-    tg.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); flip(); } });
-  });
-}
 // Export / Import (full backup of all localStorage data)
 function exportData() {
   const data = { exportedAt: new Date().toISOString(), version: 1 };
@@ -13569,14 +13420,13 @@ function renderSettingsPage() {
         </div>
       </div>
       <div class="me-card" data-me="focus"><span class="mc-emoji" style="color:var(--purple)">${icon('bell', 20)}</span><span class="mc-title">提醒与专注</span><span class="mc-desc">专注提醒 已开启</span></div>
-      <div class="me-card" data-me="privacy"><span class="mc-emoji" style="color:var(--green)">${icon('lock', 20)}</span><span class="mc-title">数据与隐私</span><span class="mc-desc">数据统计 / 隐私</span></div>
+      <div class="me-card" data-me="privacy"><span class="mc-emoji" style="color:var(--green)">${icon('lock', 20)}</span><span class="mc-title">数据与隐私</span><span class="mc-desc">数据统计 / 清空数据</span></div>
       <div class="me-card" data-me="export"><span class="mc-emoji" style="color:var(--gold-deep)">${icon('save', 20)}</span><span class="mc-title">导出备份</span><span class="mc-desc">导出 / 导入</span></div>
     </div>
 
     <div class="me-milestones">
       <div class="me-milestone"><b>${streak}</b><span>连续记录(天)</span></div>
       <div class="me-milestone"><b>${readBooks}</b><span>阅读(本)</span></div>
-      <div class="me-milestone"><b>1</b><span>副业项目</span></div>
     </div>
 
     <div class="section-card" id="me-focus-card" hidden style="margin-top:14px;">
@@ -13594,11 +13444,6 @@ function renderSettingsPage() {
     <div class="section-card" id="me-privacy-card" hidden style="margin-top:14px;">
       <div class="soft-card-title">${icon('lock', 16)} 数据与隐私</div>
       <div class="setting-row"><div class="setting-label">数据统计<small>查看本地数据概览</small></div><button class="ghost-btn" data-go="本周洞察">查看</button></div>
-      <div class="setting-row"><div class="setting-label">隐私设置<small>控制数据共享</small></div><button class="ghost-btn" id="me-privacy-set">设置</button></div>
-      <div class="setting-row"><div class="setting-label">账号安全<small>备份与恢复</small></div><button class="ghost-btn" id="me-account">管理</button></div>
-      <div class="setting-row"><div class="setting-label">导出全部数据<small>生成 JSON 备份文件</small></div><button class="ghost-btn" id="me-export">导出</button></div>
-      <div class="setting-row"><div class="setting-label">导入备份<small>会覆盖当前本地数据</small></div><button class="ghost-btn" id="me-import">导入</button></div>
-      <div class="setting-row"><div class="setting-label">重置菜单结构<small>恢复默认的人生系统菜单</small></div><button class="ghost-btn" id="me-reset-menu">重置菜单</button></div>
       <div class="setting-row"><div class="setting-label" style="color:var(--danger)">清空所有记录<small>打卡/日志/流水/照片/笔记/收藏全清 + 积分清零；保留设置与模板</small></div><button class="ghost-btn" id="me-reset-records" style="color:var(--danger);border-color:var(--danger)">清空</button></div>
       <div class="setting-row"><div class="setting-label" style="color:var(--danger)">清空全部数据<small>不可恢复，请先导出备份</small></div><button class="ghost-btn" id="me-reset-all" style="color:var(--danger);border-color:var(--danger)">清空</button></div>
     </div>
@@ -13650,17 +13495,9 @@ function renderSettingsPage() {
   page.querySelectorAll('.focus-preset').forEach(btn => {
     btn.addEventListener('click', () => { setFocusPreset(Number(btn.dataset.min)); renderContent(); });
   });
-  page.querySelector('#me-export').addEventListener('click', exportData);
-  page.querySelector('#me-import').addEventListener('click', () => importFile.click());
-  // v9324：导出/导入展开卡按钮
+  // v9324：导出/导入展开卡按钮（「导出备份」卡片）
   page.querySelector('#me-export-btn').addEventListener('click', exportData);
   page.querySelector('#me-import-btn').addEventListener('click', () => importFile.click());
-  page.querySelector('#me-reset-menu').addEventListener('click', async () => {
-    if (!await appConfirm('确认恢复默认菜单结构？自定义分组会丢失。')) return;
-    localStorage.removeItem('xenos-groups');
-    state.groups = loadGroups(); saveGroups();
-    state.activeItem = '设置'; renderMenu(); renderContent(); renderMobileTabs();
-  });
   // v9570：清空所有记录（保留设置/菜单/计划模板与任务清单/分类账户/奖励池/身体基础资料/食物库）
   page.querySelector('#me-reset-records').addEventListener('click', async () => {
     if (!await appConfirm('清空所有记录？将删除全部打卡、日志、流水、照片、笔记、收藏与素材库，并把积分清零。设置、菜单、计划模板与任务清单会保留。', { danger: true })) return;
