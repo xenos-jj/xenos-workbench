@@ -748,7 +748,14 @@ const DEFAULT_ACHIEVEMENTS = [
   { id: 'ac-8', icon: 'crown', name: '积分千分', desc: '累计获得 1000 积分', type: 'points', need: 1000 },
   { id: 'ac-9', icon: 'review', name: '复盘习惯', desc: '完成 7 次每日计划', type: 'review', need: 7 },
   { id: 'ac-10', icon: 'muscle', name: '运动起步', desc: '累计运动 300 分钟', type: 'exercise', need: 300 },
-  { id: 'ac-12', icon: 'gift', name: '第一次兑换', desc: '兑换任意一个奖励', type: 'redeem', need: 1 }
+  { id: 'ac-12', icon: 'gift', name: '第一次兑换', desc: '兑换任意一个奖励', type: 'redeem', need: 1 },
+  // v9578：补齐与「积分等级进度」目标对应、徽章里还没有的 6 条
+  { id: 'ac-13', icon: 'zap', name: '专注进阶', desc: '累计专注 5 小时', type: 'focus', need: 300 },
+  { id: 'ac-14', icon: 'book', name: '开卷', desc: '读完 1 本书', type: 'book', need: 1 },
+  { id: 'ac-15', icon: 'wallet', name: '记账达人', desc: '记账累计 30 笔', type: 'money', need: 30 },
+  { id: 'ac-16', icon: 'time', name: '专注大师', desc: '累计专注 20 小时', type: 'focus', need: 1200 },
+  { id: 'ac-17', icon: 'layers', name: '博览', desc: '读完 5 本书', type: 'book', need: 5 },
+  { id: 'ac-18', icon: 'flag', name: '百日坚持', desc: '连续记录 100 天', type: 'streak', need: 100 }
 ];
 
 const CONTENT_TABS = [
@@ -1423,6 +1430,7 @@ const touchState = {
 //   奖励池、身体基础资料、食物库、外语的语言/等级/目标、洞察勾选、一次性迁移标记。
 // 实现：① 少数键要「留容器、清记录」→ 就地清空并保存；② 其余 xenos-* 键整体删除；③ 由调用方 reload。
 const RECORD_KEEP_KEYS = [
+  'xenos-ac1-reset-v9578',
   'xenos-activeItem',
   'xenos-asset-accounts', 'xenos-asset-reconcile-v9160',
   'xenos-body',
@@ -1658,6 +1666,16 @@ function migrateData() {
     if (m && !m.time && m.date) { m.time = m.date; memosFixed = true; }
   });
   if (memosFixed) saveMemos();
+
+  // v9578：「启程」徽章重置——清掉已解锁状态，并记录重置日；
+  // 之后 getAchievementProgress 只统计「重置日之后」完成的打卡，避免被历史打卡立刻重新点亮
+  if (localStorage.getItem('xenos-ac1-reset-v9578') === null) {
+    localStorage.setItem('xenos-ac1-reset-v9578', getTodayKey());
+    if (state.achievements && state.achievements['ac-1']) {
+      delete state.achievements['ac-1'];
+      saveAchievements();
+    }
+  }
 
   // 2. 计划：重命名 / 删除旧项；跨日继承以「快照」为准，不再自动回退 DEFAULT_PLANS（允许自由增删，含默认系统任务）
   const planRemove = ['运动 30 分钟', '英语30分钟'];
@@ -9488,11 +9506,21 @@ async function redeemReward(id) {
 // ============ 成就殿堂 ============
 function getAchievementProgress(ac) {
   switch (ac.type) {
-    case 'checkin': return Object.keys(state.checkins || {}).length;
+    // v9578：「启程」重置后只统计重置日之后完成的打卡（见 migrateData 的 xenos-ac1-reset-v9578）
+    case 'checkin': {
+      const since = localStorage.getItem('xenos-ac1-reset-v9578');
+      const days = Object.keys(state.checkins || {});
+      return since ? days.filter(d => d > since).length : days.length;
+    }
     case 'streak': return calcStreak();
     case 'focus': return getFocusMinutes();
     case 'points': return getTotalEarnedPoints();
     case 'review': return getReviewCount();
+    // v9578：新增「读完书」（与书籍阅读页同口径：total>0 且 current>=total）与「记账笔数」
+    case 'book':
+      return (state.books || []).filter(b => b.total > 0 && b.current >= b.total).length;
+    case 'money':
+      return (state.transactions || []).length;
     case 'exercise':
       return Object.values(state.exerciseLogs || {})
         .reduce((s, list) => s + list.filter(e => e.done).reduce((a, e) => a + (Number(e.duration) || 0), 0), 0);
