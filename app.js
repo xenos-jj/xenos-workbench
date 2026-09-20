@@ -7757,8 +7757,7 @@ function levelLadderListHTML() {
       : (done ? '<span class="lp-done">✓</span>' : '');
     return `<div class="lp-row${isCur ? ' cur' : ''}">
       <span class="lp-lv">Lv.${n}</span>
-      <span class="lp-need">${need} 分</span>
-      <span class="lp-goal">${goal}</span>${mark}
+      <span class="lp-need">${need} 分</span>${mark}
     </div>`;
   }).join('');
   return `<div class="lp-list">${rows}</div>
