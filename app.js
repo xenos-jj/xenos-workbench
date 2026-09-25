@@ -4249,20 +4249,12 @@ function togglePlanForDate(planId, dateKey) {
   return true;
 }
 
-function renderDailyPlan(host, embedded = false, dateKeyOverride = null) {
-  const mount = host || content;
-  if (host) mount.innerHTML = ''; else content.innerHTML = '';
+// v9589：当日任务聚合唯一来源（当日计划页 + 首页「每日计划」环卡共用，保证数量一致）
+function getDailyPlanAgg(dateKey) {
   const todayKey = getTodayKey();
-  const isEmbedded = !!embedded;
-  const viewKey = dateKeyOverride || (isEmbedded ? todayKey : (SLOW_VIEW.plan || todayKey));
-  const isToday = viewKey === todayKey;
-  const readOnly = !isToday;
-
-  const todayEx = isToday ? getTodayExercise() : [];
-  const viewEx = isToday ? todayEx : ((state.exerciseLogs || {})[viewKey] || []);
-  const engDay = (state.englishCheckin.history || {})[viewKey] || null;
-
-  // 分类：每个分类独属颜色（运动页视觉体系下，用 FOCUS_COLORS 区分）
+  const isToday = dateKey === todayKey;
+  const viewEx = isToday ? getTodayExercise() : ((state.exerciseLogs || {})[dateKey] || []);
+  const engDay = (state.englishCheckin.history || {})[dateKey] || null;
   const CATS = [
     { key: '运动', icon: 'dumbbell', color: FOCUS_COLORS['运动'], rows: [] },
     { key: '英语', icon: 'book', color: FOCUS_COLORS['英语'], rows: [] },
@@ -4295,7 +4287,7 @@ function renderDailyPlan(host, embedded = false, dateKeyOverride = null) {
     (domain.tasks || []).forEach(task => {
       const done = isToday
         ? (task.done && task.doneDate === todayKey)
-        : (task.doneDate === viewKey);
+        : (task.doneDate === dateKey);
       CATS[ci].rows.push({ id: task.id, source: 'domain', dkey: key, name: task.text, points: task.points || 0, done: !!done });
     });
   });
@@ -4306,10 +4298,23 @@ function renderDailyPlan(host, embedded = false, dateKeyOverride = null) {
       CATS[4].rows.push({ id: p.id, source: 'manual', name: p.text, points: p.points || 2, done: !!p.done });
     });
   } else {
-    (state.planHistory[viewKey] || []).filter(p => p.group !== '运动计划').forEach(p => {
+    (state.planHistory[dateKey] || []).filter(p => p.group !== '运动计划').forEach(p => {
       CATS[4].rows.push({ id: p.id, source: 'manual', name: p.text, points: p.points || 2, done: !!p.done });
     });
   }
+  return CATS;
+}
+
+function renderDailyPlan(host, embedded = false, dateKeyOverride = null) {
+  const mount = host || content;
+  if (host) mount.innerHTML = ''; else content.innerHTML = '';
+  const todayKey = getTodayKey();
+  const isEmbedded = !!embedded;
+  const viewKey = dateKeyOverride || (isEmbedded ? todayKey : (SLOW_VIEW.plan || todayKey));
+  const isToday = viewKey === todayKey;
+  const readOnly = !isToday;
+
+  const CATS = getDailyPlanAgg(viewKey);
 
   // 汇总统计
   let total = 0, doneCount = 0, earnedPoints = 0;
@@ -4325,10 +4330,13 @@ function renderDailyPlan(host, embedded = false, dateKeyOverride = null) {
       ? '<button class="item-delete" data-del-type="plan" data-id="' + r.id + '" aria-label="删除"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>'
       : '';
     const lockedCls = r.locked ? ' locked' : '';
+    // v9589：删行首实心圆点；空心勾选框用分类色（勾选后底色也是分类色）
+    const chkStyle = r.done
+      ? ' style="background:' + cat.color.color + ';border-color:' + cat.color.color + '"'
+      : ' style="border-color:' + cat.color.color + '"';
     return '' +
       '<div class="exercise-row plan-task-row' + (r.done ? ' done' : '') + lockedCls + '" data-source="' + r.source + '" data-id="' + r.id + '"' + (r.dkey ? ' data-dkey="' + r.dkey + '"' : '') + '>' +
-        '<span class="cat-dot" style="background:' + cat.color.color + '"></span>' +
-        '<span class="ex-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>' +
+        '<span class="ex-check"' + chkStyle + '><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>' +
         '<span class="ex-name">' + escapeHTML(r.name) + '</span>' +
         '<span class="ex-points">+' + r.points + '</span>' +
         del +
@@ -4348,7 +4356,7 @@ function renderDailyPlan(host, embedded = false, dateKeyOverride = null) {
       : '';
     return '' +
       '<div class="sk-day-head plan-cat-head">' +
-        '<span class="sk-day-title" style="color:' + cat.color.color + '"><span class="cat-dot cat-dot-lg" style="background:' + cat.color.color + '"></span>' + icon(cat.icon, 14) + ' ' + cat.key +
+        '<span class="sk-day-title" style="color:' + cat.color.color + '">' + icon(cat.icon, 14) + ' ' + cat.key +
           '<span class="plan-cat-count" style="color:' + cat.color.color + ';border-color:' + cat.color.border + ';background:' + cat.color.bg + '">' + catDone + '/' + cat.rows.length + '</span>' +
         '</span>' +
         '<span class="sk-day-pts">+' + catPts + '</span>' +
@@ -8231,8 +8239,9 @@ function renderOverview() {
   const langPct = state.language.dailyGoal ? Math.min(100, Math.round((state.language.todayCount || 0) / state.language.dailyGoal * 100)) : 0;
   const langVal = `${state.language.todayCount || 0}/${state.language.dailyGoal || 20} 分钟`;
 
-  const planDone = state.plans.filter(p => p.done).length;
-  const planTotal = state.plans.length;
+  // v9589：每日计划环卡与「当日计划」页同源——聚合 运动+英语+支线(外貌/记账)+计划，数量口径一致
+  let planDone = 0, planTotal = 0;
+  getDailyPlanAgg(todayKey).forEach(c => c.rows.forEach(r => { planTotal++; if (r.done) planDone++; }));
   const habitPct = planTotal ? Math.round(planDone / planTotal * 100) : 0;
   const habitVal = `${planDone}/${planTotal} 项完成`;
 
