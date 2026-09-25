@@ -5793,6 +5793,9 @@ function renderSleepPage() {
   const log = state.sleepLogs[viewKey] || { duration: '', quality: '', note: '', bed: '', wake: '' };
   const QUALITY = ['很好', '一般', '不好'];
   const model = dayLogStatModel(state.sleepLogs);
+  let doneDays = 0;
+  for (let i = 0; i < 7; i++) if (dayLogHas(state.sleepLogs[shiftDate(getWeekStart(), i)])) doneDays++;
+  const pct = Math.round(doneDays / 7 * 100);
   const recent = [];
   for (let i = 6; i >= 0; i--) {
     const k = shiftDate(today, -i);
@@ -5806,6 +5809,14 @@ function renderSleepPage() {
 
     <div class="sk-mini-date">${skMiniDateHTML(viewKey)}</div>
     ${isToday ? '' : `<div class="sk-hist-tip">${icon('info', 12)} 正在查看历史记录 · 只读不可更改（如需修改请告知）</div>`}
+
+    <div class="study-goal section-card">
+      ${miniRingHTML(pct, '', pct + '%', '本周完成')}
+      <div class="sg-info">
+        <h4>睡眠记录中</h4>
+        <p class="sg-sub">记下时长与质量，慢慢摸清自己的节律</p>
+      </div>
+    </div>
 
     <div class="section-card module-card">
       <div class="module-card-head">
