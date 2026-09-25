@@ -10553,3 +10553,44 @@ body.home-bg .topbar {
 
 /* 手动新增行（复用护肤页 .sk-add-row 视觉） */
 .plan-add-row { margin-top: 10px; }
+
+/* v9586：英语打卡历史弹窗——此前 .modal-overlay/.modal-head/.modal-close 无任何样式，
+   导致弹层以裸块挂在 body 末尾：点击「查看」看似无反应、睡眠页/支线页等所有页面底部
+   反复出现、风格不符。此处补齐统一样式（仅此一处使用，不影响其他页面）。 */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(107, 93, 79, 0.22);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1200; padding: 20px;
+  animation: inspFade .15s ease;
+}
+.modal-overlay .modal-card {
+  background: var(--card);
+  border-radius: 18px;
+  padding: 20px 18px 12px;
+  max-width: 420px;
+  width: calc(100% - 32px);
+  max-height: 76vh;
+  overflow: auto;
+  box-shadow: 0 18px 50px rgba(120, 80, 40, 0.12);
+  animation: modal-in .22s cubic-bezier(.22, .8, .32, 1);
+}
+.modal-head {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 4px; padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-soft);
+}
+.modal-head h4 {
+  margin: 0; font-size: 13px; font-weight: 600; color: var(--primary-dark);
+}
+.modal-close {
+  width: 26px; height: 26px; flex: none;
+  border: none; border-radius: 50%;
+  background: var(--sidebar-bg); color: var(--primary-dark);
+  font-size: 12px; line-height: 1; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .15s ease;
+}
+.modal-close:hover { background: #FFE8D6; }
