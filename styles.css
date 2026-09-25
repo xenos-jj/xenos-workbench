@@ -10594,3 +10594,58 @@ body.home-bg .topbar {
   transition: background .15s ease;
 }
 .modal-close:hover { background: #FFE8D6; }
+/* v9587：恢复工作台独立时间选择器样式（v9582 随快速记录睡眠一起误删；现睡眠页入睡/起床复用） */
+.tp-overlay .datepicker-card { max-width: 320px; }
+.tp-card { padding: 20px 18px 14px; }
+.tp-display { display: flex; align-items: baseline; justify-content: center; gap: 8px; margin: 4px 0 12px; }
+.tp-num {
+  font-size: 32px; font-weight: 800; color: var(--text);
+  width: 64px; height: 50px; line-height: 50px; text-align: center;
+  border-radius: 10px; cursor: pointer; user-select: none;
+  font-family: var(--font-small);
+  transition: background .15s ease, color .15s ease;
+}
+.tp-num.on { background: var(--primary-light); color: var(--primary); }
+.tp-colon { font-size: 28px; color: var(--text-muted); font-weight: 700; font-family: var(--font-small); }
+.tp-tabs { display: flex; gap: 8px; justify-content: center; margin-bottom: 14px; }
+.tp-tab {
+  border: none; background: transparent; color: var(--text-muted);
+  font-size: 11px; padding: 4px 12px; border-radius: 999px; cursor: pointer;
+  font-family: var(--font);
+}
+.tp-tab.active { background: var(--primary); color: #fff; }
+.tp-clock {
+  /* v9364：aspect-ratio 1.4/1 → 1/1 正方形——之前横向扁圆不好看 */
+  position: relative; width: 100%; aspect-ratio: 1 / 1; max-width: 240px; margin: 0 auto 14px;
+  background: var(--bg-soft); border-radius: 12px;
+  /* v9366：cursor grab + touch-action none——按住拖动支持（iOS 原生 picker 体验） */
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.tp-clock:active { cursor: grabbing; }
+/* v9364：上午/下午切换按钮——横排 pill 形 */
+.tp-am-pm { display: flex; justify-content: center; gap: 6px; margin: 4px 0 10px; }
+.tp-ampm {
+  font-size: 11px; padding: 4px 14px; border-radius: 999px;
+  background: transparent; border: 0.75px solid var(--border-soft);
+  color: var(--text-muted); cursor: pointer;
+  font-family: var(--font-small);
+  transition: background .15s ease, color .15s ease, border-color .15s ease;
+}
+.tp-ampm.active { background: var(--primary-light); color: var(--primary-dark); border-color: var(--primary); }
+.tp-svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.tp-cell {
+  /* v9365：padding 0 2px + min-width 24px max-width 28px——确保「12」两位数与「1」单位数圆圈大小一致、文字水平居中 */
+  position: absolute; transform: translate(-50%, -50%);
+  min-width: 24px; max-width: 28px; height: 24px; padding: 0 2px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11.5px; color: var(--text-muted); font-family: var(--font-small);
+  cursor: pointer; transition: background .12s ease, color .12s ease;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+.tp-cell:hover { background: var(--primary-light); color: var(--primary); }
+.tp-cell.on { background: var(--primary); color: #fff; }

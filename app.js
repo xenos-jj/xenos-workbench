@@ -5357,6 +5357,189 @@ function openDatePicker(opts) {
 }
 
 
+// v9273：工作台独立时间选择器（不用浏览器默认；与日期选择器同款圆角底部弹层）
+// opts: { initial: 'HH:MM' (24h), onSelect: function('HH:MM'|'') }
+function openTimePicker(opts) {
+  opts = opts || {};
+  let selected = opts.initial || '08:00';
+  const m = /^(\d{1,2}):(\d{2})$/.exec(selected);
+  let hour = m ? parseInt(m[1], 10) : 8;
+  let minute = m ? parseInt(m[2], 10) : 0;
+  // 内部始终用 0-23 表示
+  function fmt() { return String(hour).padStart(2, '0') + ':' + String(minute).padStart(2, '0'); }
+  function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+  function close() { overlay.classList.remove('active'); setTimeout(() => overlay.remove(), 150); }
+
+  const old = document.getElementById('tp-overlay');
+  if (old) old.remove();
+
+  const overlay = document.createElement('div');
+  overlay.className = 'datepicker-overlay tp-overlay';
+  overlay.id = 'tp-overlay';
+  overlay.innerHTML = `
+    <div class="datepicker-card tp-card">
+      <div class="tp-display">
+        <div class="tp-num" data-tp-hour>${String(hour % 12 === 0 ? 12 : hour % 12).padStart(2, '0')}</div>
+        <div class="tp-colon">:</div>
+        <div class="tp-num" data-tp-min>${String(minute).padStart(2, '0')}</div>
+      </div>
+      <!-- v9364：上午/下午切换（12 小时制） -->
+      <div class="tp-am-pm">
+        <button class="tp-ampm${hour < 12 ? ' active' : ''}" data-tp-ampm="am" type="button">上午</button>
+        <button class="tp-ampm${hour >= 12 ? ' active' : ''}" data-tp-ampm="pm" type="button">下午</button>
+      </div>
+      <div class="tp-tabs">
+        <button class="tp-tab active" data-tp-tab="hour" type="button">小时</button>
+        <button class="tp-tab" data-tp-tab="min" type="button">分钟</button>
+      </div>
+      <div class="tp-clock" id="tp-clock"></div>
+      <div class="datepicker-actions v9272">
+        <button class="dp-act dp-clear" id="tp-clear">清除</button>
+        <button class="dp-act dp-cancel" id="tp-cancel">取消</button>
+        <button class="dp-act dp-confirm" id="tp-set">设置</button>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+
+  const numH = overlay.querySelector('[data-tp-hour]');
+  const numM = overlay.querySelector('[data-tp-min]');
+  const tabs = overlay.querySelectorAll('.tp-tab');
+  /* v9364：上午/下午切换按钮引用 */
+  const ampmBtns = overlay.querySelectorAll('.tp-ampm');
+  let activeTab = 'hour';
+
+  function paintClock() {
+    const isHour = activeTab === 'hour';
+    /* v9364：hour 改 12 小时制（total=12 数字铺整圆，加上午/下午切换） */
+    const total = isHour ? 12 : 60;
+    const step = isHour ? 1 : 5; // 跳格显示，避免数字太密
+    const radius = 42;
+    /* v9365：cy 56 → 50，时钟盘垂直居中（之前偏下） */
+    const cx = 50, cy = 50;
+    /* v9364：12 小时制 hour 显示值 = hour % 12（0 → 12 转换）；指针角度用 displayVal / 12 ——
+       例如 hour=22 → 22%12=10 → 数字显示「10」→ 指针指 10 位置 → 与数字对齐 */
+    const displayVal = isHour ? (hour % 12 === 0 ? 12 : hour % 12) : minute;
+    const ratio = displayVal / total;
+    const angle = ratio * 2 * Math.PI - Math.PI / 2;
+    const hx = cx + radius * Math.cos(angle);
+    const hy = cy + radius * Math.sin(angle);
+
+    // 选区高亮（以当前值为中心 ±step）
+    const cells = [];
+    const denominator = total;
+    for (let v = 0; v < total; v += step) {
+      const r = (v / denominator) * 2 * Math.PI - Math.PI / 2;
+      const x = cx + radius * Math.cos(r);
+      const y = cy + radius * Math.sin(r);
+      /* v9364：12 小时制 hour 数字 1-12（v=0 显示「12」，v=1-11 显示 1-11）；min 仍 0-55 跳格 */
+      let label;
+      if (isHour) {
+        label = v === 0 ? '12' : String(v);
+      } else {
+        label = String(v).padStart(2, '0');
+      }
+      /* v9365：active 判断修复——v=0（显示「12」）时若 displayVal=12 也算 active（之前 v=0 vs displayVal=12 永远不相等导致 12 圆圈不显示/偏小） */
+      const active = isHour
+        ? (v === displayVal || (displayVal === 12 && v === 0))
+        : (v === displayVal);
+      cells.push(`<div class="tp-cell${active ? ' on' : ''}" data-tp-v="${v}" style="left:${x.toFixed(1)}%;top:${y.toFixed(1)}%">${label}</div>`);
+    }
+    const hLine = `<line x1="${cx}" y1="${cy}" x2="${hx.toFixed(1)}" y2="${hy.toFixed(1)}" stroke="var(--primary)" stroke-width="2"/>`;
+    const dot = `<circle cx="${hx.toFixed(1)}" cy="${hy.toFixed(1)}" r="3" fill="var(--primary)"/>`;
+    overlay.querySelector('#tp-clock').innerHTML = `<svg class="tp-svg" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">${hLine}${dot}</svg>${cells.join('')}`;
+  }
+  function paintNums() {
+    /* v9364：12 小时制显示——hour 24h 转 12h 显示（0 → 12） */
+    numH.textContent = String(hour % 12 === 0 ? 12 : hour % 12).padStart(2, '0');
+    numM.textContent = String(minute).padStart(2, '0');
+    numH.classList.toggle('on', activeTab === 'hour');
+    numM.classList.toggle('on', activeTab === 'min');
+  }
+  /* v9364：根据当前 hour < 12 标 am/pm active 态 */
+  function paintAmPm() {
+    ampmBtns.forEach(b => b.classList.toggle('active', b.dataset.tpAmpm === (hour < 12 ? 'am' : 'pm')));
+  }
+  function update() { paintNums(); paintAmPm(); paintClock(); }
+
+  tabs.forEach(t => t.addEventListener('click', () => {
+    activeTab = t.dataset.tpTab;
+    tabs.forEach(x => x.classList.toggle('active', x === t));
+    update();
+  }));
+  /* v9364：上午/下午切换——hour ±12（12 ↔ 0，14 ↔ 2，22 ↔ 10） */
+  ampmBtns.forEach(b => b.addEventListener('click', () => {
+    const isAm = b.dataset.tpAmpm === 'am';
+    if (isAm && hour >= 12) hour -= 12;
+    else if (!isAm && hour < 12) hour += 12;
+    update();
+  }));
+  numH.addEventListener('click', () => { activeTab = 'hour'; tabs.forEach(x => x.classList.toggle('active', x.dataset.tpTab === 'hour')); update(); });
+  numM.addEventListener('click', () => { activeTab = 'min'; tabs.forEach(x => x.classList.toggle('active', x.dataset.tpTab === 'min')); update(); });
+  /* v9366：抽取 applyClockValue(v) 复用——点击 + 拖动都调它 */
+  function applyClockValue(v) {
+    if (activeTab === 'hour') {
+      /* v9364：12 小时制 hour 选择——v 1-11 直接用，v=0 表示 12 */
+      hour = v === 0 ? 12 : v;
+      if (ampmBtns[1].classList.contains('active')) hour += 12;
+      if (hour >= 24) hour -= 24;
+    } else minute = clamp(v, 0, 59);
+    update();
+  }
+  const clock = overlay.querySelector('#tp-clock');
+  /* v9366：按住拖动支持——pointerdown 立即响应 + pointermove 跟随手指找到最近 cell */
+  function nearestCell(clientX, clientY) {
+    const rect = clock.getBoundingClientRect();
+    /* 把 client 坐标转成 100×100 viewBox 相对坐标 */
+    const vx = (clientX - rect.left) * 100 / rect.width;
+    const vy = (clientY - rect.top) * 100 / rect.height;
+    let best = null, bestD = Infinity;
+    clock.querySelectorAll('.tp-cell').forEach(c => {
+      const cx = parseFloat(c.style.left);
+      const cy = parseFloat(c.style.top);
+      const dx = vx - cx, dy = vy - cy;
+      const d = dx * dx + dy * dy;
+      if (d < bestD) { bestD = d; best = c; }
+    });
+    return best;
+  }
+  let dragging = false;
+  clock.addEventListener('pointerdown', e => {
+    e.preventDefault();
+    dragging = true;
+    clock.setPointerCapture(e.pointerId);
+    const cell = nearestCell(e.clientX, e.clientY);
+    if (cell) applyClockValue(parseInt(cell.dataset.tpV, 10));
+  });
+  clock.addEventListener('pointermove', e => {
+    if (!dragging) return;
+    const cell = nearestCell(e.clientX, e.clientY);
+    if (cell) applyClockValue(parseInt(cell.dataset.tpV, 10));
+  });
+  clock.addEventListener('pointerup', e => {
+    dragging = false;
+    try { clock.releasePointerCapture(e.pointerId); } catch (_) {}
+  });
+  clock.addEventListener('pointercancel', () => { dragging = false; });
+  /* v9366：保留 click 兜底（鼠标用户也可能 click） */
+  clock.addEventListener('click', e => {
+    if (dragging) return;
+    const cell = e.target.closest('.tp-cell');
+    if (!cell) return;
+    applyClockValue(parseInt(cell.dataset.tpV, 10));
+  });
+  overlay.querySelector('#tp-set').addEventListener('click', () => { if (opts.onSelect) opts.onSelect(fmt()); close(); });
+  const tpClear = overlay.querySelector('#tp-clear');
+  if (tpClear) tpClear.addEventListener('click', () => { if (opts.onSelect) opts.onSelect(''); close(); });
+  const tpCancel = overlay.querySelector('#tp-cancel');
+  if (tpCancel) tpCancel.addEventListener('click', close);
+  overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
+
+  /* v9364：打开时立即 paintClock——避免初次打开空白态（之前依赖用户点 tab 才 update()） */
+  update();
+  requestAnimationFrame(() => overlay.classList.add('active'));
+  update();
+}
+
 // v9274：通用日期触发器（替换浏览器默认 input type=date）
 // 用法：bindDateTrigger(el, { initial, format, onSelect, onClear, max, placeholder })
 //   - el 任意元素；点击唤起工作台自定义 openDatePicker 弹层
@@ -5632,9 +5815,9 @@ function renderSleepPage() {
       </div>
       <div class="slow-field"><span class="slow-label">入睡 / 起床</span>
         <div style="display:flex;gap:8px;align-items:center;">
-          <input class="pf-input" id="sleep-bed" type="time" value="${escapeHTML(log.bed || '')}"${isToday ? '' : ' disabled'} style="flex:1;">
+          <input class="pf-input" id="sleep-bed" type="text" readonly placeholder="点此选择"${log.bed ? ` value="${escapeHTML(log.bed)}"` : ''}${isToday ? '' : ' disabled'} style="flex:1;cursor:${isToday ? 'pointer' : 'default'};">
           <span style="color:var(--text-muted);flex-shrink:0;">→</span>
-          <input class="pf-input" id="sleep-wake" type="time" value="${escapeHTML(log.wake || '')}"${isToday ? '' : ' disabled'} style="flex:1;">
+          <input class="pf-input" id="sleep-wake" type="text" readonly placeholder="点此选择"${log.wake ? ` value="${escapeHTML(log.wake)}"` : ''}${isToday ? '' : ' disabled'} style="flex:1;cursor:${isToday ? 'pointer' : 'default'};">
         </div>
       </div>
       <div class="slow-field"><span class="slow-label">睡眠时长</span><input class="pf-input" id="sleep-duration" type="number" step="0.1" placeholder="小时，例如 7.5（选了入睡/起床会自动算）" value="${log.duration === '' || log.duration == null ? '' : escapeHTML(String(log.duration))}"${isToday ? '' : ' disabled'}></div>
@@ -5682,6 +5865,18 @@ function renderSleepPage() {
   const wakeInput = page.querySelector('#sleep-wake');
   if (bedInput) bedInput.addEventListener('change', autoCalcDuration);
   if (wakeInput) wakeInput.addEventListener('change', autoCalcDuration);
+  // v9587：入睡/起床改用工作台独立时间选择器（openTimePicker，v9273 老实现复用），不再用浏览器默认 type=time
+  function bindSleepTimeTrigger(input) {
+    if (!input || !isToday) return;
+    input.addEventListener('click', () => {
+      openTimePicker({
+        initial: input.value || '',
+        onSelect: (v) => { input.value = v || ''; autoCalcDuration(); }
+      });
+    });
+  }
+  bindSleepTimeTrigger(bedInput);
+  bindSleepTimeTrigger(wakeInput);
 
   page.querySelectorAll('#sleep-quality .chip').forEach(btn => {
     btn.addEventListener('click', () => {
