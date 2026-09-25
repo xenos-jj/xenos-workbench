@@ -10649,3 +10649,9 @@ body.home-bg .topbar {
 }
 .tp-cell:hover { background: var(--primary-light); color: var(--primary); }
 .tp-cell.on { background: var(--primary); color: #fff; }
+
+/* v9591：睡眠页纵向节奏对齐工作台标准——study-goal/module-card 挂了 .section-card，
+   被奶油兔增强层的 .section-card{margin-bottom:26px} 覆盖，卡距比全站 12px 标准大一倍。
+   仅作用域 .sleep-page（renderSleepPage 专属类），不影响运动/饮食/护肤等页面。 */
+.skincare-page.sleep-page .study-goal,
+.skincare-page.sleep-page .section-card.module-card { margin-bottom: 12px; }

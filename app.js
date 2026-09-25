@@ -5790,7 +5790,7 @@ function drawTrendChart(containerSelector, measurements) {
 function renderSleepPage() {
   content.innerHTML = '';
   const page = document.createElement('div');
-  page.className = 'page skincare-page slow-skin';
+  page.className = 'page skincare-page slow-skin sleep-page';
   page.style.cssText = modSkinStyle('#9FB2D0');
   if (greetLine) greetLine.textContent = '睡眠';
 
