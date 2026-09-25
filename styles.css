@@ -1273,6 +1273,17 @@ svg text { font-family: var(--font-small) !important; }
   -webkit-backdrop-filter: blur(2px);
 }
 
+/* v9592：修复弹窗打开瞬间整屏闪烁——display 硬切 + backdrop-filter 首帧栅格化时
+   模糊层晚一拍出现（先见半透明底、再突然糊上 = 闪一下），改为遮罩淡入、模糊随透明度渐显 */
+.xn-modal.active {
+  animation: xn-overlay-in 0.18s ease both;
+}
+
+@keyframes xn-overlay-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
 /* v9584：分类/账户选择器层级提升——快速记录等 bottom sheet 同为 .modal(z-index 200) 且 DOM 顺序在后，同层级会盖住选择器 */
 #category-picker-modal { z-index: 1300; }
 
