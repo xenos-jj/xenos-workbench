@@ -4250,272 +4250,189 @@ function togglePlanForDate(planId, dateKey) {
   return true;
 }
 
-function renderDailyPlan(host, embedded = false) {
+function renderDailyPlan(host, embedded = false, dateKeyOverride = null) {
   const mount = host || content;
-  if (!host) content.innerHTML = '';
+  if (host) mount.innerHTML = ''; else content.innerHTML = '';
+  const todayKey = getTodayKey();
+  const isEmbedded = !!embedded;
+  const viewKey = dateKeyOverride || (isEmbedded ? todayKey : (SLOW_VIEW.plan || todayKey));
+  const isToday = viewKey === todayKey;
+  const readOnly = !isToday;
 
-  const dateKey = embedded ? getTodayKey() : (state.reviewDate || getTodayKey());
-  const isToday = dateKey === getTodayKey();
-  if (!isToday) ensurePlanHistory(dateKey);
-  const plans = isToday ? state.plans : state.planHistory[dateKey];
+  const todayEx = isToday ? getTodayExercise() : [];
+  const viewEx = isToday ? todayEx : ((state.exerciseLogs || {})[viewKey] || []);
+  const engDay = (state.englishCheckin.history || {})[viewKey] || null;
+
+  // 分类：每个分类独属颜色（运动页视觉体系下，用 FOCUS_COLORS 区分）
+  const CATS = [
+    { key: '运动', icon: 'dumbbell', color: FOCUS_COLORS['运动'], rows: [] },
+    { key: '英语', icon: 'book', color: FOCUS_COLORS['英语'], rows: [] },
+    { key: '外貌', icon: 'sparkles', color: FOCUS_COLORS['护肤'], rows: [] },
+    { key: '记账', icon: 'coins', color: FOCUS_COLORS['记账'], rows: [] },
+    { key: '计划', icon: 'list', color: FOCUS_COLORS['日常'] || { bg: '#F8F4EF', border: '#E8DDD1', color: '#A99A8A' }, rows: [] }
+  ];
+
+  // 运动：运动计划（今日）+ 自定义运动
+  if (isToday) {
+    state.plans.filter(p => p.group === '运动计划').forEach(p => {
+      CATS[0].rows.push({ id: p.id, source: 'fitness-plan', name: p.text, points: p.points || 3, done: !!p.done });
+    });
+  }
+  viewEx.forEach((ex, idx) => {
+    CATS[0].rows.push({ id: String(idx), source: 'fitness-ex', name: ex.name, points: 3, done: !!ex.done });
+  });
+
+  // 英语每日任务
+  ENGLISH_DAILY_TASKS.forEach(t => {
+    const td = (engDay && engDay.tasks && engDay.tasks[t.key]) || { done: false };
+    const locked = !!(engDay && engDay.restDay && t.key !== 'words');
+    CATS[1].rows.push({ id: t.key, source: 'english', name: t.name, points: t.points, done: !!td.done, locked });
+  });
+
+  // 支线行动：外貌 / 记账 领域任务
+  const DOMAIN_MAP = [['外貌', 'looks', 2], ['记账', 'money', 3]];
+  DOMAIN_MAP.forEach(([label, key, ci]) => {
+    const domain = state.domains[key] || { tasks: [] };
+    (domain.tasks || []).forEach(task => {
+      const done = isToday
+        ? (task.done && task.doneDate === todayKey)
+        : (task.doneDate === viewKey);
+      CATS[ci].rows.push({ id: task.id, source: 'domain', dkey: key, name: task.text, points: task.points || 0, done: !!done });
+    });
+  });
+
+  // 计划：手动新增（今日=state.plans 非运动计划；历史=planHistory 非运动计划）
+  if (isToday) {
+    state.plans.filter(p => p.group !== '运动计划').forEach(p => {
+      CATS[4].rows.push({ id: p.id, source: 'manual', name: p.text, points: p.points || 2, done: !!p.done });
+    });
+  } else {
+    (state.planHistory[viewKey] || []).filter(p => p.group !== '运动计划').forEach(p => {
+      CATS[4].rows.push({ id: p.id, source: 'manual', name: p.text, points: p.points || 2, done: !!p.done });
+    });
+  }
+
+  // 汇总统计
+  let total = 0, doneCount = 0, earnedPoints = 0;
+  CATS.forEach(c => c.rows.forEach(r => { total++; if (r.done) { doneCount++; earnedPoints += (r.points || 0); } }));
+  const percent = total ? Math.round((doneCount / total) * 100) : 0;
 
   const card = document.createElement('div');
-  card.className = 'content-card plan-card';
+  card.className = 'page skincare-page slow-skin plan-page';
+  card.style.cssText = modSkinStyle('#9CC2BC');
 
-  const doneCount = plans.filter(p => p.done).length;
-  const total = plans.length;
-  const percent = total ? Math.round((doneCount / total) * 100) : 0;
-  const earnedPoints = plans.filter(p => p.done).reduce((s, p) => s + (p.points || 0), 0);
-  const progressCircle = `
-    <div class="plan-progress-circle">
-      <svg viewBox="0 0 80 80">
-        <circle class="pc-bg" cx="40" cy="40" r="34"></circle>
-        <circle class="pc-fg" cx="40" cy="40" r="34" style="stroke-dasharray: ${(2 * Math.PI * 34).toFixed(1)}; stroke-dashoffset: ${(2 * Math.PI * 34 * (1 - percent / 100)).toFixed(1)}"></circle>
-      </svg>
-      <div class="pc-text">${percent}<span>%</span></div>
-    </div>
-  `;
+  function rowHTML(r, cat) {
+    const del = (!readOnly && r.source === 'manual')
+      ? '<button class="item-delete" data-del-type="plan" data-id="' + r.id + '" aria-label="删除"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>'
+      : '';
+    const lockedCls = r.locked ? ' locked' : '';
+    return '' +
+      '<div class="exercise-row plan-task-row' + (r.done ? ' done' : '') + lockedCls + '" data-source="' + r.source + '" data-id="' + r.id + '"' + (r.dkey ? ' data-dkey="' + r.dkey + '"' : '') + '>' +
+        '<span class="cat-dot" style="background:' + cat.color.color + '"></span>' +
+        '<span class="ex-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>' +
+        '<span class="ex-name">' + escapeHTML(r.name) + '</span>' +
+        '<span class="ex-points">+' + r.points + '</span>' +
+        del +
+      '</div>';
+  }
 
-  card.innerHTML = `
-    ${embedded ? '' : backHeadHTML(isToday ? '当日计划' : '历史计划', '工作台首页')}
-    <div class="plan-overview">
-      ${progressCircle}
-      <div class="plan-overview-info">
-        <div class="plan-overview-stats">
-          <div class="pos-stat"><span class="pos-num">${doneCount}/${total}</span><span class="pos-label">已完成</span></div>
-          <div class="pos-stat"><span class="pos-num pos-points">+${earnedPoints}</span><span class="pos-label">${isToday ? '今日积分' : '当日积分'}</span></div>
-        </div>
-      </div>
-    </div>
+  function sectionHTML(cat) {
+    if (!cat.rows.length && !(cat.key === '计划' && isToday)) return '';
+    const catDone = cat.rows.filter(r => r.done).length;
+    const catPts = cat.rows.filter(r => r.done).reduce((s, r) => s + (r.points || 0), 0);
+    const rows = cat.rows.map(r => rowHTML(r, cat)).join('');
+    const addRow = (cat.key === '计划' && isToday)
+      ? '<div class="sk-add-row plan-add-row">' +
+          '<input type="text" class="lk-input" id="plan-add-input" placeholder="新增计划，如：拍一条阳台改造 vlog">' +
+          '<button class="lk-mini-btn" id="plan-add-btn">+ 新增</button>' +
+        '</div>'
+      : '';
+    return '' +
+      '<div class="sk-day-head plan-cat-head">' +
+        '<span class="sk-day-title" style="color:' + cat.color.color + '"><span class="cat-dot cat-dot-lg" style="background:' + cat.color.color + '"></span>' + icon(cat.icon, 14) + ' ' + cat.key +
+          '<span class="plan-cat-count" style="color:' + cat.color.color + ';border-color:' + cat.color.border + ';background:' + cat.color.bg + '">' + catDone + '/' + cat.rows.length + '</span>' +
+        '</span>' +
+        '<span class="sk-day-pts">+' + catPts + '</span>' +
+      '</div>' +
+      '<div class="sk-section">' +
+        '<div class="exercise-list">' + rows + '</div>' +
+        addRow +
+      '</div>';
+  }
 
-    ${embedded ? '' : dateBarHTML(dateKey, { id: 'plan-history-trigger' })}
-
-    <div class="plan-input-row">
-      <input type="text" class="plan-input" id="plan-input" placeholder="新增任务，如：拍一条阳台改造 vlog">
-      <button class="plan-add-btn" id="plan-add-btn">+ 新增</button>
-    </div>
-    <div id="plan-groups"></div>
-  `;
+  card.innerHTML = '' +
+    (isEmbedded ? '' : '<div class="domain-hero"><div class="domain-head"><div><h3 class="domain-title">当日计划</h3></div></div></div>') +
+    (isEmbedded ? '' : '<div class="sk-mini-date">' + skMiniDateHTML(viewKey) + '</div>') +
+    (isEmbedded ? '' : '<div class="module-rule-banner"><span class="mrb-icon">' + icon('info', 12) + '</span><span class="mrb-text">把今天散落在各处的任务收拢到这里：勾掉一项，就同步回它原本的页面。</span></div>') +
+    '<div class="sk-day-head">' +
+      '<span class="sk-day-title">' + icon('list', 14) + ' 今日任务汇总</span>' +
+      '<span class="sk-day-pts">' + doneCount + '/' + total + ' · +' + earnedPoints + '</span>' +
+    '</div>' +
+    '<div class="sk-section">' +
+      '<div class="plan-progress"><div class="plan-progress-fill" style="width:' + percent + '%;background:var(--slc)"></div></div>' +
+    '</div>' +
+    CATS.map(sectionHTML).join('');
   mount.appendChild(card);
 
-  const input = card.querySelector('#plan-input');
-  const addBtn = card.querySelector('#plan-add-btn');
-  const groupsWrap = card.querySelector('#plan-groups');
-
-  // 历史回顾：非嵌入模式下绑定全局统一日期组件（切换日期即刻加载该日记录）
-  if (!embedded) {
-    bindDateBar(card, {
-      onShift: (d) => { state.reviewDate = shiftDate(dateKey, d); renderContent(); },
-      onPick: (k) => { state.reviewDate = k; renderContent(); },
-      onToday: () => { state.reviewDate = getTodayKey(); renderContent(); },
-      max: getTodayKey()
-    });
+  // 迷你日期（独立页可回看历史，历史只读）
+  if (!isEmbedded) {
+    bindSlowMiniDate(card, 'plan', null, () => renderDailyPlan(), null);
   }
 
-  function refreshOverview() {
-    const d = plans.filter(p => p.done).length;
-    const t = plans.length;
-    const pct = t ? Math.round((d / t) * 100) : 0;
-    const ep = plans.filter(p => p.done).reduce((s, p) => s + (p.points || 0), 0);
-    const fg = card.querySelector('.pc-fg');
-    const txt = card.querySelector('.pc-text');
-    const totalEl = card.querySelector('.pos-stat .pos-num');
-    const ptsEl = card.querySelector('.pos-points');
-    if (fg) {
-      const r = 2 * Math.PI * 34;
-      fg.style.strokeDashoffset = (r * (1 - pct / 100)).toFixed(1);
+  // 勾选同步回源页面
+  card.addEventListener('click', (e) => {
+    const check = e.target.closest('.ex-check');
+    if (!check) return;
+    if (readOnly) { toast('历史记录只读，无法勾选'); return; }
+    const row = check.closest('.plan-task-row');
+    if (!row) return;
+    const source = row.dataset.source;
+    const id = row.dataset.id;
+    const dkey = row.dataset.dkey;
+    if (source === 'fitness-plan') {
+      const plan = state.plans.find(p => p.id === id);
+      if (!plan) return;
+      plan.done = !plan.done; savePlans(); syncPlanWithDomainTask(plan); updateTodayCheckin(); renderProfileCard(); renderTopbar();
+    } else if (source === 'fitness-ex') {
+      const idx = parseInt(id, 10); if (isNaN(idx)) return;
+      viewEx[idx].done = !viewEx[idx].done; saveExerciseLogs(); renderProfileCard(); renderTopbar();
+    } else if (source === 'english') {
+      if (engDay && engDay.restDay && id !== 'words') { toast('休息日只需完成背单词'); return; }
+      toggleEnglishTask('daily', id); renderProfileCard(); renderTopbar();
+    } else if (source === 'domain') {
+      toggleDomainTask(dkey, id, { inPlace: true }); renderProfileCard(); renderTopbar();
+      renderDailyPlan(host, embedded, dateKeyOverride); return;
+    } else if (source === 'manual') {
+      const plans = isToday ? state.plans : (state.planHistory[viewKey] || []);
+      const plan = plans.find(p => p.id === id);
+      if (!plan) return;
+      if (isToday) { plan.done = !plan.done; savePlans(); snapshotTodayPlans(); updateTodayCheckin(); }
+      else { ensurePlanHistory(viewKey); const h = (state.planHistory[viewKey] || []).find(p => p.id === id); if (h) h.done = plan.done; savePlanHistory(); }
+      renderProfileCard(); renderTopbar();
     }
-    if (txt) txt.innerHTML = `${pct}<span>%</span>`;
-    if (totalEl) totalEl.textContent = `${d}/${t}`;
-    if (ptsEl) ptsEl.textContent = `+${ep}`;
-  }
-
-  function renderPlanItemContent(li, plan) {
-    const tag = getPlanTag(plan.text);
-    const tagStyle = getPlanBadgeColor(tag);
-    li.className = 'plan-item' + (plan.done ? ' done' : '');
-    li.dataset.id = plan.id;
-
-    if (state.editingPlanId === plan.id) {
-      li.innerHTML = `
-        <input type="text" class="plan-item-input" value="${plan.text}">
-        <input type="number" class="plan-points-input" value="${plan.points}" min="0" title="完成积分">
-        <span class="plan-item-actions">
-          <button class="icon-action" data-action="save-plan"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></button>
-          <button class="icon-action delete" data-action="cancel-plan"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
-        </span>
-      `;
-      const inputEdit = li.querySelector('.plan-item-input');
-      inputEdit.focus();
-      inputEdit.select();
-    } else {
-      li.innerHTML = `
-        <span class="plan-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
-        <span class="plan-tag" style="color:${tagStyle.color};background:${tagStyle.bg};border-color:${tagStyle.border}">${tag}</span>
-        <span class="plan-text">${plan.text}</span>
-        <span class="plan-points">+${plan.points}</span>
-        <span class="plan-item-actions">
-          <button class="icon-action" data-action="edit-plan" title="编辑（可改积分）"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
-          <button class="icon-action delete" data-action="delete-plan" title="删除"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
-        </span>
-      `;
-    }
-  }
-
-  function renderGroups() {
-    groupsWrap.innerHTML = '';
-    const tagOrder = ['运动', '英语', '睡眠', '健康', '生活', '阅读', '3D', '日常'];
-    const byTag = {};
-    plans.forEach(plan => {
-      const tag = getPlanTag(plan.text);
-      byTag[tag] = byTag[tag] || [];
-      byTag[tag].push(plan);
-    });
-    function renderSection(tag, items) {
-      const section = document.createElement('div');
-      section.className = 'plan-group-section';
-      section.innerHTML = `
-        <div class="plan-group-title">
-          <span class="plan-group-name">${tag}</span>
-          <span class="plan-group-count">${items.filter(i => i.done).length}/${items.length}</span>
-        </div>
-        <ul class="plan-list" data-group="${tag}"></ul>
-      `;
-      const ul = section.querySelector('.plan-list');
-      items.forEach(plan => {
-        const li = document.createElement('li');
-        renderPlanItemContent(li, plan);
-        ul.appendChild(li);
-      });
-      groupsWrap.appendChild(section);
-    }
-    tagOrder.forEach(tag => {
-      if (byTag[tag]) { renderSection(tag, byTag[tag]); delete byTag[tag]; }
-    });
-    Object.keys(byTag).forEach(tag => renderSection(tag, byTag[tag]));
-  }
-
-  function appendPlanItemDirect(plan) {
-    const tag = getPlanTag(plan.text);
-    let ul = groupsWrap.querySelector(`.plan-list[data-group="${tag}"]`);
-    if (!ul) {
-      renderGroups();
-      ul = groupsWrap.querySelector(`.plan-list[data-group="${tag}"]`);
-    }
-    if (!ul) return;
-    const li = document.createElement('li');
-    renderPlanItemContent(li, plan);
-    ul.appendChild(li);
-  }
-
-  function addPlan() {
-    const text = input.value.trim();
-    if (!text) return;
-    const tag = getPlanTag(text);
-    const plan = { id: uid('p'), text, done: false, group: tag, points: 2 };
-    ensurePlanGroup(tag);
-    state.plans.push(plan);
-    savePlans();
-    snapshotTodayPlans();
-    if (!isToday) {
-      ensurePlanHistory(dateKey);
-      state.planHistory[dateKey].push({ ...plan });
-      savePlanHistory();
-    }
-    input.value = '';
-    appendPlanItemDirect(plan);
-    refreshOverview();
-    if (isToday) updateTodayCheckin();
-  }
-
-  addBtn.addEventListener('click', addPlan);
-  input.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') addPlan();
+    renderDailyPlan(host, embedded, dateKeyOverride);
   });
 
-  groupsWrap.addEventListener('click', (e) => {
-    const btn = e.target.closest('[data-action]');
-    if (!btn) {
-      const check = e.target.closest('.plan-check');
-      if (check) {
-        const li = check.closest('.plan-item');
-        const plan = plans.find(p => p.id === li.dataset.id);
-        if (plan) {
-          if (isToday) {
-            togglePlanDone(plan.id);
-          } else {
-            togglePlanForDate(plan.id, dateKey);
-            renderPlanItemContent(li, plan);
-            refreshOverview();
-          }
-        }
-      }
-      return;
-    }
-
-    const li = btn.closest('.plan-item');
-    const planId = li.dataset.id;
-    const action = btn.dataset.action;
-    const plan = plans.find(p => p.id === planId);
-
-    if (action === 'edit-plan') {
-      state.editingPlanId = planId;
-      renderPlanItemContent(li, plan);
-    }
-
-    if (action === 'delete-plan') {
-      deletePlanById(planId);
-      if (!isToday) {
-        state.planHistory[dateKey] = state.planHistory[dateKey].filter(p => p.id !== planId);
-        savePlanHistory();
-      }
-      li.remove();
-      refreshOverview();
+  // 手动新增（保留在底部）
+  const addInput = card.querySelector('#plan-add-input');
+  const addBtn = card.querySelector('#plan-add-btn');
+  if (addBtn) {
+    function addPlanItem() {
+      const text = addInput.value.trim();
+      if (!text) return;
+      const plan = { id: uid('p'), text, done: false, group: '计划', points: 2 };
+      ensurePlanGroup('计划');
+      state.plans.push(plan);
+      savePlans();
+      snapshotTodayPlans();
+      addInput.value = '';
+      renderDailyPlan(host, embedded, dateKeyOverride);
       if (isToday) updateTodayCheckin();
     }
+    addBtn.addEventListener('click', addPlanItem);
+    addInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') addPlanItem(); });
+  }
 
-    if (action === 'save-plan') {
-      const inputEl = li.querySelector('.plan-item-input');
-      const pointsEl = li.querySelector('.plan-points-input');
-      const text = inputEl.value.trim();
-      if (text) {
-        const newGroup = getPlanTag(text);
-        const np = parseInt(pointsEl.value);
-        const points = isNaN(np) ? 0 : np;
-        plan.text = text;
-        plan.group = newGroup;
-        plan.points = points;
-        ensurePlanGroup(newGroup);
-        const templatePlan = state.plans.find(p => p.id === planId);
-        if (templatePlan) {
-          templatePlan.text = text;
-          templatePlan.group = newGroup;
-          templatePlan.points = points;
-        }
-        savePlans();
-        snapshotTodayPlans();
-        if (!isToday) savePlanHistory();
-      }
-      state.editingPlanId = null;
-      renderGroups();
-      refreshOverview();
-    }
-
-    if (action === 'cancel-plan') {
-      state.editingPlanId = null;
-      renderPlanItemContent(li, plan);
-    }
-  });
-
-  groupsWrap.addEventListener('keydown', (e) => {
-    if (e.key !== 'Enter' && e.key !== 'Escape') return;
-    const li = e.target.closest('.plan-item');
-    if (!li) return;
-    if (e.key === 'Enter') li.querySelector('[data-action="save-plan"]')?.click();
-    if (e.key === 'Escape') li.querySelector('[data-action="cancel-plan"]')?.click();
-  });
-
-  renderGroups();
   if (isToday) updateTodayCheckin();
 }
 
@@ -4544,77 +4461,7 @@ function getWeeklyPlanInsight() {
 }
 
 function renderHistoricalPlan(host, dateKey) {
-  const card = document.createElement('div');
-  card.className = 'content-card plan-card';
-  const plans = dateKey === getTodayKey() ? state.plans : (state.planHistory[dateKey] || []);
-  const doneCount = plans.filter(p => p.done).length;
-  const total = plans.length;
-  const percent = total ? Math.round((doneCount / total) * 100) : 0;
-  const earnedPoints = plans.filter(p => p.done).reduce((s, p) => s + (p.points || 0), 0);
-  const d = new Date(dateKey);
-  const weekdays = ['周日','周一','周二','周三','周四','周五','周六'];
-  const dateString = `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日 ${weekdays[d.getDay()]}`;
-
-  card.innerHTML = `
-    <div class="plan-overview">
-      <div class="plan-progress-circle">
-        <svg viewBox="0 0 80 80">
-          <circle class="pc-bg" cx="40" cy="40" r="34"></circle>
-          <circle class="pc-fg" cx="40" cy="40" r="34" style="stroke-dasharray: ${(2 * Math.PI * 34).toFixed(1)}; stroke-dashoffset: ${(2 * Math.PI * 34 * (1 - percent / 100)).toFixed(1)}"></circle>
-        </svg>
-        <div class="pc-text">${percent}<span>%</span></div>
-      </div>
-      <div class="plan-overview-info">
-        <h3 class="plan-title">${dateKey === getTodayKey() ? '当日计划' : '历史计划'}</h3>
-        <div class="plan-overview-stats">
-          <div class="pos-stat"><span class="pos-num">${doneCount}/${total}</span><span class="pos-label">已完成</span></div>
-          <div class="pos-stat"><span class="pos-num pos-points">+${earnedPoints}</span><span class="pos-label">当日积分</span></div>
-        </div>
-      </div>
-    </div>
-    <div id="plan-history-groups"></div>
-  `;
-  host.appendChild(card);
-
-  const groupsWrap = card.querySelector('#plan-history-groups');
-  if (!plans.length) {
-    groupsWrap.innerHTML = '<p class="plan-empty">当天没有计划记录</p>';
-    return;
-  }
-  const groups = {};
-  const tagOrder = ['运动', '英语', '睡眠', '健康', '生活', '阅读', '3D', '日常'];
-  plans.forEach(p => {
-    const g = getPlanTag(p.text);
-    if (!groups[g]) groups[g] = [];
-    groups[g].push(p);
-  });
-  const renderTag = (g) => {
-    if (!groups[g]) return;
-    const section = document.createElement('div');
-    section.className = 'plan-group-section';
-    section.innerHTML = `
-      <div class="plan-group-title"><span class="plan-group-name">${g}</span><span class="plan-group-count">${groups[g].filter(i => i.done).length}/${groups[g].length}</span></div>
-      <ul class="plan-list"></ul>
-    `;
-    const ul = section.querySelector('.plan-list');
-    groups[g].forEach(plan => {
-      const tag = getPlanTag(plan.text);
-      const tagStyle = getPlanBadgeColor(tag);
-      const li = document.createElement('li');
-      li.className = 'plan-item' + (plan.done ? ' done' : '');
-      li.innerHTML = `
-        <span class="plan-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
-        <span class="plan-tag" style="color:${tagStyle.color};background:${tagStyle.bg};border-color:${tagStyle.border}">${tag}</span>
-        <span class="plan-text">${escapeHTML(plan.text)}</span>
-        <span class="plan-points">+${plan.points}</span>
-      `;
-      ul.appendChild(li);
-    });
-    groupsWrap.appendChild(section);
-    delete groups[g];
-  };
-  tagOrder.forEach(renderTag);
-  Object.keys(groups).forEach(renderTag);
+  renderDailyPlan(host, false, dateKey);
 }
 
 // ---------- Money / 记账存钱 ----------
@@ -14208,7 +14055,7 @@ function modSkinStyle(color) {
   return `--slc:${c};--slcb:${_mixHex(c, '#FFFFFF', 0.72)};--slcd:${_mixHex(c, '#000000', 0.18)};--slcbg:${_mixHex(c, '#FFFFFF', 0.88)};`;
 }
 // 各模块「回看日期」（null = 今天）
-const SLOW_VIEW = { photography: null, cert: null, homeorg: null, music: null, social: null, travel: null, order: null, growth: null, sleep: null, health: null, fitness: null, diet: null };
+const SLOW_VIEW = { photography: null, cert: null, homeorg: null, music: null, social: null, travel: null, order: null, growth: null, sleep: null, health: null, fitness: null, diet: null, plan: null };
 // 日期选择器圆点：该模块自己的打卡/积分（不与其他模块共享）
 function slowDateStatus(m) {
   return function (k) {

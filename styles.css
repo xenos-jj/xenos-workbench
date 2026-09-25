@@ -10531,3 +10531,25 @@ body.home-bg .topbar {
 .lp-done { flex: 0 0 12px; font-size: 10px; color: var(--green); text-align: center; }
 .lp-tip { margin-top: 8px; text-align: center; font-size: 10px; color: var(--text-muted); font-family: var(--font-small); }
 
+
+/* ============ v9585 当日计划：运动页视觉体系 + 多源任务汇总 ============ */
+.plan-page .plan-cat-head { margin: 18px 0 6px; }
+.plan-page .plan-cat-head .sk-day-title { color: var(--text); display: inline-flex; align-items: center; gap: 6px; }
+.plan-page .plan-cat-count { font-size: 9px; font-family: var(--font-small); padding: 1px 8px; border-radius: 999px; font-weight: 600; margin-left: 8px; }
+.plan-page .sk-day-pts { color: var(--primary); }
+
+/* 分类色点：行首 + 标题前 */
+.cat-dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+.cat-dot-lg { width: 9px; height: 9px; margin-right: 2px; }
+
+/* 任务行（复用 .exercise-row，仅补分类色点间距） */
+.plan-task-row .cat-dot { margin-right: 0; }
+.plan-task-row.locked .ex-name { color: var(--text-muted); }
+.plan-task-row.locked .ex-check { opacity: .4; }
+
+/* 汇总进度条 */
+.plan-progress { height: 8px; border-radius: 999px; background: var(--slcb); overflow: hidden; }
+.plan-progress-fill { height: 100%; border-radius: 999px; transition: width .2s ease; min-width: 0; }
+
+/* 手动新增行（复用护肤页 .sk-add-row 视觉） */
+.plan-add-row { margin-top: 10px; }
