@@ -10553,10 +10553,23 @@ body.home-bg .topbar {
 .cat-dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
 .cat-dot-lg { width: 9px; height: 9px; margin-right: 2px; }
 
-/* 任务行（复用 .exercise-row，仅补分类色点间距） */
+/* 任务行（复用 .exercise-row，与护肤页 .module-list-item 行高/卡片框一致） */
+.plan-page .plan-task-row { padding: 7px 10px; min-height: 32px; position: relative; }
+.plan-page .plan-task-row .ex-check { width: 18px; height: 18px; }
+.plan-cat-icon { flex-shrink: 0; display: inline-flex; align-items: center; }
+.plan-task-row .plan-cat-icon svg { width: 12px; height: 12px; }
 .plan-task-row .cat-dot { margin-right: 0; }
 .plan-task-row.locked .ex-name { color: var(--text-muted); }
 .plan-task-row.locked .ex-check { opacity: .4; }
+/* 长按删除/编辑操作条（与其他页面一致） */
+.plan-page .plan-task-row .module-item-actions {
+  position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+  display: flex; align-items: center; gap: 6px;
+  opacity: 0; pointer-events: none; transition: opacity .18s ease; z-index: 2;
+}
+.plan-page .plan-task-row.show-delete { padding-right: 56px; background: var(--bg-soft); }
+.plan-page .plan-task-row.show-delete .module-item-actions { opacity: 1; pointer-events: auto; }
+.plan-page .plan-edit-btn { color: var(--primary-dark); border-color: #E2DCF5; background: #fff; }
 
 /* 汇总进度条 */
 .plan-progress { height: 8px; border-radius: 999px; background: var(--slcb); overflow: hidden; }

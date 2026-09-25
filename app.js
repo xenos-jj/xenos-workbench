@@ -4326,20 +4326,35 @@ function renderDailyPlan(host, embedded = false, dateKeyOverride = null) {
   card.style.cssText = modSkinStyle('#9CC2BC');
 
   function rowHTML(r, cat) {
-    const del = (!readOnly && r.source === 'manual')
-      ? '<button class="item-delete" data-del-type="plan" data-id="' + r.id + '" aria-label="删除"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>'
-      : '';
     const lockedCls = r.locked ? ' locked' : '';
     // v9589：删行首实心圆点；空心勾选框用分类色（勾选后底色也是分类色）
     const chkStyle = r.done
       ? ' style="background:' + cat.color.color + ';border-color:' + cat.color.color + '"'
       : ' style="border-color:' + cat.color.color + '"';
+    // 长按删除/编辑：所有来源行都带操作按钮（删除连带来源页；编辑回写来源）
+    let delData = '';
+    if (r.source === 'manual' || r.source === 'fitness-plan') {
+      delData = 'data-del-type="plan" data-id="' + r.id + '"';
+    } else if (r.source === 'fitness-ex') {
+      delData = 'data-del-type="exercise" data-idx="' + r.id + '"';
+    } else if (r.source === 'english') {
+      delData = 'data-del-type="eng-task" data-type="daily" data-key="' + r.id + '"';
+    } else if (r.source === 'domain') {
+      delData = 'data-del-type="domain-task" data-domain="' + r.dkey + '" data-id="' + r.id + '"';
+    }
+    const actions = readOnly
+      ? ''
+      : '<div class="module-item-actions">' +
+          '<button class="module-act-btn plan-edit-btn" data-edit-source="' + r.source + '" data-edit-id="' + r.id + '"' + (r.dkey ? ' data-edit-dkey="' + r.dkey + '"' : '') + ' aria-label="编辑">' + icon('edit', 11) + '</button>' +
+          '<button class="item-delete" ' + delData + ' aria-label="删除">' + icon('delete', 11) + '</button>' +
+        '</div>';
     return '' +
       '<div class="exercise-row plan-task-row' + (r.done ? ' done' : '') + lockedCls + '" data-source="' + r.source + '" data-id="' + r.id + '"' + (r.dkey ? ' data-dkey="' + r.dkey + '"' : '') + '>' +
+        '<span class="plan-cat-icon" style="color:' + cat.color.color + '">' + icon(cat.icon, 12) + '</span>' +
         '<span class="ex-check"' + chkStyle + '><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>' +
         '<span class="ex-name">' + escapeHTML(r.name) + '</span>' +
         '<span class="ex-points">+' + r.points + '</span>' +
-        del +
+        actions +
       '</div>';
   }
 
@@ -4356,7 +4371,9 @@ function renderDailyPlan(host, embedded = false, dateKeyOverride = null) {
       : '';
     return '' +
       '<div class="sk-day-head plan-cat-head">' +
-        '<span class="sk-day-title" style="color:' + cat.color.color + '">' + icon(cat.icon, 14) + ' ' + cat.key +
+        '<span class="sk-day-title">' +
+          '<span class="plan-cat-icon" style="color:' + cat.color.color + '">' + icon(cat.icon, 14) + '</span>' +
+          '<span>' + cat.key + '</span>' +
           '<span class="plan-cat-count" style="color:' + cat.color.color + ';border-color:' + cat.color.border + ';background:' + cat.color.bg + '">' + catDone + '/' + cat.rows.length + '</span>' +
         '</span>' +
         '<span class="sk-day-pts">+' + catPts + '</span>' +
@@ -4388,6 +4405,13 @@ function renderDailyPlan(host, embedded = false, dateKeyOverride = null) {
 
   // 勾选同步回源页面
   card.addEventListener('click', (e) => {
+    const edit = e.target.closest('.plan-edit-btn');
+    if (edit) {
+      e.preventDefault();
+      e.stopPropagation();
+      handlePlanRowEdit(edit.dataset.editSource, edit.dataset.editId, edit.dataset.editDkey);
+      return;
+    }
     const check = e.target.closest('.ex-check');
     if (!check) return;
     if (readOnly) { toast('历史记录只读，无法勾选'); return; }
@@ -4441,6 +4465,44 @@ function renderDailyPlan(host, embedded = false, dateKeyOverride = null) {
   }
 
   if (isToday) updateTodayCheckin();
+}
+
+// 当日计划：长按编辑任意来源行，回写其原始页面数据
+function handlePlanRowEdit(source, id, dkey) {
+  if (source === 'manual' || source === 'fitness-plan') {
+    const plan = state.plans.find(p => p.id === id);
+    if (!plan) return;
+    openModal('编辑计划', plan.text, '').then(v => {
+      if (v === null) return;
+      plan.text = v.trim() || plan.text;
+      savePlans(); renderDailyPlan();
+    });
+  } else if (source === 'fitness-ex') {
+    const idx = parseInt(id, 10); if (isNaN(idx)) return;
+    const arr = getTodayExercise();
+    const ex = arr[idx]; if (!ex) return;
+    openModal('编辑运动', ex.name, '').then(v => {
+      if (v === null) return;
+      ex.name = v.trim() || ex.name;
+      saveExerciseLogs(); renderDailyPlan();
+    });
+  } else if (source === 'domain') {
+    const dom = state.domains[dkey]; if (!dom) return;
+    const task = (dom.tasks || []).find(t => t.id === id); if (!task) return;
+    openModal('编辑任务', task.text, '').then(v => {
+      if (v === null) return;
+      task.text = v.trim() || task.text;
+      saveDomains(); renderDailyPlan();
+    });
+  } else if (source === 'english') {
+    const engDay = (state.englishCheckin.history || {})[getTodayKey()];
+    if (!engDay || !engDay.tasks || !engDay.tasks[id]) return;
+    openModal('编辑备注', (engDay.tasks[id].note || ''), '').then(v => {
+      if (v === null) return;
+      engDay.tasks[id].note = v.trim();
+      saveEnglishCheckin(); renderDailyPlan();
+    });
+  }
 }
 
 function getWeeklyPlanInsight() {
