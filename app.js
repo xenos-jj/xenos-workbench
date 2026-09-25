@@ -5760,12 +5760,9 @@ function renderSleepPage() {
   const today = getTodayKey();
   const viewKey = SLOW_VIEW.sleep || today;
   const isToday = viewKey === today;
-  const log = state.sleepLogs[viewKey] || { duration: '', quality: '', note: '' };
+  const log = state.sleepLogs[viewKey] || { duration: '', quality: '', note: '', bed: '', wake: '' };
   const QUALITY = ['很好', '一般', '不好'];
   const model = dayLogStatModel(state.sleepLogs);
-  let doneDays = 0;
-  for (let i = 0; i < 7; i++) if (dayLogHas(state.sleepLogs[shiftDate(getWeekStart(), i)])) doneDays++;
-  const pct = Math.round(doneDays / 7 * 100);
   const recent = [];
   for (let i = 6; i >= 0; i--) {
     const k = shiftDate(today, -i);
@@ -5778,17 +5775,7 @@ function renderSleepPage() {
     <div class="domain-hero"><div class="domain-head"><div><h3 class="domain-title">睡眠</h3></div></div></div>
 
     <div class="sk-mini-date">${skMiniDateHTML(viewKey)}</div>
-    ${isToday
-      ? `<div class="module-rule-banner"><span class="mrb-icon">${icon('info', 12)}</span><span class="mrb-text">睡眠看趋势、不追完美：记下大概的时长和质量就好，偶尔熬夜也不用自责。</span></div>`
-      : `<div class="sk-hist-tip">${icon('info', 12)} 正在查看历史记录 · 只读不可更改（如需修改请告知）</div>`}
-
-    <div class="study-goal section-card">
-      ${miniRingHTML(pct, '', pct + '%', '本周完成')}
-      <div class="sg-info">
-        <h4>睡眠记录中</h4>
-        <p class="sg-sub">记下时长与质量，慢慢摸清自己的节律</p>
-      </div>
-    </div>
+    ${isToday ? '' : `<div class="sk-hist-tip">${icon('info', 12)} 正在查看历史记录 · 只读不可更改（如需修改请告知）</div>`}
 
     <div class="section-card module-card">
       <div class="module-card-head">
@@ -5796,7 +5783,14 @@ function renderSleepPage() {
         <span class="soft-card-title" style="margin:0;">昨夜睡眠</span>
         <span class="sk-pending${hasRec ? ' ok' : ''}">${log.duration ? escapeHTML(String(log.duration)) + ' h' : (log.quality || '待记录')}</span>
       </div>
-      <div class="slow-field"><span class="slow-label">睡眠时长</span><input class="pf-input" id="sleep-duration" type="number" step="0.1" placeholder="小时，例如 7.5" value="${log.duration === '' || log.duration == null ? '' : escapeHTML(String(log.duration))}"${isToday ? '' : ' disabled'}></div>
+      <div class="slow-field"><span class="slow-label">入睡 / 起床</span>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <input class="pf-input" id="sleep-bed" type="time" value="${escapeHTML(log.bed || '')}"${isToday ? '' : ' disabled'} style="flex:1;">
+          <span style="color:var(--text-muted);flex-shrink:0;">→</span>
+          <input class="pf-input" id="sleep-wake" type="time" value="${escapeHTML(log.wake || '')}"${isToday ? '' : ' disabled'} style="flex:1;">
+        </div>
+      </div>
+      <div class="slow-field"><span class="slow-label">睡眠时长</span><input class="pf-input" id="sleep-duration" type="number" step="0.1" placeholder="小时，例如 7.5（选了入睡/起床会自动算）" value="${log.duration === '' || log.duration == null ? '' : escapeHTML(String(log.duration))}"${isToday ? '' : ' disabled'}></div>
       <div class="slow-field"><span class="slow-label">睡眠质量</span>
         <div class="slow-chips" id="sleep-quality">${QUALITY.map(q => `<button class="chip${log.quality === q ? ' active' : ''}" data-q="${q}">${q}</button>`).join('')}</div>
       </div>
@@ -5810,6 +5804,7 @@ function renderSleepPage() {
         ${recent.map(d => `<div class="module-list-item" style="cursor:default;">
           <span class="mli-text">${formatDateCN(d.date)}${d.note ? ' · ' + escapeHTML(d.note) : ''}</span>
           <span class="mli-points">${d.duration ? escapeHTML(String(d.duration)) + ' h' : ''}${d.quality ? (d.duration ? ' · ' : '') + d.quality : ''}</span>
+          <button class="item-delete" data-del-type="sleep-log" data-date="${d.date}" aria-label="删除"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
         </div>`).join('')}
       </div>
     </div>` : ''}
@@ -5824,6 +5819,23 @@ function renderSleepPage() {
   });
   bindSlowTextarea(page);
 
+  // v9584：入睡/起床时间 → 自动计算睡眠时长（跨零点按 +24h 处理）
+  function autoCalcDuration() {
+    const bed = page.querySelector('#sleep-bed');
+    const wake = page.querySelector('#sleep-wake');
+    const dur = page.querySelector('#sleep-duration');
+    if (!bed || !wake || !dur) return;
+    if (!bed.value || !wake.value) return;
+    const toMin = (s) => { const [h, m] = s.split(':').map(Number); return h * 60 + m; };
+    let mins = toMin(wake.value) - toMin(bed.value);
+    if (mins <= 0) mins += 24 * 60;
+    dur.value = Math.round(mins / 6) / 10;
+  }
+  const bedInput = page.querySelector('#sleep-bed');
+  const wakeInput = page.querySelector('#sleep-wake');
+  if (bedInput) bedInput.addEventListener('change', autoCalcDuration);
+  if (wakeInput) wakeInput.addEventListener('change', autoCalcDuration);
+
   page.querySelectorAll('#sleep-quality .chip').forEach(btn => {
     btn.addEventListener('click', () => {
       if (!isToday) { toast('只能在当天记录哦'); return; }
@@ -5837,7 +5849,9 @@ function renderSleepPage() {
     const duration = parseFloat(page.querySelector('#sleep-duration').value) || 0;
     const qEl = page.querySelector('#sleep-quality .chip.active');
     const note = page.querySelector('#sleep-note').value.trim();
-    state.sleepLogs[today] = { duration: duration, quality: qEl ? qEl.dataset.q : '', note: note };
+    const bed = page.querySelector('#sleep-bed') ? page.querySelector('#sleep-bed').value : '';
+    const wake = page.querySelector('#sleep-wake') ? page.querySelector('#sleep-wake').value : '';
+    state.sleepLogs[today] = { duration: duration, quality: qEl ? qEl.dataset.q : '', note: note, bed: bed, wake: wake };
     saveSleepLogs();
     toast('睡眠记录已保存');
     SLOW_VIEW.sleep = null;
@@ -9756,7 +9770,7 @@ document.addEventListener('keydown', (e) => {
 });
 
 // 列表项删除统一委托处理：点击 🗑 删除对应条目并刷新当前页
-// del-type: plan=计划, exercise=今日运动, domain-task=领域每日打卡任务, eng-task=英语打卡任务记录
+// del-type: plan=计划, exercise=今日运动, domain-task=领域每日打卡任务, eng-task=英语打卡任务记录, sleep-log=睡眠最近7天记录
 document.addEventListener('click', (e) => {
   const del = e.target.closest('.item-delete');
   if (!del) return;
@@ -9764,6 +9778,11 @@ document.addEventListener('click', (e) => {
   const type = del.dataset.delType || 'plan';
   e.preventDefault();
   e.stopPropagation();
+  if (type === 'sleep-log') {
+    const dkey = del.dataset.date;
+    if (dkey && state.sleepLogs[dkey]) { delete state.sleepLogs[dkey]; saveSleepLogs(); renderContent(); }
+    return;
+  }
   if (type === 'exercise') {
     const idx = parseInt(del.dataset.idx);
     const arr = getTodayExercise();

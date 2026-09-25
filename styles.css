@@ -92,9 +92,18 @@
 .proj-task.show-delete .item-delete,
 .exercise-row.show-delete .item-delete,
 .voice-item.show-delete .item-delete,
-.reward-row.show-delete .item-delete {
+.reward-row.show-delete .item-delete,
+.module-list-item.show-delete .item-delete {
   opacity: 1;
   pointer-events: auto;
+}
+
+/* v9584：module-list-item（睡眠最近7天等）长按删除按钮——默认隐藏，长按 show-delete 后显现 */
+.module-list-item .item-delete {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .15s ease;
+  flex-shrink: 0;
 }
 
 /* 我的支线页：分支卡长按删除 */
@@ -1263,6 +1272,9 @@ svg text { font-family: var(--font-small) !important; }
   backdrop-filter: blur(2px);
   -webkit-backdrop-filter: blur(2px);
 }
+
+/* v9584：分类/账户选择器层级提升——快速记录等 bottom sheet 同为 .modal(z-index 200) 且 DOM 顺序在后，同层级会盖住选择器 */
+#category-picker-modal { z-index: 1300; }
 
 .xn-modal .modal-card {
   background: var(--card);
