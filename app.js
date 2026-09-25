@@ -865,8 +865,7 @@ const DEFAULT_SETTINGS = {
   keepBranches: [
     { name: '生活秩序', emoji: '📋', icon: 'list', freq: '每周 2 天', color: '#a0bb7a' },
     { name: '内在成长', emoji: '🌱', icon: 'sprout', freq: '每周 1 天', color: '#f4b75b' },
-    // v9563：睡眠 / 健康 从「运动」页分离为独立页，入口落在保持中的支线（生活秩序 / 内在成长 之后）
-    { name: '睡眠', emoji: '🌙', icon: 'moon', freq: '每天', color: '#9FB2D0' },
+    // v9588：睡眠入口卡从「保持中的支线」移除（睡眠页保留，可从首页今日概览圆环进入）
     { name: '健康', emoji: '🌿', icon: 'health', freq: '按需记录', color: '#9FBF9A' },
   ],
   slowBranches: [
@@ -10839,7 +10838,7 @@ function weatherBunnyIconSVG() {
 
 // v9563：保持中的支线卡片名 -> 实际路由（多数同名，个别需要映射）
 const KEEP_BRANCH_ROUTE = { '攒钱': '记账', '睡眠': '睡眠管理', '健康': '身体小状况' };
-// v9563：老用户的 keepBranches 里没有「睡眠 / 健康」，打开支线页时补齐一次（幂等）
+// v9588：老用户的 keepBranches 里没有「健康」时补齐一次（幂等）；并一次性移除「睡眠」入口卡
 function ensureKeepBranches() {
   if (!Array.isArray(state.settings.keepBranches) || !state.settings.keepBranches.length) {
     state.settings.keepBranches = JSON.parse(JSON.stringify(DEFAULT_SETTINGS.keepBranches));
@@ -10847,7 +10846,11 @@ function ensureKeepBranches() {
     return;
   }
   let changed = false;
-  ['睡眠', '健康'].forEach(function (n) {
+  if (state.settings.keepBranches.some(function (k) { return k.name === '睡眠'; })) {
+    state.settings.keepBranches = state.settings.keepBranches.filter(function (k) { return k.name !== '睡眠'; });
+    changed = true;
+  }
+  ['健康'].forEach(function (n) {
     if (!state.settings.keepBranches.some(function (k) { return k.name === n; })) {
       const d = (DEFAULT_SETTINGS.keepBranches || []).find(function (x) { return x.name === n; });
       if (d) { state.settings.keepBranches.push(JSON.parse(JSON.stringify(d))); changed = true; }
