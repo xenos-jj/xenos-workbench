@@ -858,8 +858,8 @@ const DEFAULT_SETTINGS = {
   mood: '平静',
   currentPhase: '成长',
   phaseOptions: ['成长', '生活', '自律', '学习', '英语', '剪辑', 'AI'],
-  monthlyFocus: ['英语', '记账'],
-  focusOptions: ['英语', '记账', '阅读', '护肤', '穿搭', '妆容', '仪态', '运动', '饮食'],
+  monthlyFocus: ['英语'],
+  focusOptions: ['英语', '阅读', '护肤', '穿搭', '妆容', '仪态', '运动', '饮食'],
   moduleTravel: true,
   moduleSocial: true,
   keepBranches: [
@@ -909,7 +909,8 @@ const FOCUS_CARD_DEF = {
   '仪态': { type: 'looks', route: '仪态', action: '体态训练 10min', sub: '挺拔一点，自信一点' },
   '穿搭': { type: 'looks', route: '穿搭', action: '搭配今日穿搭', sub: '今天的出场，也是生活的仪式感' }
 };
-const REMOVED_FOCUS_LABELS = ['睡眠', '自媒体', '锻炼', '生活'];
+// v9583：记账升级为底部导航根页面，移出本月主线可选池（同步清理老数据已选主线）
+const REMOVED_FOCUS_LABELS = ['睡眠', '自媒体', '锻炼', '生活', '记账'];
 function focusColorOf(name) {
   if (FOCUS_COLORS[name]) return FOCUS_COLORS[name];
   // 自定义标签：按名字哈希生成柔和 pastel 色
@@ -3744,7 +3745,7 @@ function selectItem(name, skipHistory = false) {
 
 // 底部导航高亮联动
 function updateBottomNav() {
-  const map = { '工作台首页': 'home', '我的支线': 'branches', '本周洞察': 'insight', '自我介绍': 'mine' };
+  const map = { '工作台首页': 'home', '我的支线': 'branches', '本周洞察': 'insight', '记账': 'mine' };
   const active = map[state.activeItem];
   document.querySelectorAll('#bottom-nav .bn-item').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.bn === active);
@@ -3759,7 +3760,7 @@ function bindBottomNav() {
     btn.addEventListener('click', () => {
       const key = btn.dataset.bn;
       if (key === 'plus') { openFocusModal(); return; }
-      const target = { home: '工作台首页', branches: '我的支线', insight: '本周洞察', mine: '自我介绍' }[key];
+      const target = { home: '工作台首页', branches: '我的支线', insight: '本周洞察', mine: '记账' }[key];
       if (target) selectItem(target);
     });
   });
@@ -4013,7 +4014,7 @@ const PAGE_BACK_FALLBACK = {
 };
 
 // v9313：顶层入口（无上一级页面）= 顶栏返回箭头自动隐藏
-const BACK_ROOT_PAGES = new Set(['工作台首页', '我的支线', '本周洞察', '自我介绍', '设置']);
+const BACK_ROOT_PAGES = new Set(['工作台首页', '我的支线', '本周洞察', '记账', '自我介绍', '设置']);
 
 // 生成统一返回按钮；fallback 为无历史时的兜底页面名
 function backButtonHTML(fallback) {
@@ -6031,12 +6032,11 @@ function renderFitness() {
       : `<div class="sk-hist-tip">${icon('info', 12)} 正在查看历史记录 · 只读不可更改（如需修改请告知）</div>`}
 
     <div class="sk-day-head">
-      <span class="sk-day-title">${icon('dumbbell', 14)} ${isToday ? '今日运动' : '该日运动'}</span>
+      <span class="sk-day-title">${icon('dumbbell', 14)} ${isToday ? '运动清单' : '该日运动'}</span>
       <span class="sk-day-pts" id="ex-burn">${isToday ? '已消耗 ' + totalEx + ' kcal' : (viewEx.length ? viewEx.length + ' 项' : '无记录')}</span>
     </div>
 
     <div class="sk-section">
-      <div class="sk-section-head">${icon('running', 14)} <span>运动清单</span><span class="sk-pending ok" style="margin-left:auto">${viewEx.length} 项</span></div>
       <div class="exercise-list" id="exercise-list"></div>
       ${isToday ? `<div class="exercise-add-row">
         <input type="text" id="ex-name" class="small-input" placeholder="运动名称，如爬楼梯">
@@ -6100,14 +6100,12 @@ function renderFitness() {
     // 运动计划默认项（与计划页/健康领域同步）
     const planExercises = isToday ? state.plans.filter(p => p.group === '运动计划') : [];
     planExercises.forEach(plan => {
-      const duration = parsePlanDuration(plan.text);
       const row = document.createElement('div');
       row.className = 'exercise-row' + (plan.done ? ' done' : '');
       row.dataset.planId = plan.id;
       row.innerHTML = `
         <span class="ex-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
         <span class="ex-name">${plan.text}</span>
-        <span class="ex-duration">${duration} 分钟</span>
         <span class="ex-points">+3</span>
         <button class="item-delete" data-del-type="plan" data-id="${plan.id}" aria-label="删除"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
       `;
@@ -6121,7 +6119,6 @@ function renderFitness() {
       row.innerHTML = `
         <span class="ex-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
         <span class="ex-name">${ex.name}</span>
-        <span class="ex-duration">${ex.duration} 分钟</span>
         <span class="ex-points">+3</span>
         ${isToday ? `<button class="item-delete" data-del-type="exercise" data-idx="${idx}" aria-label="删除"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>` : ''}
       `;

@@ -2188,13 +2188,6 @@ svg text { font-family: var(--font-small) !important; }
   line-height: 1.4;
 }
 
-.ex-duration {
-  font-size: 9px;
-  font-family: var(--font-small);
-  color: var(--text-muted);
-  flex-shrink: 0;
-}
-
 /* v9340：.ex-kcal 改为 .ex-points，每项任务显示 +3 分（user 要求每项任务 3 积分），样式对齐 .mli-points / .plan-points（font-size 9px + var(--font-small) + var(--primary-dark) + font-weight 600）。 */
 .ex-points {
   font-size: 9px;
@@ -10318,6 +10311,8 @@ body.home-bg .topbar {
 /* ⑤ 「本周练习统计」左侧图标（标题图标 + 热力图行图标）与页面图标同色 */
 .slow-skin .sk-section-head svg,
 .slow-skin .insp-heatmap-grid .ih-icon { color: var(--slc); }
+/* v9583：日头图标（今日运动/运动清单等）与板块图标同色（此前是 var(--text) 灰，与下方板块不一致） */
+.slow-skin .sk-day-title svg { color: var(--slc); }
 /* ⑥ 卡内按钮行 / 间距用护肤页口径（7px） */
 .slow-skin .focus-actions { margin-top: 7px; }
 .slow-skin .sk-hist-tip { margin-top: 7px; }
