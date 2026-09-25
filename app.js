@@ -5508,188 +5508,6 @@ function openDatePicker(opts) {
   render();
 }
 
-// v9273：工作台独立时间选择器（不用浏览器默认；与日期选择器同款圆角底部弹层）
-// opts: { initial: 'HH:MM' (24h), onSelect: function('HH:MM'|'') }
-function openTimePicker(opts) {
-  opts = opts || {};
-  let selected = opts.initial || '08:00';
-  const m = /^(\d{1,2}):(\d{2})$/.exec(selected);
-  let hour = m ? parseInt(m[1], 10) : 8;
-  let minute = m ? parseInt(m[2], 10) : 0;
-  // 内部始终用 0-23 表示
-  function fmt() { return String(hour).padStart(2, '0') + ':' + String(minute).padStart(2, '0'); }
-  function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
-  function close() { overlay.classList.remove('active'); setTimeout(() => overlay.remove(), 150); }
-
-  const old = document.getElementById('tp-overlay');
-  if (old) old.remove();
-
-  const overlay = document.createElement('div');
-  overlay.className = 'datepicker-overlay tp-overlay';
-  overlay.id = 'tp-overlay';
-  overlay.innerHTML = `
-    <div class="datepicker-card tp-card">
-      <div class="tp-display">
-        <div class="tp-num" data-tp-hour>${String(hour % 12 === 0 ? 12 : hour % 12).padStart(2, '0')}</div>
-        <div class="tp-colon">:</div>
-        <div class="tp-num" data-tp-min>${String(minute).padStart(2, '0')}</div>
-      </div>
-      <!-- v9364：上午/下午切换（12 小时制） -->
-      <div class="tp-am-pm">
-        <button class="tp-ampm${hour < 12 ? ' active' : ''}" data-tp-ampm="am" type="button">上午</button>
-        <button class="tp-ampm${hour >= 12 ? ' active' : ''}" data-tp-ampm="pm" type="button">下午</button>
-      </div>
-      <div class="tp-tabs">
-        <button class="tp-tab active" data-tp-tab="hour" type="button">小时</button>
-        <button class="tp-tab" data-tp-tab="min" type="button">分钟</button>
-      </div>
-      <div class="tp-clock" id="tp-clock"></div>
-      <div class="datepicker-actions v9272">
-        <button class="dp-act dp-clear" id="tp-clear">清除</button>
-        <button class="dp-act dp-cancel" id="tp-cancel">取消</button>
-        <button class="dp-act dp-confirm" id="tp-set">设置</button>
-      </div>
-    </div>`;
-  document.body.appendChild(overlay);
-
-  const numH = overlay.querySelector('[data-tp-hour]');
-  const numM = overlay.querySelector('[data-tp-min]');
-  const tabs = overlay.querySelectorAll('.tp-tab');
-  /* v9364：上午/下午切换按钮引用 */
-  const ampmBtns = overlay.querySelectorAll('.tp-ampm');
-  let activeTab = 'hour';
-
-  function paintClock() {
-    const isHour = activeTab === 'hour';
-    /* v9364：hour 改 12 小时制（total=12 数字铺整圆，加上午/下午切换） */
-    const total = isHour ? 12 : 60;
-    const step = isHour ? 1 : 5; // 跳格显示，避免数字太密
-    const radius = 42;
-    /* v9365：cy 56 → 50，时钟盘垂直居中（之前偏下） */
-    const cx = 50, cy = 50;
-    /* v9364：12 小时制 hour 显示值 = hour % 12（0 → 12 转换）；指针角度用 displayVal / 12 ——
-       例如 hour=22 → 22%12=10 → 数字显示「10」→ 指针指 10 位置 → 与数字对齐 */
-    const displayVal = isHour ? (hour % 12 === 0 ? 12 : hour % 12) : minute;
-    const ratio = displayVal / total;
-    const angle = ratio * 2 * Math.PI - Math.PI / 2;
-    const hx = cx + radius * Math.cos(angle);
-    const hy = cy + radius * Math.sin(angle);
-
-    // 选区高亮（以当前值为中心 ±step）
-    const cells = [];
-    const denominator = total;
-    for (let v = 0; v < total; v += step) {
-      const r = (v / denominator) * 2 * Math.PI - Math.PI / 2;
-      const x = cx + radius * Math.cos(r);
-      const y = cy + radius * Math.sin(r);
-      /* v9364：12 小时制 hour 数字 1-12（v=0 显示「12」，v=1-11 显示 1-11）；min 仍 0-55 跳格 */
-      let label;
-      if (isHour) {
-        label = v === 0 ? '12' : String(v);
-      } else {
-        label = String(v).padStart(2, '0');
-      }
-      /* v9365：active 判断修复——v=0（显示「12」）时若 displayVal=12 也算 active（之前 v=0 vs displayVal=12 永远不相等导致 12 圆圈不显示/偏小） */
-      const active = isHour
-        ? (v === displayVal || (displayVal === 12 && v === 0))
-        : (v === displayVal);
-      cells.push(`<div class="tp-cell${active ? ' on' : ''}" data-tp-v="${v}" style="left:${x.toFixed(1)}%;top:${y.toFixed(1)}%">${label}</div>`);
-    }
-    const hLine = `<line x1="${cx}" y1="${cy}" x2="${hx.toFixed(1)}" y2="${hy.toFixed(1)}" stroke="var(--primary)" stroke-width="2"/>`;
-    const dot = `<circle cx="${hx.toFixed(1)}" cy="${hy.toFixed(1)}" r="3" fill="var(--primary)"/>`;
-    overlay.querySelector('#tp-clock').innerHTML = `<svg class="tp-svg" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">${hLine}${dot}</svg>${cells.join('')}`;
-  }
-  function paintNums() {
-    /* v9364：12 小时制显示——hour 24h 转 12h 显示（0 → 12） */
-    numH.textContent = String(hour % 12 === 0 ? 12 : hour % 12).padStart(2, '0');
-    numM.textContent = String(minute).padStart(2, '0');
-    numH.classList.toggle('on', activeTab === 'hour');
-    numM.classList.toggle('on', activeTab === 'min');
-  }
-  /* v9364：根据当前 hour < 12 标 am/pm active 态 */
-  function paintAmPm() {
-    ampmBtns.forEach(b => b.classList.toggle('active', b.dataset.tpAmpm === (hour < 12 ? 'am' : 'pm')));
-  }
-  function update() { paintNums(); paintAmPm(); paintClock(); }
-
-  tabs.forEach(t => t.addEventListener('click', () => {
-    activeTab = t.dataset.tpTab;
-    tabs.forEach(x => x.classList.toggle('active', x === t));
-    update();
-  }));
-  /* v9364：上午/下午切换——hour ±12（12 ↔ 0，14 ↔ 2，22 ↔ 10） */
-  ampmBtns.forEach(b => b.addEventListener('click', () => {
-    const isAm = b.dataset.tpAmpm === 'am';
-    if (isAm && hour >= 12) hour -= 12;
-    else if (!isAm && hour < 12) hour += 12;
-    update();
-  }));
-  numH.addEventListener('click', () => { activeTab = 'hour'; tabs.forEach(x => x.classList.toggle('active', x.dataset.tpTab === 'hour')); update(); });
-  numM.addEventListener('click', () => { activeTab = 'min'; tabs.forEach(x => x.classList.toggle('active', x.dataset.tpTab === 'min')); update(); });
-  /* v9366：抽取 applyClockValue(v) 复用——点击 + 拖动都调它 */
-  function applyClockValue(v) {
-    if (activeTab === 'hour') {
-      /* v9364：12 小时制 hour 选择——v 1-11 直接用，v=0 表示 12 */
-      hour = v === 0 ? 12 : v;
-      if (ampmBtns[1].classList.contains('active')) hour += 12;
-      if (hour >= 24) hour -= 24;
-    } else minute = clamp(v, 0, 59);
-    update();
-  }
-  const clock = overlay.querySelector('#tp-clock');
-  /* v9366：按住拖动支持——pointerdown 立即响应 + pointermove 跟随手指找到最近 cell */
-  function nearestCell(clientX, clientY) {
-    const rect = clock.getBoundingClientRect();
-    /* 把 client 坐标转成 100×100 viewBox 相对坐标 */
-    const vx = (clientX - rect.left) * 100 / rect.width;
-    const vy = (clientY - rect.top) * 100 / rect.height;
-    let best = null, bestD = Infinity;
-    clock.querySelectorAll('.tp-cell').forEach(c => {
-      const cx = parseFloat(c.style.left);
-      const cy = parseFloat(c.style.top);
-      const dx = vx - cx, dy = vy - cy;
-      const d = dx * dx + dy * dy;
-      if (d < bestD) { bestD = d; best = c; }
-    });
-    return best;
-  }
-  let dragging = false;
-  clock.addEventListener('pointerdown', e => {
-    e.preventDefault();
-    dragging = true;
-    clock.setPointerCapture(e.pointerId);
-    const cell = nearestCell(e.clientX, e.clientY);
-    if (cell) applyClockValue(parseInt(cell.dataset.tpV, 10));
-  });
-  clock.addEventListener('pointermove', e => {
-    if (!dragging) return;
-    const cell = nearestCell(e.clientX, e.clientY);
-    if (cell) applyClockValue(parseInt(cell.dataset.tpV, 10));
-  });
-  clock.addEventListener('pointerup', e => {
-    dragging = false;
-    try { clock.releasePointerCapture(e.pointerId); } catch (_) {}
-  });
-  clock.addEventListener('pointercancel', () => { dragging = false; });
-  /* v9366：保留 click 兜底（鼠标用户也可能 click） */
-  clock.addEventListener('click', e => {
-    if (dragging) return;
-    const cell = e.target.closest('.tp-cell');
-    if (!cell) return;
-    applyClockValue(parseInt(cell.dataset.tpV, 10));
-  });
-  overlay.querySelector('#tp-set').addEventListener('click', () => { if (opts.onSelect) opts.onSelect(fmt()); close(); });
-  const tpClear = overlay.querySelector('#tp-clear');
-  if (tpClear) tpClear.addEventListener('click', () => { if (opts.onSelect) opts.onSelect(''); close(); });
-  const tpCancel = overlay.querySelector('#tp-cancel');
-  if (tpCancel) tpCancel.addEventListener('click', close);
-  overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
-
-  /* v9364：打开时立即 paintClock——避免初次打开空白态（之前依赖用户点 tab 才 update()） */
-  update();
-  requestAnimationFrame(() => overlay.classList.add('active'));
-  update();
-}
 
 // v9274：通用日期触发器（替换浏览器默认 input type=date）
 // 用法：bindDateTrigger(el, { initial, format, onSelect, onClear, max, placeholder })
@@ -8466,11 +8284,11 @@ function renderOverview() {
           </span>
           <span class="hq-arrow">›</span>
         </button>
-        <button class="hp-quick-btn hp-qb-sleep" data-qr="sleep">
-          <span class="hq-icon hq-sleep">${icon('moon', 15)}</span>
+        <button class="hp-quick-btn hp-qb-diet" data-qr="diet">
+          <span class="hq-icon hq-diet">${icon('utensils', 15)}</span>
           <span class="hq-text">
-            <b class="hq-title">睡眠</b>
-            <small class="hq-sub">记录睡眠时长</small>
+            <b class="hq-title">饮食</b>
+            <small class="hq-sub">记一下今天吃了啥</small>
           </span>
           <span class="hq-arrow">›</span>
         </button>
@@ -14107,45 +13925,16 @@ function sportTabHTML() {
     <div class="qr-field"><label>备注</label><input type="text" id="qr-note" placeholder="今天做了什么运动？"></div>`;
 }
 
-function sleepTabHTML() {
-  /* v9368：读 localStorage 上次保存的 bed/wake 替代 hardcoded 默认——重新打开 modal 时显示一致 */
-  let savedBed = '22:30', savedWake = '06:30';
-  try {
-    const note = JSON.parse(localStorage.getItem('xenos-sleep-note') || '{}');
-    if (note.bed) savedBed = note.bed;
-    if (note.wake) savedWake = note.wake;
-  } catch (_) {}
-  return `<div class="qr-time-row">
-      <div class="qr-time-card" id="qr-bed-card">
-        <span class="qr-time-label"><span class="qr-time-ico">${icon('moon', 14)}</span>睡觉时间</span>
-        <span class="qr-time-val" id="qr-bed-val">${savedBed}</span>
-        <input type="time" id="qr-bed" value="${savedBed}" class="qr-time-input">
-      </div>
-      <div class="qr-time-sep">›</div>
-      <div class="qr-time-card" id="qr-wake-card">
-        <span class="qr-time-label"><span class="qr-time-ico">${icon('sunrise', 14)}</span>起床时间</span>
-        <span class="qr-time-val" id="qr-wake-val">${savedWake}</span>
-        <input type="time" id="qr-wake" value="${savedWake}" class="qr-time-input">
-      </div>
-    </div>
-    <div class="qr-field qr-range-field">
-      <div class="qr-range-head"><label>睡眠质量</label><span id="qr-q-val" class="qr-q-val">82分</span></div>
-      <div class="qr-range-track">
-        <div class="qr-range-fill" id="qr-range-fill" style="width:82%"></div>
-        <input type="range" class="qr-range" id="qr-quality" min="0" max="100" value="82">
-      </div>
-      <div class="qr-range-labels"><span>很差</span><span>较差</span><span>一般</span><span>良好</span><span>很好</span></div>
-    </div>
-    <div class="qr-field"><label>睡眠状态</label><div class="qr-chips qr-chips-lg" id="qr-sleep-chips">
-      <span class="qr-chip" data-s="入睡快"><span class="qr-chip-ico">😊</span>入睡快</span>
-      <span class="qr-chip active" data-s="一般"><span class="qr-chip-ico">😐</span>一般</span>
-      <span class="qr-chip" data-s="易醒"><span class="qr-chip-ico">😫</span>易醒</span>
+function dietTabHTML() {
+  return `<div class="qr-field"><label>餐次</label><div class="qr-chips" id="qr-diet-type">
+      <span class="qr-chip active" data-t="早餐"><span class="qr-chip-ico">${icon('sunrise', 14)}</span>早餐</span>
+      <span class="qr-chip" data-t="午餐"><span class="qr-chip-ico">${icon('utensils', 14)}</span>午餐</span>
+      <span class="qr-chip" data-t="晚餐"><span class="qr-chip-ico">${icon('food', 14)}</span>晚餐</span>
+      <span class="qr-chip" data-t="加餐"><span class="qr-chip-ico">${icon('plus', 14)}</span>加餐</span>
     </div></div>
-    <div class="qr-field qr-note-field">
-      <label>睡眠备注 <span class="qr-optional">（可选）</span></label>
-      <textarea id="qr-note" placeholder="记录一下昨晚的睡眠感受吧～" maxlength="100"></textarea>
-      <span class="qr-count" id="qr-note-count">0/100</span>
-    </div>`;
+    <div class="qr-field"><label>吃了什么 <span class="qr-optional">（可带数量，如 鸡胸肉 150 g）</span></label><input type="text" id="qr-food" placeholder="今天吃了啥？"></div>
+    <div class="qr-field"><label>花费（元）</label><input type="number" id="qr-cost" value="" min="0" step="0.01" placeholder="0.00"></div>
+    <div class="qr-field"><label>备注</label><input type="text" id="qr-note" placeholder="记点感想～"></div>`;
 }
 
 function moneyTabHTML(subType) {
@@ -14171,19 +13960,19 @@ function ideaTabHTML() {
     </div>`;
 }
 
-const QR_TITLES = { sport: '运动', sleep: '睡眠', money: '记账', idea: '灵感' };
-const QR_SHORT_LABELS = { sport: '运动', sleep: '睡眠', money: '记账', idea: '灵感' };
-const QR_SHORT_ICONS = { sport: 'dumbbell', sleep: 'moon', money: 'coins', idea: 'bulb' };
+const QR_TITLES = { sport: '运动', diet: '饮食', money: '记账', idea: '灵感' };
+const QR_SHORT_LABELS = { sport: '运动', diet: '饮食', money: '记账', idea: '灵感' };
+const QR_SHORT_ICONS = { sport: 'dumbbell', diet: 'utensils', money: 'coins', idea: 'bulb' };
 const QR_SHORT_SUBS = { money: 'income' };
 // v9354：副标题小字已删除（QR_SHORT_TIPS 保留空文案表仅防遗漏引用报错）
-const QR_SHORT_TIPS = { sport: '', sleep: '', money: '', idea: '' };
-const QR_SHORT_COLORS = { sport: 'qr-short-green', sleep: 'qr-short-blue', money: 'qr-short-gold', idea: 'qr-short-pink' };
+const QR_SHORT_TIPS = { sport: '', diet: '', money: '', idea: '' };
+const QR_SHORT_COLORS = { sport: 'qr-short-green', diet: 'qr-short-orange', money: 'qr-short-gold', idea: 'qr-short-pink' };
 
 function renderQuickShortcuts(current) {
   const grid = document.getElementById('qr-short-grid');
   if (!grid) return;
   // v9352：过滤掉当前 tab——只显示其他 3 个快捷入口；3 个一行排布
-  const order = ['sport', 'sleep', 'money', 'idea'];
+  const order = ['sport', 'diet', 'money', 'idea'];
   const visible = order.filter(t => t !== current);
   grid.innerHTML = visible.map(t => {
     const sub = QR_SHORT_SUBS[t] || '';
@@ -14200,7 +13989,7 @@ function renderQuickRecordBody(tab, subType) {
   const body = document.getElementById('qr-body');
   if (!body) return;
   if (tab === 'sport') body.innerHTML = sportTabHTML();
-  else if (tab === 'sleep') body.innerHTML = sleepTabHTML();
+  else if (tab === 'diet') body.innerHTML = dietTabHTML();
   else if (tab === 'money') body.innerHTML = moneyTabHTML(subType);
   else body.innerHTML = ideaTabHTML();
   const titleEl = document.getElementById('qr-title');
@@ -14253,36 +14042,7 @@ function bindQuickRecordEvents() {
       }
     };
   });
-  // v9273：替换浏览器默认 time picker，用工作台自定义 openTimePicker
-  const bedCard = modal.querySelector('#qr-bed-card');
-  if (bedCard) {
-    bedCard.onclick = async () => {
-      const cur = (modal.querySelector('#qr-bed-val') || {}).textContent || '22:30';
-      const v = await openTimePicker({ initial: cur });
-      if (v !== undefined) {
-        const valEl = modal.querySelector('#qr-bed-val');
-        if (valEl) valEl.textContent = v || cur;
-      }
-    };
-  }
-  const wakeCard = modal.querySelector('#qr-wake-card');
-  if (wakeCard) {
-    wakeCard.onclick = async () => {
-      const cur = (modal.querySelector('#qr-wake-val') || {}).textContent || '06:30';
-      const v = await openTimePicker({ initial: cur });
-      if (v !== undefined) {
-        const valEl = modal.querySelector('#qr-wake-val');
-        if (valEl) valEl.textContent = v || cur;
-      }
-    };
-  }
-  const q = modal.querySelector('#qr-quality');
-  if (q) q.oninput = () => {
-    const v = modal.querySelector('#qr-q-val');
-    if (v) v.textContent = q.value + '分';
-    const fill = modal.querySelector('#qr-range-fill');
-    if (fill) fill.style.width = q.value + '%';
-  };
+  // v9582：睡眠快速记录入口已移除（改为饮食），以下 bed/wake/quality 绑定随之删除
   const noteArea = modal.querySelector('#qr-note');
   if (noteArea) noteArea.oninput = () => {
     const c = modal.querySelector('#qr-note-count');
@@ -14334,14 +14094,15 @@ async function saveQuickRecord() {
     if (!state.exerciseLogs[todayKey]) state.exerciseLogs[todayKey] = [];
     state.exerciseLogs[todayKey].push({ id: uid('ex'), name: note || sportType, duration: minutes, calories: estimateExerciseCalories(sportType, minutes), done: true });
     saveExerciseLogs();
-  } else if (tab === 'sleep') {
-    /* v9368：保存 bed/wake 改读 span textContent——因为 input 是 hidden（v9365）+ openTimePicker 只更新 span 文字，input.value 仍是 hardcoded 默认 */
-    const bed = (modal.querySelector('#qr-bed-val') || {}).textContent || '';
-    const wake = (modal.querySelector('#qr-wake-val') || {}).textContent || '';
-    const quality = parseInt((modal.querySelector('#qr-quality') || {}).value) || 70;
-    const stateChip = modal.querySelector('#qr-sleep-chips .qr-chip.active');
-    const sleepState = stateChip ? stateChip.dataset.s : '一般';
-    localStorage.setItem('xenos-sleep-note', JSON.stringify({ date: getTodayKey(), bed, wake, quality, sleepState, note }));
+  } else if (tab === 'diet') {
+    const typeChip = modal.querySelector('#qr-diet-type .qr-chip.active');
+    const mealType = typeChip ? typeChip.dataset.t : '早餐';
+    const foodRaw = (modal.querySelector('#qr-food') || {}).value || '';
+    if (!foodRaw.trim()) { await appAlert('吃了什么呀～'); return; }
+    const cost = parseFloat((modal.querySelector('#qr-cost') || {}).value) || 0;
+    const text = note.trim() ? foodRaw.trim() + '（' + note.trim() + '）' : foodRaw.trim();
+    addDietMeal(mealType, text, cost, []);
+    toast('已记录到今天饮食');
   } else if (tab === 'money') {
     const amount = parseFloat((modal.querySelector('#qr-amount') || {}).value);
     const typeChip = modal.querySelector('#qr-type-chips .qr-chip.active');
