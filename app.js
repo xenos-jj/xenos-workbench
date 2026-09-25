@@ -737,24 +737,23 @@ function rewardTierByCost(cost) {
 }
 function rewardTierMeta(key) { return REWARD_TIERS.find(t => t.key === key) || REWARD_TIERS[0]; }
 
+// 成就徽章：按难易（易→难）排序；同类相似徽章已精简（积分类仅留「积分千分」）
 const DEFAULT_ACHIEVEMENTS = [
   { id: 'ac-1', icon: 'sunrise', name: '启程', desc: '完成第一次打卡', type: 'checkin', need: 1 },
-  { id: 'ac-2', icon: 'fire', name: '连续三日', desc: '连续打卡 3 天', type: 'streak', need: 3 },
-  { id: 'ac-3', icon: 'mountain', name: '坚持一周', desc: '连续打卡 7 天', type: 'streak', need: 7 },
-  { id: 'ac-4', icon: 'mountains', name: '月度长跑', desc: '连续打卡 30 天', type: 'streak', need: 30 },
-  { id: 'ac-5', icon: 'timer', name: '专注新手', desc: '累计专注 60 分钟', type: 'focus', need: 60 },
-  { id: 'ac-6', icon: 'meditate', name: '心流达人', desc: '累计专注 600 分钟', type: 'focus', need: 600 },
-  { id: 'ac-7', icon: 'gem', name: '积分百分', desc: '累计获得 100 积分', type: 'points', need: 100 },
-  { id: 'ac-8', icon: 'crown', name: '积分千分', desc: '累计获得 1000 积分', type: 'points', need: 1000 },
-  { id: 'ac-9', icon: 'review', name: '复盘习惯', desc: '完成 7 次每日计划', type: 'review', need: 7 },
-  { id: 'ac-10', icon: 'muscle', name: '运动起步', desc: '累计运动 300 分钟', type: 'exercise', need: 300 },
   { id: 'ac-12', icon: 'gift', name: '第一次兑换', desc: '兑换任意一个奖励', type: 'redeem', need: 1 },
-  // v9578：补齐与「积分等级进度」目标对应、徽章里还没有的 6 条
-  { id: 'ac-13', icon: 'zap', name: '专注进阶', desc: '累计专注 5 小时', type: 'focus', need: 300 },
+  { id: 'ac-2', icon: 'fire', name: '连续三日', desc: '连续打卡 3 天', type: 'streak', need: 3 },
   { id: 'ac-14', icon: 'book', name: '开卷', desc: '读完 1 本书', type: 'book', need: 1 },
+  { id: 'ac-9', icon: 'review', name: '复盘习惯', desc: '完成 7 次每日计划', type: 'review', need: 7 },
+  { id: 'ac-5', icon: 'timer', name: '专注新手', desc: '累计专注 60 分钟', type: 'focus', need: 60 },
   { id: 'ac-15', icon: 'wallet', name: '记账达人', desc: '记账累计 30 笔', type: 'money', need: 30 },
-  { id: 'ac-16', icon: 'time', name: '专注大师', desc: '累计专注 20 小时', type: 'focus', need: 1200 },
+  { id: 'ac-3', icon: 'mountain', name: '坚持一周', desc: '连续打卡 7 天', type: 'streak', need: 7 },
+  { id: 'ac-13', icon: 'zap', name: '专注进阶', desc: '累计专注 5 小时', type: 'focus', need: 300 },
+  { id: 'ac-10', icon: 'muscle', name: '运动起步', desc: '累计运动 300 分钟', type: 'exercise', need: 300 },
+  { id: 'ac-4', icon: 'mountains', name: '月度长跑', desc: '连续打卡 30 天', type: 'streak', need: 30 },
   { id: 'ac-17', icon: 'layers', name: '博览', desc: '读完 5 本书', type: 'book', need: 5 },
+  { id: 'ac-6', icon: 'meditate', name: '心流达人', desc: '累计专注 600 分钟', type: 'focus', need: 600 },
+  { id: 'ac-8', icon: 'crown', name: '积分千分', desc: '累计获得 1000 积分', type: 'points', need: 1000 },
+  { id: 'ac-16', icon: 'time', name: '专注大师', desc: '累计专注 20 小时', type: 'focus', need: 1200 },
   { id: 'ac-18', icon: 'flag', name: '百日坚持', desc: '连续记录 100 天', type: 'streak', need: 100 }
 ];
 
