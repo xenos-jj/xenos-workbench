@@ -56,7 +56,8 @@ const DEFAULT_ENGLISH_CHECKIN = {
   version: 1,
   dailyMode: 'standard', // 'standard' | 'simplified'
   totalPoints: 0,
-  history: {} // { '2026-08-17': { mode, restDay, tasks:{words:{done,note},...}, weekly:{wordReview:{done,note},...}, note } }
+  customDaily: [], // 用户自定义的英语每日任务：[{ id, name, points, note }]
+  history: {} // { '2026-08-17': { mode, restDay, tasks:{words:{done,note},...}, weekly:{wordReview:{done,note},...}, custom:{<id>:{done,note}}, note } }
 };
 
 // ---------- 本周洞察：可选数据模块（新增板块时在此扩展） ----------
@@ -548,7 +549,7 @@ const CANONICAL_ICONS = Object.freeze({
   '音乐练习':    { icon: 'music',       desc: '乐器声乐' },
   // 通用
   '碎碎念':      { icon: 'note',        desc: '随记' },
-  '当日计划':    { icon: 'calendar',    desc: '每日计划' },
+  '计划清单':    { icon: 'calendar',    desc: '计划清单' },
   '自我介绍':    { icon: 'user',        desc: '个人档案' },
   '设置':        { icon: 'settings',    desc: '设置' }
 });
@@ -629,7 +630,7 @@ const DEFAULT_GROUPS = [
 
 const MOBILE_TABS = [
   { id: 'tab-home', name: '首页', icon: 'home', target: '工作台首页' },
-  { id: 'tab-plan', name: '计划', icon: 'review', target: '每日计划' },
+  { id: 'tab-plan', name: '计划清单', icon: 'review', target: '计划清单' },
   { id: 'tab-focus', name: '专注', icon: 'clock', action: 'focus' },
   { id: 'tab-money', name: '记账', icon: 'coins', target: '记账' },
   { id: 'tab-health', name: '健康', icon: 'health', target: '身体小状况' }
@@ -1980,6 +1981,7 @@ function getEnglishToday() {
       restDay: false,
       tasks: {},
       weekly: {},
+      custom: {},
       note: ''
     };
     ENGLISH_DAILY_TASKS.forEach(t => { state.englishCheckin.history[today].tasks[t.key] = { done: false, note: '' }; });
@@ -2027,23 +2029,64 @@ function setEnglishWeeklyDone(taskKey, done, note) {
 function toggleEnglishTask(type, taskKey) {
   const today = getTodayKey();
   const day = getEnglishToday();
-  const pool = type === 'weekly' ? day.weekly : day.tasks;
+  const pool = type === 'weekly' ? day.weekly : (type === 'custom' ? day.custom : day.tasks);
   if (!pool[taskKey]) pool[taskKey] = { done: false, note: '' };
   pool[taskKey].done = !pool[taskKey].done;
   const task = type === 'weekly'
     ? ENGLISH_WEEKLY_TASKS.find(t => t.key === taskKey)
-    : ENGLISH_DAILY_TASKS.find(t => t.key === taskKey);
+    : (type === 'custom' ? (state.englishCheckin.customDaily || []).find(t => t.id === taskKey) : ENGLISH_DAILY_TASKS.find(t => t.key === taskKey));
   if (task) {
-    state.englishCheckin.totalPoints = (state.englishCheckin.totalPoints || 0) + (pool[taskKey].done ? task.points : -task.points);
+    state.englishCheckin.totalPoints = (state.englishCheckin.totalPoints || 0) + (pool[taskKey].done ? (task.points || 0) : -(task.points || 0));
   }
   saveEnglishCheckin();
 }
 
 function setEnglishTaskNote(type, taskKey, note) {
   const day = getEnglishToday();
-  const pool = type === 'weekly' ? day.weekly : day.tasks;
+  const pool = type === 'weekly' ? day.weekly : (type === 'custom' ? day.custom : day.tasks);
   if (!pool[taskKey]) pool[taskKey] = { done: false, note: '' };
   pool[taskKey].note = note;
+  saveEnglishCheckin();
+}
+
+// v9594：用户自定义英语每日任务（从计划清单页「英语」模块新增）
+function getEnglishCustomDaily() {
+  if (!state.englishCheckin.customDaily) state.englishCheckin.customDaily = [];
+  return state.englishCheckin.customDaily;
+}
+function addEnglishCustomTask(name) {
+  const list = getEnglishCustomDaily();
+  const id = uid('ec');
+  list.push({ id, name, points: 2, note: '' });
+  const day = getEnglishToday();
+  if (!day.custom) day.custom = {};
+  if (!day.custom[id]) day.custom[id] = { done: false, note: '' };
+  saveEnglishCheckin();
+}
+function toggleEnglishCustomTask(id) {
+  const day = getEnglishToday();
+  if (!day.custom) day.custom = {};
+  if (!day.custom[id]) day.custom[id] = { done: false, note: '' };
+  const task = (state.englishCheckin.customDaily || []).find(t => t.id === id);
+  day.custom[id].done = !day.custom[id].done;
+  if (task) {
+    state.englishCheckin.totalPoints = (state.englishCheckin.totalPoints || 0) + (day.custom[id].done ? (task.points || 0) : -(task.points || 0));
+  }
+  saveEnglishCheckin();
+}
+function deleteEnglishCustomTask(id) {
+  const list = getEnglishCustomDaily();
+  const task = list.find(t => t.id === id);
+  if (!task) return;
+  // 回退所有历史日期里已打卡的积分
+  const hist = state.englishCheckin.history || {};
+  Object.values(hist).forEach(d => {
+    if (d.custom && d.custom[id] && d.custom[id].done) {
+      state.englishCheckin.totalPoints = (state.englishCheckin.totalPoints || 0) - (task.points || 0);
+    }
+    if (d.custom) delete d.custom[id];
+  });
+  state.englishCheckin.customDaily = list.filter(t => t.id !== id);
   saveEnglishCheckin();
 }
 
@@ -2119,10 +2162,13 @@ function getEnglishStageProgress() {
 
 function getEnglishDailyDone() {
   const day = getEnglishToday();
-  if (day.restDay) return { exempt: true, done: !!(day.tasks || {}).words && (day.tasks || {}).words.done, total: ENGLISH_DAILY_TASKS.length };
+  const customList = state.englishCheckin.customDaily || [];
+  let customDone = 0;
+  customList.forEach(t => { if (day.custom && day.custom[t.id] && day.custom[t.id].done) customDone++; });
+  if (day.restDay) return { exempt: true, done: (!!(day.tasks || {}).words && (day.tasks || {}).words.done) + customDone, total: ENGLISH_DAILY_TASKS.length };
   let done = 0;
   ENGLISH_DAILY_TASKS.forEach(t => { if ((day.tasks || {})[t.key] && (day.tasks || {})[t.key].done) done++; });
-  return { done, total: ENGLISH_DAILY_TASKS.length };
+  return { done: done + customDone, total: ENGLISH_DAILY_TASKS.length + customList.length };
 }
 
 function loadVideoEdit() {
@@ -2227,7 +2273,7 @@ function loadGroups() {
       // v9291：移除 每日计划 / 本周洞察 / 我的支线 / 书籍阅读 / 学习成长（仅删侧边栏导航，页面本体保留）
       // v9565：健康整合页已整页删除 → 老菜单里同步剔除「健康」入口
       // v9572：系统面板页整页删除 → 老菜单里同步剔除「系统面板」入口
-      const removed = new Set(['历史', '内容素材库', '旅行体验', '社交拓展', '每日计划', '本周洞察', '我的支线', '书籍阅读', '学习成长', '健康', '系统面板']);
+      const removed = new Set(['历史', '内容素材库', '旅行体验', '社交拓展', '每日计划', '当日计划', '本周洞察', '我的支线', '书籍阅读', '学习成长', '健康', '系统面板']);
       // v9317：兼容旧的「社交拓展」入口过滤（已迁移为「爱好拓展」）
       parsed.data.forEach(g => {
         if (Array.isArray(g.items)) {
@@ -3891,7 +3937,6 @@ function initSwipeBack() {
 // 页面路由表：菜单项名称 -> 渲染函数
 const PAGE_ROUTES = {
   '工作台首页': renderOverview,
-  '每日计划': renderDailyReview,
   '本周洞察': renderInsightPage,
   '奖励池': renderRewards,
   '成就殿堂': renderAchievements,
@@ -3920,7 +3965,9 @@ const PAGE_ROUTES = {
   '音乐练习': renderMusicPage,
   // 成长提升（书籍阅读/视频剪辑/3D建模 为懒加载模块，见 LAZY_PAGES）
   // 保留的功能页（由领域页的工具入口跳转）
+  '计划清单': renderDailyPlan,
   '每日计划': renderDailyPlan,
+  '当日计划': renderDailyPlan,
   '饮食': renderDiet,
   '健身': renderFitness,
   '睡眠管理': renderSleepPage,
@@ -3956,7 +4003,7 @@ function loadLazyPage(name, cb) {
 
 // 功能子页 -> 返回目标（这些页面由领域页/支线卡跳转进来）
 const SUB_PAGE_PARENT = {
-  '每日计划': '工作台首页',
+  '计划清单': '工作台首页',
   '饮食': '我的支线',
   '健身': '我的支线',
   '睡眠管理': '我的支线',
@@ -3984,7 +4031,7 @@ const PAGE_BACK_FALLBACK = {
   '本周洞察': '工作台首页',
   '自我介绍': '工作台首页',
   '设置': '工作台首页',
-  '每日计划': '工作台首页',
+  '计划清单': '工作台首页',
   '饮食': '我的支线',
   '健身': '我的支线',
   '睡眠管理': '我的支线',
@@ -4249,7 +4296,8 @@ function togglePlanForDate(planId, dateKey) {
   return true;
 }
 
-// v9589：当日任务聚合唯一来源（当日计划页 + 首页「每日计划」环卡共用，保证数量一致）
+// v9594：计划清单聚合唯一来源（计划清单页 + 首页「计划清单」环卡共用，保证数量一致）。
+// 仅聚合 运动 / 英语 / 外貌 三块；记账、手动计划两块已从本页移除（源数据 state.domains.money / state.plans 全部保留，不动其他页面）。
 function getDailyPlanAgg(dateKey) {
   const todayKey = getTodayKey();
   const isToday = dateKey === todayKey;
@@ -4258,9 +4306,7 @@ function getDailyPlanAgg(dateKey) {
   const CATS = [
     { key: '运动', icon: 'dumbbell', color: FOCUS_COLORS['运动'], rows: [] },
     { key: '英语', icon: 'book', color: FOCUS_COLORS['英语'], rows: [] },
-    { key: '外貌', icon: 'sparkles', color: FOCUS_COLORS['护肤'], rows: [] },
-    { key: '记账', icon: 'coins', color: FOCUS_COLORS['记账'], rows: [] },
-    { key: '计划', icon: 'list', color: FOCUS_COLORS['日常'] || { bg: '#F8F4EF', border: '#E8DDD1', color: '#A99A8A' }, rows: [] }
+    { key: '外貌', icon: 'sparkles', color: FOCUS_COLORS['护肤'], rows: [] }
   ];
 
   // 运动：运动计划（今日）+ 自定义运动
@@ -4273,15 +4319,19 @@ function getDailyPlanAgg(dateKey) {
     CATS[0].rows.push({ id: String(idx), source: 'fitness-ex', name: ex.name, points: 3, done: !!ex.done });
   });
 
-  // 英语每日任务
+  // 英语每日任务（固定 + 用户自定义）
   ENGLISH_DAILY_TASKS.forEach(t => {
     const td = (engDay && engDay.tasks && engDay.tasks[t.key]) || { done: false };
     const locked = !!(engDay && engDay.restDay && t.key !== 'words');
     CATS[1].rows.push({ id: t.key, source: 'english', name: t.name, points: t.points, done: !!td.done, locked });
   });
+  (state.englishCheckin.customDaily || []).forEach(t => {
+    const td = (engDay && engDay.custom && engDay.custom[t.id]) || { done: false };
+    CATS[1].rows.push({ id: t.id, source: 'english-custom', name: t.name, points: t.points || 2, done: !!td.done });
+  });
 
-  // 支线行动：外貌 / 记账 领域任务
-  const DOMAIN_MAP = [['外貌', 'looks', 2], ['记账', 'money', 3]];
+  // 支线行动：外貌 领域任务（v9594 起仅外貌，记账块已移出本页）
+  const DOMAIN_MAP = [['外貌', 'looks', 2]];
   DOMAIN_MAP.forEach(([label, key, ci]) => {
     const domain = state.domains[key] || { tasks: [] };
     (domain.tasks || []).forEach(task => {
@@ -4292,16 +4342,6 @@ function getDailyPlanAgg(dateKey) {
     });
   });
 
-  // 计划：手动新增（今日=state.plans 非运动计划；历史=planHistory 非运动计划）
-  if (isToday) {
-    state.plans.filter(p => p.group !== '运动计划').forEach(p => {
-      CATS[4].rows.push({ id: p.id, source: 'manual', name: p.text, points: p.points || 2, done: !!p.done });
-    });
-  } else {
-    (state.planHistory[dateKey] || []).filter(p => p.group !== '运动计划').forEach(p => {
-      CATS[4].rows.push({ id: p.id, source: 'manual', name: p.text, points: p.points || 2, done: !!p.done });
-    });
-  }
   return CATS;
 }
 
@@ -4313,6 +4353,8 @@ function renderDailyPlan(host, embedded = false, dateKeyOverride = null) {
   const viewKey = dateKeyOverride || (isEmbedded ? todayKey : (SLOW_VIEW.plan || todayKey));
   const isToday = viewKey === todayKey;
   const readOnly = !isToday;
+  // v9594：当前查看日期对应的英语打卡节点（修复之前 source==='english' 引用未定义 engDay 的报错）
+  const engDay = (state.englishCheckin.history || {})[viewKey] || null;
 
   const CATS = getDailyPlanAgg(viewKey);
 
@@ -4341,6 +4383,8 @@ function renderDailyPlan(host, embedded = false, dateKeyOverride = null) {
       delData = 'data-del-type="eng-task" data-type="daily" data-key="' + r.id + '"';
     } else if (r.source === 'domain') {
       delData = 'data-del-type="domain-task" data-domain="' + r.dkey + '" data-id="' + r.id + '"';
+    } else if (r.source === 'english-custom') {
+      delData = 'data-del-type="eng-custom" data-id="' + r.id + '"';
     }
     const actions = readOnly
       ? ''
@@ -4359,14 +4403,16 @@ function renderDailyPlan(host, embedded = false, dateKeyOverride = null) {
   }
 
   function sectionHTML(cat) {
-    if (!cat.rows.length && !(cat.key === '计划' && isToday)) return '';
+    // v9594：今日可编辑时即使无任务也展示该模块（含内联新增行）；历史/只读且无任务则隐藏
+    if (!cat.rows.length && (!isToday || readOnly)) return '';
     const catDone = cat.rows.filter(r => r.done).length;
     const catPts = cat.rows.filter(r => r.done).reduce((s, r) => s + (r.points || 0), 0);
     const rows = cat.rows.map(r => rowHTML(r, cat)).join('');
-    const addRow = (cat.key === '计划' && isToday)
-      ? '<div class="sk-add-row plan-add-row">' +
-          '<input type="text" class="lk-input" id="plan-add-input" placeholder="新增计划，如：拍一条阳台改造 vlog">' +
-          '<button class="lk-mini-btn" id="plan-add-btn">+ 新增</button>' +
+    // v9594：每个模块底部内联「新增」（参考护肤页 .sk-add-inline），与右侧全局 + 分开
+    const addRow = (isToday && !readOnly)
+      ? '<div class="sk-add-inline plan-add-inline" data-add-cat="' + cat.key + '">' +
+          '<input class="lk-input" data-plan-add-input placeholder="加一个' + cat.key + '任务...">' +
+          '<button class="lk-mini-btn" data-plan-add-btn aria-label="添加">' + icon('plus', 12) + '</button>' +
         '</div>'
       : '';
     return '' +
@@ -4385,7 +4431,7 @@ function renderDailyPlan(host, embedded = false, dateKeyOverride = null) {
   }
 
   card.innerHTML = '' +
-    (isEmbedded ? '' : '<div class="domain-hero"><div class="domain-head"><div><h3 class="domain-title">当日计划</h3></div></div></div>') +
+    (isEmbedded ? '' : '<div class="domain-hero"><div class="domain-head"><div><h3 class="domain-title">计划清单</h3></div></div></div>') +
     (isEmbedded ? '' : '<div class="sk-mini-date">' + skMiniDateHTML(viewKey) + '</div>') +
     (isEmbedded ? '' : '<div class="module-rule-banner"><span class="mrb-icon">' + icon('info', 12) + '</span><span class="mrb-text">把今天散落在各处的任务收拢到这里：勾掉一项，就同步回它原本的页面。</span></div>') +
     '<div class="sk-day-head">' +
@@ -4403,7 +4449,7 @@ function renderDailyPlan(host, embedded = false, dateKeyOverride = null) {
     bindSlowMiniDate(card, 'plan', null, () => renderDailyPlan(), null);
   }
 
-  // 勾选同步回源页面
+  // 勾选同步回源页面（v9594：整行可点，排除操作按钮/新增行/input）
   card.addEventListener('click', (e) => {
     const edit = e.target.closest('.plan-edit-btn');
     if (edit) {
@@ -4412,62 +4458,79 @@ function renderDailyPlan(host, embedded = false, dateKeyOverride = null) {
       handlePlanRowEdit(edit.dataset.editSource, edit.dataset.editId, edit.dataset.editDkey);
       return;
     }
-    const check = e.target.closest('.ex-check');
-    if (!check) return;
-    if (readOnly) { toast('历史记录只读，无法勾选'); return; }
-    const row = check.closest('.plan-task-row');
+    if (e.target.closest('.module-item-actions')) return;
+    if (e.target.closest('.plan-add-inline')) return;
+    if (e.target.closest('input, button')) return;
+    const row = e.target.closest('.plan-task-row');
     if (!row) return;
+    if (readOnly) { toast('历史记录只读，无法勾选'); return; }
     const source = row.dataset.source;
     const id = row.dataset.id;
     const dkey = row.dataset.dkey;
+    let changed = true;
     if (source === 'fitness-plan') {
       const plan = state.plans.find(p => p.id === id);
       if (!plan) return;
-      plan.done = !plan.done; savePlans(); syncPlanWithDomainTask(plan); updateTodayCheckin(); renderProfileCard(); renderTopbar();
+      plan.done = !plan.done; savePlans(); syncPlanWithDomainTask(plan); updateTodayCheckin();
     } else if (source === 'fitness-ex') {
       const idx = parseInt(id, 10); if (isNaN(idx)) return;
-      viewEx[idx].done = !viewEx[idx].done; saveExerciseLogs(); renderProfileCard(); renderTopbar();
+      viewEx[idx].done = !viewEx[idx].done; saveExerciseLogs();
     } else if (source === 'english') {
       if (engDay && engDay.restDay && id !== 'words') { toast('休息日只需完成背单词'); return; }
-      toggleEnglishTask('daily', id); renderProfileCard(); renderTopbar();
+      toggleEnglishTask('daily', id);
+    } else if (source === 'english-custom') {
+      toggleEnglishCustomTask(id);
     } else if (source === 'domain') {
-      toggleDomainTask(dkey, id, { inPlace: true }); renderProfileCard(); renderTopbar();
-      renderDailyPlan(host, embedded, dateKeyOverride); return;
+      toggleDomainTask(dkey, id, { inPlace: true });
     } else if (source === 'manual') {
       const plans = isToday ? state.plans : (state.planHistory[viewKey] || []);
       const plan = plans.find(p => p.id === id);
       if (!plan) return;
       if (isToday) { plan.done = !plan.done; savePlans(); snapshotTodayPlans(); updateTodayCheckin(); }
       else { ensurePlanHistory(viewKey); const h = (state.planHistory[viewKey] || []).find(p => p.id === id); if (h) h.done = plan.done; savePlanHistory(); }
-      renderProfileCard(); renderTopbar();
+    } else {
+      changed = false;
     }
-    renderDailyPlan(host, embedded, dateKeyOverride);
+    if (changed) {
+      renderProfileCard(); renderTopbar();
+      renderDailyPlan(host, embedded, dateKeyOverride);
+    }
   });
 
-  // 手动新增（保留在底部）
-  const addInput = card.querySelector('#plan-add-input');
-  const addBtn = card.querySelector('#plan-add-btn');
-  if (addBtn) {
-    function addPlanItem() {
-      const text = addInput.value.trim();
+  // v9594：每个模块底部内联新增（运动计划 / 英语自定义任务 / 外貌领域任务），与全局 + 分开
+  card.querySelectorAll('.plan-add-inline').forEach(wrap => {
+    const catKey = wrap.dataset.addCat;
+    const input = wrap.querySelector('[data-plan-add-input]');
+    const btn = wrap.querySelector('[data-plan-add-btn]');
+    function addItem() {
+      const text = input.value.trim();
       if (!text) return;
-      const plan = { id: uid('p'), text, done: false, group: '计划', points: 2 };
-      ensurePlanGroup('计划');
-      state.plans.push(plan);
-      savePlans();
-      snapshotTodayPlans();
-      addInput.value = '';
+      if (catKey === '运动') {
+        const plan = { id: uid('p'), text, done: false, group: '运动计划', points: 3 };
+        ensurePlanGroup('运动计划');
+        state.plans.push(plan);
+        savePlans();
+        syncPlanWithDomainTask(plan);
+        snapshotTodayPlans();
+      } else if (catKey === '英语') {
+        addEnglishCustomTask(text);
+      } else if (catKey === '外貌') {
+        const dom = state.domains.looks;
+        if (dom) dom.tasks.push({ id: uid('looks-t'), text, points: 0, done: false, doneDate: '' });
+        saveDomains();
+      }
+      input.value = '';
       renderDailyPlan(host, embedded, dateKeyOverride);
       if (isToday) updateTodayCheckin();
     }
-    addBtn.addEventListener('click', addPlanItem);
-    addInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') addPlanItem(); });
-  }
+    btn.addEventListener('click', addItem);
+    input.addEventListener('keydown', (e) => { if (e.key === 'Enter') addItem(); });
+  });
 
   if (isToday) updateTodayCheckin();
 }
 
-// 当日计划：长按编辑任意来源行，回写其原始页面数据
+// 计划清单：长按编辑任意来源行，回写其原始页面数据
 function handlePlanRowEdit(source, id, dkey) {
   if (source === 'manual' || source === 'fitness-plan') {
     const plan = state.plans.find(p => p.id === id);
@@ -4500,6 +4563,15 @@ function handlePlanRowEdit(source, id, dkey) {
     openModal('编辑备注', (engDay.tasks[id].note || ''), '').then(v => {
       if (v === null) return;
       engDay.tasks[id].note = v.trim();
+      saveEnglishCheckin(); renderDailyPlan();
+    });
+  } else if (source === 'english-custom') {
+    const list = getEnglishCustomDaily();
+    const task = list.find(t => t.id === id);
+    if (!task) return;
+    openModal('编辑任务', task.name, '').then(v => {
+      if (v === null) return;
+      task.name = v.trim() || task.name;
       saveEnglishCheckin(); renderDailyPlan();
     });
   }
@@ -7629,7 +7701,7 @@ function getPointRankingItems() {
     { name: '穿搭', icon: 'shirt', value: getLooksTabPoints('outfit') },
     { name: '妆容', icon: 'brush', value: getLooksTabPoints('makeup') },
     { name: '记账', icon: 'coins', value: getDomainPoints('money') },
-    { name: '每日计划', icon: 'review', value: getPlanPoints() },
+    { name: '计划清单', icon: 'review', value: getPlanPoints() },
     { name: '专注', icon: 'clock', value: getFocusPoints() },
     { name: '每日复盘', icon: 'note', value: getReviewCount() * 5 },
     { name: '英语学习', icon: 'language', value: getLanguagePoints() },
@@ -8350,7 +8422,7 @@ function renderOverview() {
 
     <div class="hp-section-title">今日概览</div>
     <div class="hp-rings">
-      ${overviewRingHTML(habitPct, 'ring-peach', habitIcon, '每日计划', habitPct + '%', habitVal, '#E8B4A8', '每日计划')}
+      ${overviewRingHTML(habitPct, 'ring-peach', habitIcon, '计划清单', habitPct + '%', habitVal, '#E8B4A8', '计划清单')}
       ${overviewRingHTML(sleepPct, 'ring-purple', sleepIcon, '睡眠', sleepPct + '%', sleepVal, '#B8AAD8', '睡眠管理')}
       ${overviewRingHTML(sportPct, 'ring-green', sportIcon, '运动', sportPct + '%', sportVal, '#9ACB86', '健身')}
       ${overviewRingHTML(langPct, 'ring-purple', langIcon, '学英语', langPct + '%', langVal, '#8978C3', '学习成长')}
@@ -9164,7 +9236,7 @@ function toggleDomainTask(key, taskId, opts) {
   renderContent();
 }
 
-// ============ 每日计划 ============
+// ============ 计划清单 ============
 function getReview(dateKey) {
   if (!state.dailyReviews[dateKey]) {
     state.dailyReviews[dateKey] = { ...DEFAULT_DAILY_REVIEW };
@@ -9190,7 +9262,7 @@ function renderDailyReview() {
     ${dateBarHTML(dateKey, { id: 'review-date-trigger' })}
 
     <div class="review-stats">
-      <div class="review-stat" data-jump="每日计划"><div class="rs-val">${isToday ? prog.done : '-'}</div><div class="rs-label">完成任务</div></div>
+      <div class="review-stat" data-jump="计划清单"><div class="rs-val">${isToday ? prog.done : '-'}</div><div class="rs-label">完成任务</div></div>
       <div class="review-stat" data-jump="本周洞察"><div class="rs-val">${focusMin}</div><div class="rs-label">专注分钟</div></div>
       <div class="review-stat" data-jump="成就殿堂"><div class="rs-val gold">${dayPoints}</div><div class="rs-label">当日积分</div></div>
       <div class="review-stat" data-jump="本周洞察"><div class="rs-val">${calcStreak()}</div><div class="rs-label">连续天数</div></div>
@@ -9941,6 +10013,11 @@ document.addEventListener('click', (e) => {
     }
     if (pool[taskKey]) { pool[taskKey].done = false; pool[taskKey].note = ''; }
     saveEnglishCheckin();
+    renderContent();
+    return;
+  }
+  if (type === 'eng-custom') {
+    deleteEnglishCustomTask(id);
     renderContent();
     return;
   }
@@ -11300,7 +11377,7 @@ function renderBranchesPage() {
   });
 
   const keepManage = page.querySelector('[data-manage="keep"]');
-  if (keepManage) keepManage.addEventListener('click', () => selectItem('每日计划'));
+  if (keepManage) keepManage.addEventListener('click', () => selectItem('计划清单'));
 
   const slowManage = page.querySelector('[data-manage="slow"]');
   if (slowManage) slowManage.addEventListener('click', openSlowBranchPicker);
@@ -11534,6 +11611,25 @@ function renderStudyPage() {
       </div>`;
   }
 
+  function customTaskHTML(t) {
+    const day = getEnglishToday();
+    const td = (day.custom || {})[t.id] || { done: false, note: '' };
+    return `
+      <div class="eng-task-row ${td.done ? 'done' : ''}" data-type="custom" data-key="${t.id}">
+        <div class="eng-task-main" style="--eng-color:#8978C3;--eng-bg:#EDE9F7">
+          <div class="eng-task-check ${td.done ? 'on' : ''}"><input type="checkbox" data-eng-check="1" ${td.done ? 'checked' : ''} aria-label="${escapeHTML(t.name)}"></div>
+          <div class="eng-task-info">
+            <div class="eng-task-name">${escapeHTML(t.name)}</div>
+            <div class="eng-task-sub">自定义任务</div>
+          </div>
+          <span class="eng-task-points">+${t.points || 0}</span>
+        </div>
+        <button class="item-delete" data-del-type="eng-custom" data-id="${t.id}" aria-label="删除记录">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+        </button>
+      </div>`;
+  }
+
   function stagesHTML() {
     return `<div class="eng-stages">${stages.map((s, idx) => `
       <div class="eng-stage ${s.active ? 'active' : ''} ${s.past ? 'past' : ''}">
@@ -11604,6 +11700,7 @@ function renderStudyPage() {
       <div class="soft-card-title">${icon('check', 14)} 今日学习任务</div>
       <div class="eng-daily-list">
         ${ENGLISH_DAILY_TASKS.map(dailyTaskHTML).join('')}
+        ${getEnglishCustomDaily().map(customTaskHTML).join('')}
       </div>
       <label class="eng-rest-row">
         <input type="checkbox" id="eng-rest-day" ${day.restDay ? 'checked' : ''}>
@@ -13510,7 +13607,7 @@ function renderSettingsPage() {
     <div class="section-card" id="me-focus-card" hidden style="margin-top:14px;">
       <div class="soft-card-title">${icon('bell', 16)} 提醒与专注</div>
       <div class="setting-row"><div class="setting-label">专注提醒<small>开始专注时通知</small></div><span class="switch-on">已开启</span></div>
-      <div class="setting-row"><div class="setting-label">每日计划提醒<small>晚间固定提醒</small></div><span class="setting-val">21:00</span></div>
+      <div class="setting-row"><div class="setting-label">计划清单提醒<small>晚间固定提醒</small></div><span class="setting-val">21:00</span></div>
       <div class="setting-row"><div class="setting-label">习惯打卡提醒<small>每日打卡</small></div><span class="switch-on">已开启</span></div>
       <div class="setting-row"><div class="setting-label">专注默认时长</div>
         <div class="focus-presets" style="justify-content:flex-start;">
@@ -13849,6 +13946,28 @@ function renderInsightPage() {
     return '';
   }
 
+  // v9594：计划清单近 14 天每日完成率折线（与计划清单页同源：getDailyPlanAgg）
+  function planTrendData() {
+    const days = [];
+    const labels = [];
+    for (let i = 13; i >= 0; i--) {
+      const k = shiftDate(getTodayKey(), -i);
+      days.push(k);
+      labels.push(parseInt(k.slice(8), 10) + ''); // 日号
+    }
+    const values = days.map(d => {
+      const cats = getDailyPlanAgg(d);
+      let total = 0, done = 0;
+      cats.forEach(c => c.rows.forEach(r => { total++; if (r.done) done++; }));
+      return total ? Math.round(done / total * 100) : 0;
+    });
+    return { labels, values };
+  }
+  const planTrend = planTrendData();
+  const planSeries = [{ id: 'plan', name: '计划清单完成率', color: '#E8B4A8', values: planTrend.values }];
+  const planTrendSVG = multiSeriesLineChart(planSeries, planTrend.labels, null);
+  const planToday = planTrend.values[planTrend.values.length - 1];
+
   page.innerHTML = '<div class="insp-page">'
     + '<div class="insp-top">'
     + '<div class="insp-top-left">'
@@ -13864,6 +13983,9 @@ function renderInsightPage() {
 
     + '<div class="insp-cards-grid" id="insp-cards-grid">' + cardsHTML() + '</div>'
 
+    + '<div class="insp-section"><div class="insp-section-head"><span class="insp-section-title"><span class="insp-sec-spark">' + icon('sparkle', 14) + '</span> 计划清单完成趋势</span><span class="insp-heat-legend">近 14 天每日完成率 · 今日 ' + planToday + '% › 点击看明细</span></div>'
+    + '<div class="insp-line-card insp-plan-trend" id="insp-plan-card"><div class="insp-line-wrap" id="insp-plan-wrap">' + planTrendSVG + '</div></div></div>'
+
     + '<div class="insp-section"><div class="insp-section-head"><span class="insp-section-title"><span class="insp-sec-spark">' + icon('sparkle', 14) + '</span> 每周数据变化</span></div>'
     + '<div class="insp-line-card combined-line-card"><div class="insp-line-wrap" id="insp-line-wrap"></div><div class="insp-line-legend" id="insp-line-legend">' + allStats.map(legendItemHTML).join('') + '</div></div></div>'
 
@@ -13878,6 +14000,8 @@ function renderInsightPage() {
 
   page.querySelector('#insp-week-btn').addEventListener('click', openWeekPicker);
   page.querySelector('#insp-diy-btn').addEventListener('click', openInsightDIY);
+  const planCard = page.querySelector('#insp-plan-card');
+  if (planCard) planCard.addEventListener('click', () => selectItem('计划清单'));
   page.querySelectorAll('.insp-cat-card').forEach(el => {
     el.addEventListener('click', () => {
       const st = allStats.find(x => x.id === el.dataset.cat);
