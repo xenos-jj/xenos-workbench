@@ -4400,8 +4400,8 @@ function renderDailyPlan(host, embedded = false, dateKeyOverride = null) {
     const actions = readOnly
       ? ''
       : '<div class="module-item-actions">' +
-          '<button class="module-act-btn plan-edit-btn" data-edit-source="' + r.source + '" data-edit-id="' + r.id + '"' + (r.dkey ? ' data-edit-dkey="' + r.dkey + '"' : '') + ' aria-label="编辑">' + icon('edit', 11) + '</button>' +
-          '<button class="item-delete" ' + delData + ' aria-label="删除">' + icon('delete', 11) + '</button>' +
+          '<button class="module-act-btn module-edit-btn plan-edit-btn" data-edit-source="' + r.source + '" data-edit-id="' + r.id + '"' + (r.dkey ? ' data-edit-dkey="' + r.dkey + '"' : '') + ' aria-label="编辑">' + icon('edit', 11) + '</button>' +
+          '<button class="item-delete module-act-btn module-del-btn" ' + delData + ' aria-label="删除">' + icon('delete', 11) + '</button>' +
         '</div>';
     return '' +
       '<div class="exercise-row plan-task-row' + (r.done ? ' done' : '') + lockedCls + '" data-source="' + r.source + '" data-id="' + r.id + '"' + (r.dkey ? ' data-dkey="' + r.dkey + '"' : '') + '>' +

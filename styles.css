@@ -8478,6 +8478,14 @@ select.pf-input {
 .module-act-btn.module-del-btn { color: #d9534f; border-color: #f0c8c5; }
 .module-act-btn:hover { background: var(--bg-soft); }
 .module-act-btn.module-del-btn:hover { background: var(--danger-hover); }
+/* v9598：长按操作条统一对齐仪态页——操作条显现时积分隐藏。
+   修复：.skincare-page .module-list-item{padding:7px 10px}(9793) 在源码后部覆盖了
+   .module-list-item.show-delete{padding-right:52px}(8469)，slow-skin 页（晨间秩序等）
+   积分不被推走，且 .mli-points 的 margin-right:8px 使其露出删除圆钮遮盖区一小条；
+   仪态页只是因 .mli-pts 无 margin-right 恰好被圆钮盖住。统一为显现即隐藏积分。 */
+.module-list-item.show-delete .mli-points,
+.module-list-item.show-delete .mli-pts,
+.exercise-row.show-delete .ex-points { display: none; }
 
 .module-list-item .mli-main { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .module-list-item .mli-name { font-size: 11px; color: var(--text); font-weight: 600; }
