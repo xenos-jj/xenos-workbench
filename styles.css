@@ -10686,3 +10686,9 @@ body.home-bg .topbar {
    仅作用域 .sleep-page（renderSleepPage 专属类），不影响运动/饮食/护肤等页面。 */
 .skincare-page.sleep-page .study-goal,
 .skincare-page.sleep-page .section-card.module-card { margin-bottom: 12px; }
+
+/* v9596：「睡眠记录中」卡离日期行的距离对齐运动页提示横幅（都是 18px）——
+   .slow-skin .section-card:not(.slow-checkin) 给 section-card 强加了 margin-top:18px !important，
+   叠在 .sk-mini-date 的 18px 下边距上，导致睡眠卡距日期 36px（运动横幅仅 18px）。
+   仅收回 sleep-page 的 study-goal 顶部这 18px；卡间节奏（module-card mt=18）不受影响。 */
+.skincare-page.sleep-page .study-goal { margin-top: 0 !important; }
