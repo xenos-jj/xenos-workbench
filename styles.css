@@ -10555,7 +10555,7 @@ body.home-bg .topbar {
 
 /* 任务行（复用 .exercise-row，与护肤页 .module-list-item 行高/卡片框一致） */
 .plan-page .plan-task-row { padding: 7px 10px; min-height: 32px; position: relative; }
-.plan-page .plan-task-row .ex-check { width: 18px; height: 18px; }
+.plan-page .plan-task-row .ex-check { width: 18px; height: 18px; background: #fff; } /* v9595：白底对齐护肤页 .mli-check，圈感更实 */
 .plan-cat-icon { flex-shrink: 0; display: inline-flex; align-items: center; }
 .plan-task-row .plan-cat-icon svg { width: 12px; height: 12px; }
 .plan-task-row .cat-dot { margin-right: 0; }
@@ -10578,25 +10578,9 @@ body.home-bg .topbar {
 /* 手动新增行（复用护肤页 .sk-add-row 视觉） */
 .plan-add-row { margin-top: 10px; }
 
-/* v9594：每个模块底部内联「新增」（参考护肤页 .sk-add-inline，但与全局 + 分开）
-   显式覆盖 .skincare-page .sk-add-inline 的透明默认，给出带边框的可见行 */
-.plan-page .plan-add-inline {
-  display: flex; align-items: center; gap: 6px;
-  margin-top: 8px; padding: 0 10px; height: 34px; box-sizing: border-box;
-  border: 1px dashed var(--border-soft); border-radius: 10px; background: #fff;
-}
-.plan-page .plan-add-inline .lk-input {
-  flex: 1 1 auto; min-width: 0; width: auto;
-  border: none; background: transparent; box-shadow: none; outline: none;
-  padding: 6px 0; font-size: 11.5px; color: var(--text); font-family: var(--font);
-}
-.plan-page .plan-add-inline .lk-input::placeholder { color: var(--text-muted); }
-.plan-page .plan-add-inline .lk-mini-btn {
-  flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center;
-  border: 1px solid var(--border-soft); border-radius: 8px; background: var(--bg);
-  color: var(--text-muted); padding: 6px 10px;
-}
-.plan-page .plan-add-inline .lk-mini-btn:hover { border-color: var(--primary); color: var(--text); background: var(--primary-light); }
+/* v9595：新增行完全复用护肤页 .sk-add-inline 规格（细边输入框 + 细边➕，各自独立圆角框）
+   页面根已带 .skincare-page，删除 v9594 的虚线容器覆盖后自动与护肤页同款；此处仅补与上方任务行的间距 */
+.plan-page .plan-add-inline { margin-top: 7px !important; }
 /* 洞察页计划清单趋势卡：可点击 */
 .insp-plan-trend { cursor: pointer; transition: box-shadow .15s ease, transform .15s ease; }
 .insp-plan-trend:hover { box-shadow: 0 4px 14px rgba(168, 154, 138, 0.18); transform: translateY(-1px); }

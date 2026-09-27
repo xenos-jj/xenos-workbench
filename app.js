@@ -4394,7 +4394,6 @@ function renderDailyPlan(host, embedded = false, dateKeyOverride = null) {
         '</div>';
     return '' +
       '<div class="exercise-row plan-task-row' + (r.done ? ' done' : '') + lockedCls + '" data-source="' + r.source + '" data-id="' + r.id + '"' + (r.dkey ? ' data-dkey="' + r.dkey + '"' : '') + '>' +
-        '<span class="plan-cat-icon" style="color:' + cat.color.color + '">' + icon(cat.icon, 12) + '</span>' +
         '<span class="ex-check"' + chkStyle + '><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>' +
         '<span class="ex-name">' + escapeHTML(r.name) + '</span>' +
         '<span class="ex-points">+' + r.points + '</span>' +
