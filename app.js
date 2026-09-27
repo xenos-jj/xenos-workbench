@@ -858,7 +858,7 @@ const DEFAULT_SETTINGS = {
   userAvatar: '🐰',
   mood: '平静',
   currentPhase: '成长',
-  phaseOptions: ['成长', '生活', '自律', '学习', '英语', '剪辑', 'AI'],
+  phaseOptions: ['成长', '生活', '学习'],
   monthlyFocus: ['英语'],
   focusOptions: ['英语', '阅读', '护肤', '穿搭', '妆容', '仪态', '运动', '饮食'],
   moduleTravel: true,
@@ -1849,6 +1849,17 @@ function migrateData() {
       const before = state.settings.monthlyFocus.length;
       state.settings.monthlyFocus = state.settings.monthlyFocus.filter(o => !REMOVED_FOCUS_LABELS.includes(o));
       if (state.settings.monthlyFocus.length !== before) settingsTouched = true;
+    }
+    // v9597：阶段选择器移除 自律/英语/剪辑/AI（仅 phaseOptions，主线 focusOptions/monthlyFocus 不动）
+    const REMOVED_PHASE_LABELS = ['自律', '英语', '剪辑', 'AI'];
+    if (Array.isArray(state.settings.phaseOptions)) {
+      const before = state.settings.phaseOptions.length;
+      state.settings.phaseOptions = state.settings.phaseOptions.filter(o => !REMOVED_PHASE_LABELS.includes(o));
+      if (state.settings.phaseOptions.length !== before) settingsTouched = true;
+      if (REMOVED_PHASE_LABELS.includes(state.settings.currentPhase)) {
+        state.settings.currentPhase = state.settings.phaseOptions[0] || DEFAULT_SETTINGS.currentPhase;
+        settingsTouched = true;
+      }
     }
     // v9285：清理 v9283 已删除的 烹饪美食/志愿公益 残留（用户老数据中的 long-term 慢模块已不可点开）
     const REMOVED_SLOW_NAMES = ['烹饪美食', '志愿公益'];
