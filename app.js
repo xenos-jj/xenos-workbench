@@ -33,10 +33,10 @@ const DEFAULT_LANGUAGE = {
 
 // ---------- 学习成长：英语打卡（v9144） ----------
 const ENGLISH_DAILY_TASKS = [
-  { key: 'words', name: '背单词', sub: '完成新词 + 复习旧词', points: 3, color: '#A99BD6', bg: '#F3F0FA' },
-  { key: 'listening', name: '听力练习', sub: '完成精听 + 泛听', points: 3, color: '#6FBFB0', bg: '#EAF6F4' },
-  { key: 'speaking', name: '口语练习', sub: '跟读 + 口头输出练习', points: 5, color: '#F4B678', bg: '#FFF5E9' },
-  { key: 'review', name: '当日复盘', sub: '标记难词、难点', points: 2, color: '#8FA3C7', bg: '#EEF2F9' }
+  { key: 'words', name: '背30个单词', sub: '新词 30 个 + 复习旧词', points: 3, color: '#A99BD6', bg: '#F3F0FA' },
+  { key: 'listening', name: '听一篇文章', sub: '完整听一篇 + 复听', points: 3, color: '#6FBFB0', bg: '#EAF6F4' },
+  { key: 'speaking', name: '读五个句子', sub: '跟读 + 朗读五句', points: 5, color: '#F4B678', bg: '#FFF5E9' },
+  { key: 'review', name: '音标练习', sub: '音标跟读 + 辨音练习', points: 2, color: '#8FA3C7', bg: '#EEF2F9' }
 ];
 
 const ENGLISH_WEEKLY_TASKS = [
@@ -4486,7 +4486,7 @@ function renderDailyPlan(host, embedded = false, dateKeyOverride = null) {
       const idx = parseInt(id, 10); if (isNaN(idx)) return;
       viewEx[idx].done = !viewEx[idx].done; saveExerciseLogs();
     } else if (source === 'english') {
-      if (engDay && engDay.restDay && id !== 'words') { toast('休息日只需完成背单词'); return; }
+      if (engDay && engDay.restDay && id !== 'words') { toast('休息日只需完成背30个单词'); return; }
       toggleEnglishTask('daily', id);
     } else if (source === 'english-custom') {
       toggleEnglishCustomTask(id);
@@ -11573,7 +11573,7 @@ function renderStudyPage() {
       const total = cur.total || ENGLISH_DAILY_TASKS.length;
       const done = cur.done || 0;
       const tp = state.englishCheckin.totalPoints || 0;
-      sub.textContent = (cur.exempt ? '休息日 · 仅需完成「背单词」· 今日 ' : '已完成 ' + done + '/' + total + ' · 今日 ') + tp + ' 积分';
+      sub.textContent = (cur.exempt ? '休息日 · 仅需完成「背30个单词」· 今日 ' : '已完成 ' + done + '/' + total + ' · 今日 ') + tp + ' 积分';
     }
   }
 
@@ -11689,7 +11689,7 @@ function renderStudyPage() {
 
   function dailySummary() {
     const tp = getEnglishTodayPoints();
-    if (day.restDay) return `休息日 · 仅需完成「背单词」· 今日 ${tp} 积分`;
+    if (day.restDay) return `休息日 · 仅需完成「背30个单词」· 今日 ${tp} 积分`;
     return `已完成 ${dailyDone.done}/${dailyDone.total} · 今日 ${tp} 积分`;
   }
 
